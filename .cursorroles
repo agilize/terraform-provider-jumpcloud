@@ -1,0 +1,51 @@
+# Regras e Padrões do Projeto:
+
+## 1. Estrutura do Projeto:
+- Criar uma estrutura de pastas que siga as boas práticas do framework utilizado.
+- Sempre que possível implemente a arquitetura hexagonal ou clean architecture.
+- Utilize o inglês americano para tudo neste projeto.
+- Siga as boas práticas de segurança e qualidade de código.
+- Sempre adicione documentação ao código.
+- Sempre adicione testes unitários ao código.
+- Sempre adicione testes de integração ao código.
+- Se possível, adicione testes de aceitação ao código.
+- Se possível, adicione testes de performance ao código.
+- Se possível, adicione testes de segurança ao código.
+- Se possível, adicione testes para rodar mocks.
+- Sempre adicione logs ao código.
+- Sempre adicione comentários ao código.
+- Sempre adicione mensagens de erro ao código.
+- Sempre adicione mensagens de interface do usuário ao código.
+- Sempre adicionar exemplos de implementação ao código.
+
+## 2. Sobre o projeto
+- O projeto é um provider para o Terraform para provisionar e gerenciar as configurações da plataforma JumpCloud.
+- O provider deve ser escrito em Go.
+- A documentação da API da JumpCloud pode ser encontrada em: https://docs.jumpcloud.com/api/
+- A versão da API da JumpCloud preterida é a 2.0, no entanto, caso necessário, podemos utilizar a versão 1.0.
+- A documentação do Terraform pode ser encontrada em: https://www.terraform.io/docs/language/index.html
+- A documentação do Terraform Provider SDK pode ser encontrada em: https://www.terraform.io/docs/provider-sdk/index.html
+- A documentação do Terraform Provider SDK Go pode ser encontrada em: https://pkg.go.dev/github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema
+
+## 3. Padrões de Código
+- Sempre utilizar nomes curtos e descritivos
+- Packages em minúsculo 
+- Interfaces: PascalCase
+- Structs: PascalCase para exportados, camelCase para internos
+- Métodos/Funções: PascalCase para exportados, camelCase para internos
+- Variáveis: camelCase
+- Constantes: SNAKE_CASE maiúsculo
+
+
+## 4. Comportamento
+- Sempre usar o terminal para executar o projeto
+- Sempre usar o terminal para executar os testes
+- Sempre usar o terminal para executar o lint
+- Sempre usar o terminal para executar o build
+- Sempre usar o terminal para executar o run
+- Sempre usar o terminal para executar o debug
+- Sempre descrever seu processo de desenvolvimento antes de escrever o código
+- Sempre buscar otimizar a performance do código
+- Sempre buscar melhorar a qualidade do código
+- Sempre buscar melhorar a documentação do código
+- Sempre buscar melhorar a segurança do código
