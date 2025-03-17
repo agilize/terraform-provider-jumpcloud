@@ -3,16 +3,19 @@
 echo "Running golangci-lint with project configuration"
 echo "==============================================="
 
+# Define o caminho para o golangci-lint
+GOLANGCI_LINT="$HOME/go/bin/golangci-lint"
+
 # Check if golangci-lint is installed
-if ! command -v golangci-lint &> /dev/null; then
-    echo "Error: golangci-lint is not installed or not in PATH"
+if [ ! -f "$GOLANGCI_LINT" ]; then
+    echo "Error: golangci-lint is not installed at $GOLANGCI_LINT"
     echo "Please install it: https://golangci-lint.run/usage/install/"
     exit 1
 fi
 
 # Run golangci-lint
 echo "Running linting checks..."
-golangci-lint run --timeout=5m --config=.golangci.yml --verbose --out-format=colored-line-number "$@"
+"$GOLANGCI_LINT" run --timeout=5m --config=.golangci.yml --verbose --out-format=colored-line-number "$@"
 
 exit_code=$?
 
