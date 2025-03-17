@@ -30,7 +30,7 @@ func TestResourceSystemCreate(t *testing.T) {
 
 	// Set up expectations
 	mockClient.On("DoRequest", http.MethodPost, "/api/v2/systems", mock.Anything).Return(responseBody, nil)
-	mockClient.On("DoRequest", http.MethodGet, "/api/systems/test-system-id", nil).Return(responseBody, nil)
+	mockClient.On("DoRequest", http.MethodGet, "/api/systems/test-system-id", []byte(nil)).Return(responseBody, nil)
 
 	// Create test schema data
 	d := schema.TestResourceDataRaw(t, resourceSystem().Schema, map[string]interface{}{
@@ -75,7 +75,7 @@ func TestResourceSystemRead(t *testing.T) {
 	responseBody, _ := json.Marshal(systemResponse)
 
 	// Set up expectations
-	mockClient.On("DoRequest", http.MethodGet, "/api/systems/test-system-id", nil).Return(responseBody, nil)
+	mockClient.On("DoRequest", http.MethodGet, "/api/systems/test-system-id", []byte(nil)).Return(responseBody, nil)
 
 	// Create test schema data
 	d := schema.TestResourceDataRaw(t, resourceSystem().Schema, map[string]interface{}{})
@@ -121,7 +121,7 @@ func TestResourceSystemUpdate(t *testing.T) {
 
 	// Set up expectations
 	mockClient.On("DoRequest", http.MethodPut, "/api/systems/test-system-id", mock.Anything).Return([]byte("{}"), nil)
-	mockClient.On("DoRequest", http.MethodGet, "/api/systems/test-system-id", nil).Return(responseBody, nil)
+	mockClient.On("DoRequest", http.MethodGet, "/api/systems/test-system-id", []byte(nil)).Return(responseBody, nil)
 
 	// Create test schema data with original values
 	oldData := map[string]interface{}{
@@ -157,7 +157,7 @@ func TestResourceSystemDelete(t *testing.T) {
 	mockClient := new(MockClient)
 
 	// Set up expectations
-	mockClient.On("DoRequest", http.MethodDelete, "/api/systems/test-system-id", nil).Return([]byte("{}"), nil)
+	mockClient.On("DoRequest", http.MethodDelete, "/api/systems/test-system-id", []byte(nil)).Return([]byte("{}"), nil)
 
 	// Create test schema data
 	d := schema.TestResourceDataRaw(t, resourceSystem().Schema, map[string]interface{}{})

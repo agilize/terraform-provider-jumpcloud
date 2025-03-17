@@ -6,7 +6,10 @@ Este provider Terraform permite gerenciar recursos do JumpCloud através do Terr
 
 - Gerenciamento de usuários JumpCloud (criação, atualização, deleção)
 - Gerenciamento de sistemas JumpCloud (configuração, atualização)
-- Recuperação de informações sobre usuários e sistemas para integração com outros recursos 
+- Gerenciamento de grupos de usuários (criação, atualização, deleção)
+- Gerenciamento de associações entre usuários e sistemas (criação, deleção)
+- Gerenciamento de políticas e associações de políticas a grupos
+- Recuperação de informações sobre usuários, sistemas, grupos e associações para integração com outros recursos 
 
 O provider utiliza a API oficial do JumpCloud para realizar todas as operações, garantindo consistência e segurança na gestão dos recursos.
 
@@ -17,187 +20,204 @@ O provider utiliza a API oficial do JumpCloud para realizar todas as operações
 | Nome | Descrição |
 |------|-----------|
 | `jumpcloud_user` | Gerencia usuários no JumpCloud, permitindo definir atributos, configurações de MFA e senhas |
-| `jumpcloud_system` | Gerencia sistemas (dispositivos) no JumpCloud, configurando atributos, tags e políticas de segurança |
+| `jumpcloud_system` | Gerencia sistemas no JumpCloud, permitindo configurar tags, descrições e configurações de segurança |
+| `jumpcloud_user_group` | Gerencia grupos de usuários no JumpCloud |
+| `jumpcloud_system_group` | Gerencia grupos de sistemas no JumpCloud |
+| `jumpcloud_user_group_membership` | Gerencia a associação de usuários a grupos de usuários |
+| `jumpcloud_system_group_membership` | Gerencia a associação de sistemas a grupos de sistemas |
+| `jumpcloud_user_system_association` | Gerencia associações entre usuários e sistemas, controlando acesso direto |
+| `jumpcloud_command` | Gerencia comandos no JumpCloud, permitindo executar scripts nos sistemas |
+| `jumpcloud_command_association` | Gerencia associações entre comandos e sistemas ou grupos |
+| `jumpcloud_policy` | Gerencia políticas no JumpCloud, como políticas de senha, MFA e bloqueio de conta |
+| `jumpcloud_policy_association` | Gerencia associações entre políticas e grupos de usuários ou sistemas |
 
 ### Fontes de Dados (Data Sources)
 
 | Nome | Descrição |
 |------|-----------|
-| `jumpcloud_user` | Recupera informações detalhadas sobre usuários do JumpCloud |
-| `jumpcloud_system` | Recupera informações sobre sistemas registrados no JumpCloud |
+| `jumpcloud_user` | Obtém informações sobre usuários existentes no JumpCloud |
+| `jumpcloud_system` | Obtém informações sobre sistemas existentes no JumpCloud |
+| `jumpcloud_user_group` | Obtém informações sobre grupos de usuários existentes no JumpCloud |
+| `jumpcloud_system_group` | Obtém informações sobre grupos de sistemas existentes no JumpCloud |
+| `jumpcloud_user_system_association` | Verifica a associação entre um usuário e um sistema |
+| `jumpcloud_command` | Obtém informações sobre comandos existentes no JumpCloud |
+| `jumpcloud_policy` | Obtém informações sobre políticas existentes no JumpCloud |
 
 ## Requisitos
 
-- [Terraform](https://www.terraform.io/downloads.html) >= 0.13.x
-- [Go](https://golang.org/doc/install) >= 1.18 (apenas para desenvolvimento)
-- Uma conta JumpCloud com acesso à API
+- [Terraform](https://www.terraform.io/downloads.html) 0.13.x ou superior
+- Go 1.20 ou superior (para desenvolvimento)
+- Conta JumpCloud com permissões administrativas
+- API Key do JumpCloud
 
 ## Instalação
 
-### Usando o Terraform Registry (recomendado)
+### Terraform 0.13+
 
-Adicione a configuração abaixo ao seu arquivo Terraform:
+Para usar o provider, adicione a seguinte configuração no seu arquivo Terraform:
 
 ```hcl
 terraform {
   required_providers {
     jumpcloud = {
-      source  = "ferreirafav/jumpcloud"
+      source = "ferreirafav/jumpcloud"
       version = "0.1.0"
     }
   }
 }
-```
 
-### Instalação manual (para desenvolvimento)
-
-1. Clone o repositório
-   ```sh
-   git clone https://github.com/ferreirafav/terraform-provider-jumpcloud.git
-   ```
-
-2. Entre no diretório do repositório
-   ```sh
-   cd terraform-provider-jumpcloud
-   ```
-
-3. Compile o provider
-   ```sh
-   go build -o terraform-provider-jumpcloud
-   ```
-
-4. Instale o provider local
-   ```sh
-   make install
-   ```
-
-## Configuração
-
-Para usar o provider, adicione a seguinte configuração Terraform:
-
-```hcl
 provider "jumpcloud" {
-  api_key = "your_api_key"  # ou use a variável de ambiente JUMPCLOUD_API_KEY
-  org_id  = "your_org_id"   # ou use a variável de ambiente JUMPCLOUD_ORG_ID
-  # api_url = "https://console.jumpcloud.com/api"  # opcional, este é o valor padrão
+  api_key = var.jumpcloud_api_key  # Ou defina a variável de ambiente JUMPCLOUD_API_KEY
+  org_id  = var.jumpcloud_org_id   # Ou defina a variável de ambiente JUMPCLOUD_ORG_ID
 }
-```
-
-### Variáveis de ambiente
-
-Para maior segurança, recomendamos o uso de variáveis de ambiente:
-
-```sh
-export JUMPCLOUD_API_KEY="sua_api_key"
-export JUMPCLOUD_ORG_ID="seu_org_id"
 ```
 
 ## Exemplos de Uso
 
-### Gerenciando um usuário
+### Gerenciamento de Usuários
 
 ```hcl
-resource "jumpcloud_user" "devops_user" {
-  username    = "devops.user"
-  email       = "devops.user@exemplo.com"
-  firstname   = "DevOps"
+resource "jumpcloud_user" "example" {
+  username    = "example.user"
+  email       = "example.user@example.com"
+  firstname   = "Example"
   lastname    = "User"
-  password    = "P@ssw0rd_segura!123"
-  description = "Usuário DevOps gerenciado pelo Terraform"
+  password    = "securePassword123!"
+  description = "Created by Terraform"
   
   attributes = {
-    department = "TI"
-    role       = "DevOps Engineer"
-    location   = "Remoto"
+    department = "IT"
+    location   = "Remote"
   }
   
-  mfa_enabled = true
+  mfa_enabled          = true
   password_never_expires = false
 }
 ```
 
-### Consultando informações de um sistema
+### Gerenciamento de Sistemas
 
 ```hcl
-data "jumpcloud_system" "web_server" {
-  display_name = "web-server-prod"
+resource "jumpcloud_system" "web_server" {
+  display_name     = "web-server-01"
+  description      = "Web server for production environment"
+  
+  allow_ssh_root_login              = false
+  allow_ssh_password_authentication = false
+  allow_multi_factor_authentication = true
+  
+  tags = ["web", "production", "managed-by-terraform"]
+}
+```
+
+### Associação entre Usuário e Sistema
+
+```hcl
+resource "jumpcloud_user_system_association" "admin_access" {
+  user_id   = jumpcloud_user.admin.id
+  system_id = jumpcloud_system.web_server.id
+}
+```
+
+### Gerenciamento de Políticas
+
+```hcl
+resource "jumpcloud_policy" "password_complexity" {
+  name        = "Secure Password Policy"
+  description = "Política de complexidade de senha segura para todos os usuários"
+  type        = "password_complexity"
+  active      = true
+  
+  configurations = {
+    min_length             = "12"
+    requires_uppercase     = "true"
+    requires_lowercase     = "true"
+    requires_number        = "true"
+    requires_special_char  = "true"
+    password_expires_days  = "90"
+    enable_password_expiry = "true"
+  }
 }
 
-output "sistema_info" {
-  value = {
-    id              = data.jumpcloud_system.web_server.id
-    sistema_tipo    = data.jumpcloud_system.web_server.system_type
-    sistema_os      = data.jumpcloud_system.web_server.os
-    sistema_versao  = data.jumpcloud_system.web_server.version
-    sistema_tags    = data.jumpcloud_system.web_server.tags
+resource "jumpcloud_user_group" "finance" {
+  name        = "Finance Department"
+  description = "Grupo de usuários do departamento financeiro"
+}
+
+resource "jumpcloud_policy_association" "finance_password_policy" {
+  policy_id = jumpcloud_policy.password_complexity.id
+  group_id  = jumpcloud_user_group.finance.id
+  type      = "user_group"
+}
+```
+
+### Verificação de Associações e Criação Condicional
+
+```hcl
+# Verificar se um usuário tem acesso a um sistema
+data "jumpcloud_user_system_association" "check_access" {
+  user_id   = data.jumpcloud_user.existing_user.id
+  system_id = data.jumpcloud_system.existing_system.id
+}
+
+# Criar associação apenas se ainda não existir
+resource "jumpcloud_user_system_association" "conditional_access" {
+  count = data.jumpcloud_user_system_association.check_access.associated ? 0 : 1
+  
+  user_id   = data.jumpcloud_user.existing_user.id
+  system_id = data.jumpcloud_system.existing_system.id
+}
+
+# Verificar se uma política de MFA já existe
+data "jumpcloud_policy" "existing_mfa" {
+  name = "Required MFA Policy"
+}
+
+# Criar a política apenas se não existir
+resource "jumpcloud_policy" "conditional_mfa" {
+  count = data.jumpcloud_policy.existing_mfa.id != "" ? 0 : 1
+  
+  name        = "Required MFA Policy"
+  description = "Política criada condicionalmente pelo Terraform"
+  type        = "mfa"
+  active      = true
+  
+  configurations = {
+    require_mfa_for_all_users = "true"
   }
 }
 ```
 
-## Documentação Completa
-
-A documentação de cada recurso e fonte de dados está disponível nos seguintes arquivos:
-
-- [Recurso de Usuário](docs/resources/user.md)
-- [Recurso de Sistema](docs/resources/system.md)
-- [Fonte de Dados de Usuário](docs/data-sources/user.md)
-- [Fonte de Dados de Sistema](docs/data-sources/system.md)
-
-Os exemplos completos de uso podem ser encontrados no diretório [examples](examples/).
-
 ## Desenvolvimento
 
-### Pré-requisitos
+### Construção Local
 
-Para contribuir com o desenvolvimento do provider, você precisará:
+1. Clone o repositório
+2. Execute `go build` para compilar o provider
+3. Execute o script `scripts/build.sh` para instalar o provider localmente
 
-- [Go](http://www.golang.org) versão 1.18 ou superior
-- [Terraform](https://www.terraform.io/downloads.html) versão 0.13 ou superior
-- Uma conta JumpCloud para testes
+### Execução de Testes 
 
-### Compilação
-
-Para compilar o provider:
-
-```sh
-go build -o terraform-provider-jumpcloud
+```
+go test ./...
 ```
 
-### Testes
+### Teste de Aceitação
 
-O provider inclui vários tipos de testes:
-
-```sh
-# Testes unitários
-make test-unit
-
-# Testes de integração
-make test-integration
-
-# Testes de aceitação
-make test-acceptance
-
-# Testes de segurança
-make test-security
-
-# Testes de performance
-make test-performance
+```
+TF_ACC=1 JUMPCLOUD_API_KEY=sua-api-key go test ./... -v
 ```
 
-### Gerando Documentação
+## Contribuição
 
-Para gerar ou atualizar a documentação:
+Contribuições são bem-vindas! Por favor, siga estas etapas:
 
-```sh
-make docs
-```
-
-## Links Úteis
-
-- [Documentação da API JumpCloud](https://docs.jumpcloud.com/api)
-- [Terraform Registry](https://registry.terraform.io/providers/ferreirafav/jumpcloud/latest)
-- [Terraform Documentation](https://www.terraform.io/docs)
+1. Fork o repositório
+2. Crie um branch para sua contribuição (`git checkout -b feature/nome-da-feature`)
+3. Faça as alterações necessárias
+4. Execute os testes (`go test ./...`)
+5. Envie um Pull Request
 
 ## Licença
 
-Este provider é licenciado sob a licença MIT. 
+Este projeto está licenciado sob a licença MIT - veja o arquivo LICENSE para mais detalhes.

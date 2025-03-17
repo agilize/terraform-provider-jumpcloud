@@ -31,15 +31,15 @@ func TestDataSourceUserRead(t *testing.T) {
 	userDataJSON, _ := json.Marshal(userData)
 
 	// Configurar o mock para responder à busca por username
-	mockClient.On("DoRequest", "GET", "/api/search/systemusers?username=testuser", nil).
+	mockClient.On("DoRequest", "GET", "/api/search/systemusers?username=testuser", []byte(nil)).
 		Return(userDataJSON, nil)
 
 	// Configurar o mock para responder à busca por email
-	mockClient.On("DoRequest", "GET", "/api/search/systemusers?email=test@example.com", nil).
+	mockClient.On("DoRequest", "GET", "/api/search/systemusers?email=test@example.com", []byte(nil)).
 		Return(userDataJSON, nil)
 
 	// Configurar o mock para responder à busca por ID
-	mockClient.On("DoRequest", "GET", "/api/systemusers/test-user-id", nil).
+	mockClient.On("DoRequest", "GET", "/api/systemusers/test-user-id", []byte(nil)).
 		Return(userDataJSON, nil)
 
 	// Criar o data source

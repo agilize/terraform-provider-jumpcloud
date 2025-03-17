@@ -35,11 +35,11 @@ func TestDataSourceSystemRead(t *testing.T) {
 	systemDataJSON, _ := json.Marshal(systemData)
 
 	// Configurar o mock para responder à busca por ID
-	mockClient.On("DoRequest", "GET", "/api/systems/test-system-id", nil).
+	mockClient.On("DoRequest", "GET", "/api/systems/test-system-id", []byte(nil)).
 		Return(systemDataJSON, nil)
 
 	// Configurar o mock para responder à busca por nome de exibição
-	mockClient.On("DoRequest", "GET", "/api/search/systems?displayName=test-system", nil).
+	mockClient.On("DoRequest", "GET", "/api/search/systems?displayName=test-system", []byte(nil)).
 		Return(systemDataJSON, nil)
 
 	// Criar o data source

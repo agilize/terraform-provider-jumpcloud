@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -18,8 +19,39 @@ type MockClient struct {
 
 // DoRequest implements the mock request method for tests
 func (m *MockClient) DoRequest(method, path string, body interface{}) ([]byte, error) {
-	args := m.Called(method, path, body)
+	var bodyBytes []byte
+	var err error
+
+	// Converter body para []byte se não for nil
+	if body != nil {
+		switch v := body.(type) {
+		case []byte:
+			bodyBytes = v
+		default:
+			bodyBytes, err = json.Marshal(body)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	args := m.Called(method, path, bodyBytes)
+	if args.Get(0) == nil {
+		return []byte{}, args.Error(1)
+	}
 	return args.Get(0).([]byte), args.Error(1)
+}
+
+// GetApiKey implementa o método necessário para a interface JumpCloudClient
+func (m *MockClient) GetApiKey() string {
+	args := m.Called()
+	return args.Get(0).(string)
+}
+
+// GetOrgID implementa o método necessário para a interface JumpCloudClient
+func (m *MockClient) GetOrgID() string {
+	args := m.Called()
+	return args.Get(0).(string)
 }
 
 // mockClient provides a mock implementation of the client interface for testing
@@ -209,4 +241,9 @@ func (m *mockClient) DeleteSystem(ctx context.Context, id string) error {
 	delete(m.systems, id)
 
 	return nil
+}
+
+// NewFlexibleMockClient cria um cliente mock flexível para testes
+func NewFlexibleMockClient() *MockClient {
+	return new(MockClient)
 }

@@ -7,16 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// providerFactories are used to instantiate a provider during testing
-var providerFactories = map[string]func() (*schema.Provider, error){
-	"jumpcloud": func() (*schema.Provider, error) {
-		return New(), nil
-	},
-}
+var testAccProviders map[string]*schema.Provider
+var testAccProvider *schema.Provider
 
-func TestProvider(t *testing.T) {
-	if err := New().InternalValidate(); err != nil {
-		t.Fatalf("err: %s", err)
+func init() {
+	testAccProvider = Provider()
+	testAccProviders = map[string]*schema.Provider{
+		"jumpcloud": testAccProvider,
 	}
 }
 
@@ -33,12 +30,25 @@ func testAccPreCheck(t *testing.T) bool {
 		return false
 	}
 
+	if v := os.Getenv("JUMPCLOUD_ORG_ID"); v == "" {
+		t.Skip("JUMPCLOUD_ORG_ID must be set for acceptance tests")
+		return false
+	}
+
 	return true
 }
 
-// testAccProvider is used to instantiate a provider during tests
-func testAccProvider() *schema.Provider {
-	return New()
+// providerFactories are used to instantiate a provider during testing
+var providerFactories = map[string]func() (*schema.Provider, error){
+	"jumpcloud": func() (*schema.Provider, error) {
+		return Provider(), nil
+	},
+}
+
+func TestProvider(t *testing.T) {
+	if err := Provider().InternalValidate(); err != nil {
+		t.Fatalf("err: %s", err)
+	}
 }
 
 // testAccProviderFactories returns the provider factories for testing
