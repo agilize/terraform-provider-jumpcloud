@@ -1,7 +1,10 @@
 # Terraform Provider JumpCloud
 
-[![Build Status](https://github.com/ferreirafav/terraform-provider-jumpcloud/workflows/Build%20and%20Release/badge.svg)](https://github.com/ferreirafav/terraform-provider-jumpcloud/actions)
+[![Build Status](https://github.com/ferreirafav/terraform-provider-jumpcloud/workflows/Unified%20Build%20and%20Release%20Pipeline/badge.svg)](https://github.com/ferreirafav/terraform-provider-jumpcloud/actions)
+[![Latest Release](https://img.shields.io/github/v/release/ferreirafav/terraform-provider-jumpcloud?include_prereleases&sort=semver)](https://github.com/ferreirafav/terraform-provider-jumpcloud/releases)
+[![GitHub Packages](https://img.shields.io/badge/GitHub%20Packages-Provider-blue)](https://github.com/ferreirafav/terraform-provider-jumpcloud/packages)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ferreirafav/terraform-provider-jumpcloud)](https://goreportcard.com/report/github.com/ferreirafav/terraform-provider-jumpcloud)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/ferreirafav/terraform-provider-jumpcloud)](https://github.com/ferreirafav/terraform-provider-jumpcloud)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 The JumpCloud Terraform Provider allows you to manage resources on the [JumpCloud](https://jumpcloud.com) platform through Terraform.

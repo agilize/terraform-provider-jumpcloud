@@ -253,16 +253,13 @@ jobs:
       - name: Set up GitHub CLI
         run: |
           type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
-          && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
-          && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-          && sudo apt update \
-          && sudo apt install gh -y
-      
+          
       - name: Publish to GitHub Packages
         env:
           VERSION: ${{ needs.version.outputs.version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
         run: |
           cd release
           echo "Publishing packages to GitHub Packages..."
@@ -273,28 +270,22 @@ jobs:
           # Informações sobre o ambiente
           echo "Repositório: ${{ github.repository }}"
           echo "Owner: ${{ github.repository_owner }}"
+          echo "Nome do repo: ${{ github.event.repository.name }}"
           echo "Versão: ${VERSION}"
           echo "Referência: ${{ github.ref }}"
-          
-          # Autenticar com o GitHub CLI
-          echo "Autenticando com GitHub CLI..."
-          echo "$GITHUB_TOKEN" | gh auth login --with-token
-          gh auth status
-          
-          # Verificar se o pacote já existe 
-          echo "Verificando pacotes existentes..."
-          gh api -H "Accept: application/vnd.github+json" "/users/${{ github.repository_owner }}/packages" || echo "Erro ao verificar pacotes, mas continuando..."
           
           # Publicar cada arquivo ZIP como um pacote no GitHub Packages
           PUBLISH_SUCCESS=true
           for zipfile in terraform-provider-jumpcloud_*.zip; do
             echo "Publishing $zipfile to GitHub Packages"
-            if gh api \
-              --method PUT \
+            if curl -L \
+              -X PUT \
               -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
-              --input "$zipfile" \
-              "/users/${{ github.repository_owner }}/packages/generic/terraform-provider-jumpcloud/${VERSION}/${zipfile}"; then
+              -H "Content-Type: application/octet-stream" \
+              --data-binary "@$zipfile" \
+              "https://api.github.com/repos/${{ github.repository }}/packages/generic/terraform-provider-jumpcloud/${VERSION}/$zipfile"; then
               echo "✅ Sucesso ao publicar $zipfile"
             else
               echo "❌ Erro ao publicar $zipfile"
@@ -305,12 +296,14 @@ jobs:
           # Publicar checksums
           if [ -f SHA256SUMS ]; then
             echo "Publishing SHA256SUMS to GitHub Packages"
-            if gh api \
-              --method PUT \
+            if curl -L \
+              -X PUT \
               -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
-              --input SHA256SUMS \
-              "/users/${{ github.repository_owner }}/packages/generic/terraform-provider-jumpcloud/${VERSION}/SHA256SUMS"; then
+              -H "Content-Type: application/octet-stream" \
+              --data-binary "@SHA256SUMS" \
+              "https://api.github.com/repos/${{ github.repository }}/packages/generic/terraform-provider-jumpcloud/${VERSION}/SHA256SUMS"; then
               echo "✅ Sucesso ao publicar SHA256SUMS"
             else
               echo "❌ Erro ao publicar SHA256SUMS"
@@ -375,7 +368,7 @@ jobs:
           ```hcl
           provider_installation {
             network_mirror {
-              url = "https://github.com/${{ github.repository_owner }}/terraform-provider-jumpcloud/releases/download/v${VERSION}/"
+              url = "https://github.com/${{ github.repository }}/releases/download/v${VERSION}/"
               include = ["github.com/${{ github.repository_owner }}/jumpcloud"]
             }
             direct {
@@ -400,7 +393,7 @@ jobs:
           Você pode baixar os binários diretamente usando:
           
           \`\`\`
-          curl -LO https://github.com/${{ github.repository_owner }}/terraform-provider-jumpcloud/packages/generic/terraform-provider-jumpcloud/${VERSION}/terraform-provider-jumpcloud_${VERSION}_[sua_plataforma].zip
+          curl -LO https://github.com/${{ github.repository }}/packages/generic/terraform-provider-jumpcloud/${VERSION}/terraform-provider-jumpcloud_${VERSION}_[sua_plataforma].zip
           \`\`\`
           
           Substitua [sua_plataforma] pela plataforma desejada (ex: darwin_amd64, linux_amd64, etc).
@@ -424,14 +417,16 @@ jobs:
           echo "Arquivo README-PACKAGE.md criado:"
           cat README-PACKAGE.md
           
-          # Publicar o README usando GitHub CLI
+          # Publicar o README usando curl
           echo "Publicando documentação no GitHub Packages..."
-          if gh api \
-            --method PUT \
+          if curl -L \
+            -X PUT \
             -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            --input README-PACKAGE.md \
-            "/users/${{ github.repository_owner }}/packages/generic/terraform-provider-jumpcloud/${VERSION}/README.md"; then
+            -H "Content-Type: application/octet-stream" \
+            --data-binary "@README-PACKAGE.md" \
+            "https://api.github.com/repos/${{ github.repository }}/packages/generic/terraform-provider-jumpcloud/${VERSION}/README.md"; then
             echo "✅ Documentação publicada com sucesso!"
           else
             echo "❌ Erro ao publicar a documentação"
