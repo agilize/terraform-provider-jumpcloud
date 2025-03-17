@@ -1,25 +1,25 @@
 # jumpcloud_api_key_binding Resource
 
-Gerencia permissões de chaves de API no JumpCloud. Este recurso permite definir quais operações uma chave de API pode realizar e em quais recursos, permitindo um controle granular de acesso.
+Manages API key permissions in JumpCloud. This resource allows you to define which operations an API key can perform and on which resources, enabling granular access control.
 
-## Exemplo de Uso
+## Example Usage
 
-### Automação de Usuários
+### User Automation
 ```hcl
-# Criar uma chave de API para automação
+# Create an API key for automation
 resource "jumpcloud_api_key" "user_automation" {
   name        = "User Automation API Key"
-  description = "Chave de API para automação de usuários"
+  description = "API key for user automation"
 }
 
-# Configurar permissões para gerenciar todos os usuários
+# Configure permissions to manage all users
 resource "jumpcloud_api_key_binding" "user_management" {
   api_key_id    = jumpcloud_api_key.user_automation.id
   resource_type = "user"
   permissions   = ["read", "list", "create", "update", "delete"]
 }
 
-# Configurar permissões para gerenciar grupos de usuários
+# Configure permissions to manage user groups
 resource "jumpcloud_api_key_binding" "user_group_management" {
   api_key_id    = jumpcloud_api_key.user_automation.id
   resource_type = "user_group"
@@ -27,15 +27,15 @@ resource "jumpcloud_api_key_binding" "user_group_management" {
 }
 ```
 
-### Monitoramento de Sistemas
+### System Monitoring
 ```hcl
-# Criar uma chave de API para monitoramento
+# Create an API key for monitoring
 resource "jumpcloud_api_key" "system_monitor" {
   name        = "System Monitor API Key"
-  description = "Chave de API para monitoramento de sistemas"
+  description = "API key for system monitoring"
 }
 
-# Configurar permissões de leitura para sistemas específicos
+# Configure read permissions for specific systems
 resource "jumpcloud_api_key_binding" "system_monitoring" {
   api_key_id    = jumpcloud_api_key.system_monitor.id
   resource_type = "system"
@@ -43,7 +43,7 @@ resource "jumpcloud_api_key_binding" "system_monitoring" {
   resource_ids  = ["sys_123", "sys_456", "sys_789"]
 }
 
-# Configurar permissões para monitorar grupos de sistemas
+# Configure permissions to monitor system groups
 resource "jumpcloud_api_key_binding" "system_group_monitoring" {
   api_key_id    = jumpcloud_api_key.system_monitor.id
   resource_type = "system_group"
@@ -51,22 +51,22 @@ resource "jumpcloud_api_key_binding" "system_group_monitoring" {
 }
 ```
 
-### Gerenciamento de Aplicações
+### Application Management
 ```hcl
-# Criar uma chave de API para gerenciamento de aplicações
+# Create an API key for application management
 resource "jumpcloud_api_key" "app_management" {
   name        = "Application Management API Key"
-  description = "Chave de API para gerenciamento de aplicações"
+  description = "API key for application management"
 }
 
-# Configurar permissões para gerenciar aplicações
+# Configure permissions to manage applications
 resource "jumpcloud_api_key_binding" "application_management" {
   api_key_id    = jumpcloud_api_key.app_management.id
   resource_type = "application"
   permissions   = ["read", "list", "create", "update", "delete"]
 }
 
-# Configurar permissões para gerenciar associações de usuários
+# Configure permissions to manage user associations
 resource "jumpcloud_api_key_binding" "application_user_binding" {
   api_key_id    = jumpcloud_api_key.app_management.id
   resource_type = "application_user"
@@ -74,22 +74,22 @@ resource "jumpcloud_api_key_binding" "application_user_binding" {
 }
 ```
 
-### Monitoramento de Eventos
+### Event Monitoring
 ```hcl
-# Criar uma chave de API para monitoramento de eventos
+# Create an API key for event monitoring
 resource "jumpcloud_api_key" "event_monitor" {
   name        = "Event Monitor API Key"
-  description = "Chave de API para monitoramento de eventos"
+  description = "API key for event monitoring"
 }
 
-# Configurar permissões para monitorar eventos de autenticação
+# Configure permissions to monitor authentication events
 resource "jumpcloud_api_key_binding" "auth_event_monitoring" {
   api_key_id    = jumpcloud_api_key.event_monitor.id
   resource_type = "auth_event"
   permissions   = ["read", "list"]
 }
 
-# Configurar permissões para monitorar eventos de diretório
+# Configure permissions to monitor directory events
 resource "jumpcloud_api_key_binding" "directory_event_monitoring" {
   api_key_id    = jumpcloud_api_key.event_monitor.id
   resource_type = "directory_event"
@@ -97,65 +97,65 @@ resource "jumpcloud_api_key_binding" "directory_event_monitoring" {
 }
 ```
 
-## Argumentos
+## Arguments
 
-Os seguintes argumentos são suportados:
+The following arguments are supported:
 
-* `api_key_id` - (Obrigatório) ID da chave de API à qual este binding se aplica.
-* `resource_type` - (Obrigatório) Tipo de recurso ao qual o binding se aplica. Valores válidos incluem:
-  * `user` - Usuários
-  * `user_group` - Grupos de usuários
-  * `system` - Sistemas
-  * `system_group` - Grupos de sistemas
-  * `application` - Aplicações
-  * `application_user` - Associações de usuários a aplicações
-  * `policy` - Políticas
-  * `command` - Comandos
-  * `auth_event` - Eventos de autenticação
-  * `directory_event` - Eventos de diretório
+* `api_key_id` - (Required) ID of the API key to which this binding applies.
+* `resource_type` - (Required) Type of resource to which the binding applies. Valid values include:
+  * `user` - Users
+  * `user_group` - User groups
+  * `system` - Systems
+  * `system_group` - System groups
+  * `application` - Applications
+  * `application_user` - User to application associations
+  * `policy` - Policies
+  * `command` - Commands
+  * `auth_event` - Authentication events
+  * `directory_event` - Directory events
   * `webhook` - Webhooks
-  * `organization` - Organizações
-* `permissions` - (Obrigatório) Lista de permissões concedidas à chave de API para o tipo de recurso especificado. Valores válidos incluem:
-  * `read` - Permissão para ler recursos
-  * `list` - Permissão para listar recursos
-  * `create` - Permissão para criar recursos
-  * `update` - Permissão para atualizar recursos
-  * `delete` - Permissão para excluir recursos
-* `resource_ids` - (Opcional) Lista de IDs específicos de recursos aos quais as permissões se aplicam. Se omitido, as permissões se aplicam a todos os recursos do tipo especificado.
+  * `organization` - Organizations
+* `permissions` - (Required) List of permissions granted to the API key for the specified resource type. Valid values include:
+  * `read` - Permission to read resources
+  * `list` - Permission to list resources
+  * `create` - Permission to create resources
+  * `update` - Permission to update resources
+  * `delete` - Permission to delete resources
+* `resource_ids` - (Optional) List of specific resource IDs to which the permissions apply. If omitted, permissions apply to all resources of the specified type.
 
-## Atributos Exportados
+## Exported Attributes
 
-Além dos argumentos acima, os seguintes atributos são exportados:
+In addition to the arguments above, the following attributes are exported:
 
-* `id` - ID único do binding da chave de API.
-* `created` - Data de criação do binding no formato ISO 8601.
-* `updated` - Data da última atualização do binding no formato ISO 8601.
+* `id` - The unique ID of the API key binding.
+* `created` - The creation date of the binding in ISO 8601 format.
+* `updated` - The date the binding was last updated in ISO 8601 format.
 
-## Importação
+## Import
 
-Bindings de chave de API podem ser importados usando seu ID:
+API key bindings can be imported using their ID:
 
 ```shell
 terraform import jumpcloud_api_key_binding.user_management j1_api_key_binding_1234567890
 ```
 
-## Notas de Uso
+## Usage Notes
 
-### Segurança
+### Security
 
-1. Siga o princípio do menor privilégio ao conceder permissões.
-2. Use `resource_ids` para limitar o escopo das permissões quando possível.
-3. Revise regularmente as permissões concedidas às chaves de API.
-4. Documente o propósito e uso de cada binding.
+1. Follow the principle of least privilege when granting permissions.
+2. Use `resource_ids` to limit the scope of permissions when possible.
+3. Regularly review permissions granted to API keys.
+4. Document the purpose and use of each binding.
 
-### Boas Práticas
+### Best Practices
 
-1. Agrupe bindings relacionados com a mesma chave de API.
-2. Use descrições claras nas chaves de API para identificar seu propósito.
-3. Mantenha um inventário de bindings e suas permissões.
-4. Implemente rotação regular de chaves de API.
+1. Group related bindings with the same API key.
+2. Use clear descriptions in API keys to identify their purpose.
+3. Maintain an inventory of bindings and their permissions.
+4. Implement regular rotation of API keys.
 
-### Exemplo de Validação de Permissões
+### Example of Permission Validation
 
 ```python
 from typing import List, Dict
@@ -165,19 +165,19 @@ def validate_api_key_permissions(
     required_permissions: Dict[str, List[str]]
 ) -> bool:
     """
-    Valida se uma chave de API tem as permissões necessárias.
+    Validates if an API key has the necessary permissions.
     
     Args:
-        api_key: A chave de API a ser validada
-        required_permissions: Dicionário de tipo de recurso para lista de permissões
+        api_key: The API key to be validated
+        required_permissions: Dictionary of resource type to list of permissions
         
     Returns:
-        bool: True se a chave tem todas as permissões necessárias
+        bool: True if the key has all the required permissions
     """
-    # Implementar lógica de validação de permissões
+    # Implement permission validation logic
     return True
 
-# Exemplo de uso
+# Example usage
 required_permissions = {
     'user': ['read', 'list', 'create'],
     'user_group': ['read', 'list'],
@@ -190,7 +190,7 @@ is_valid = validate_api_key_permissions(
 )
 ```
 
-### Exemplo de Auditoria de Permissões
+### Example of Permission Auditing
 
 ```python
 from datetime import datetime
@@ -200,13 +200,13 @@ def audit_api_key_bindings(
     bindings: List[Dict]
 ) -> Dict[str, List[str]]:
     """
-    Audita bindings de chaves de API para identificar permissões sensíveis.
+    Audits API key bindings to identify sensitive permissions.
     
     Args:
-        bindings: Lista de bindings a serem auditados
+        bindings: List of bindings to be audited
         
     Returns:
-        Dict[str, List[str]]: Relatório de permissões sensíveis por chave
+        Dict[str, List[str]]: Report of sensitive permissions by key
     """
     sensitive_permissions = {
         'user': ['delete'],
@@ -234,7 +234,7 @@ def audit_api_key_bindings(
     
     return audit_report
 
-# Exemplo de uso
+# Example usage
 bindings = [
     {
         'api_key_id': 'key1',

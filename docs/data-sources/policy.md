@@ -1,107 +1,100 @@
 # jumpcloud_policy Data Source
 
-Use este data source para obter informações sobre uma política específica existente no JumpCloud. Este data source permite recuperar detalhes sobre políticas como complexidade de senha, MFA e outras configurações de segurança.
+Use this data source to get information about a specific existing JumpCloud policy. This data source allows you to retrieve details about policies such as password complexity, MFA, and other security settings.
 
-## Exemplo de Uso
+## Example Usage
 
 ```hcl
-# Buscar política por nome
+# Get policy by name
 data "jumpcloud_policy" "password_policy" {
   name = "Secure Password Policy"
 }
 
-# Buscar política por ID
+# Get policy by ID
 data "jumpcloud_policy" "mfa_policy" {
-  id = "5f8b0e1b9d81b81b33c92a1c" # Exemplo de ID (substitua pelo ID real)
+  id = "5f8b0e1b9d81b81b33c92a1c" # Example ID (replace with a real ID)
 }
 
-# Verificar se política está ativa
+# Check if policy is active
 output "password_policy_status" {
-  value = "${data.jumpcloud_policy.password_policy.name} está ${data.jumpcloud_policy.password_policy.active ? "ativa" : "inativa"}"
+  value = "${data.jumpcloud_policy.password_policy.name} is ${data.jumpcloud_policy.password_policy.active ? "active" : "inactive"}"
 }
 
-# Verificar configurações da política
+# Check policy settings
 output "password_policy_min_length" {
-  value = lookup(data.jumpcloud_policy.password_policy.configurations, "min_length", "não especificado")
+  value = lookup(data.jumpcloud_policy.password_policy.configurations, "min_length", "not specified")
 }
 
-# Exibir tipo e template da política
+# Display policy type and template
 output "mfa_policy_details" {
-  value = "Política: ${data.jumpcloud_policy.mfa_policy.name}, Tipo: ${data.jumpcloud_policy.mfa_policy.type}, Criada em: ${data.jumpcloud_policy.mfa_policy.created}"
+  value = "Policy: ${data.jumpcloud_policy.mfa_policy.name}, Type: ${data.jumpcloud_policy.mfa_policy.type}, Created at: ${data.jumpcloud_policy.mfa_policy.created}"
 }
 ```
 
-## Uso Condicional
+## Conditional Usage
 
-Este data source é útil para criar recursos condicionalmente com base em políticas existentes:
+This data source is useful for conditionally creating resources based on existing policies:
 
 ```hcl
-# Verificar se uma política de MFA já existe
+# Check if an MFA policy already exists
 data "jumpcloud_policy" "existing_mfa" {
-  name = "Required MFA Policy"
+  name = "MFA Policy"
+  
+  # This prevents an error if the policy doesn't exist
+  depends_on = [jumpcloud_policy.default_mfa]
 }
 
-# Criar a política apenas se não existir
-resource "jumpcloud_policy" "conditional_mfa" {
-  count       = data.jumpcloud_policy.existing_mfa.id != "" ? 0 : 1
-  name        = "Required MFA Policy"
-  description = "Política criada condicionalmente pelo Terraform"
-  type        = "mfa"
-  active      = true
+# Create a new policy only if one doesn't already exist
+resource "jumpcloud_policy" "default_mfa" {
+  count = data.jumpcloud_policy.existing_mfa.id == "" ? 1 : 0
   
-  configurations = {
-    require_mfa_for_all_users = "true"
-  }
+  name = "MFA Policy"
+  type = "mfa"
+  # other attributes...
 }
 ```
 
-## Referência de Argumentos
+## Groups Usage
 
-Os seguintes argumentos são suportados:
-
-* `id` - (Opcional) O ID da política no JumpCloud.
-* `name` - (Opcional) O nome da política no JumpCloud.
-
-> **Nota:** É necessário especificar exatamente um desses argumentos.
-
-## Referência de Atributos
-
-Os seguintes atributos são exportados:
-
-* `id` - O ID da política.
-* `name` - O nome da política.
-* `description` - A descrição da política.
-* `type` - O tipo da política. Possíveis valores: `password_complexity`, `samba_ad_password_sync`, `password_expiration`, `custom`, `password_reused`, `password_failed_attempts`, `account_lockout_timeout`, `mfa`, `system_updates`.
-* `template` - O template usado pela política.
-* `active` - Indica se a política está ativa.
-* `created` - A data de criação da política.
-* `configurations` - Um mapa das configurações específicas da política.
-* `organization_id` - O ID da organização à qual a política pertence.
-
-## Associação com Outros Recursos
-
-As informações de uma política existente podem ser usadas para associá-la a grupos:
+This data source can help you understand which groups a policy is applied to:
 
 ```hcl
-data "jumpcloud_policy" "existing_password_policy" {
-  name = "Secure Password Policy"
+data "jumpcloud_policy" "windows_password" {
+  name = "Windows Password Policy"
 }
 
-data "jumpcloud_user_group" "finance" {
-  name = "Finance Department"
-}
-
-resource "jumpcloud_policy_association" "finance_password_policy" {
-  policy_id = data.jumpcloud_policy.existing_password_policy.id
-  group_id  = data.jumpcloud_user_group.finance.id
-  type      = "user_group"
+# List all groups the policy is applied to
+output "policy_groups" {
+  value = data.jumpcloud_policy.windows_password.applied_to_groups
 }
 ```
 
-## Casos de Uso Comuns
+## Argument Reference
 
-1. **Validação de Políticas**: Verificar se políticas específicas existem e estão ativas antes de criar novas associações.
-2. **Automação Condicional**: Criar recursos apenas se determinadas políticas não existirem.
-3. **Reporting**: Gerar relatórios sobre as configurações de políticas em uso.
-4. **Validação de Configuração**: Verificar se as políticas existentes estão configuradas conforme os requisitos de segurança.
-5. **Integração com Outros Sistemas**: Usar informações de políticas para integrar com outros sistemas ou ferramentas de automação. 
+The following arguments are supported. **Note:** Exactly one of these arguments must be specified:
+
+* `id` - (Optional) The ID of the policy to retrieve.
+* `name` - (Optional) The name of the policy to retrieve.
+
+## Attribute Reference
+
+In addition to all the arguments above, the following attributes are exported:
+
+* `type` - The type of policy (e.g., "password", "mfa", "lockout").
+* `name` - The name of the policy.
+* `active` - Whether the policy is active or not.
+* `template` - The template ID used for the policy.
+* `description` - Description of the policy's purpose.
+* `configurations` - Map of configuration settings specific to the policy type.
+* `created` - Timestamp when the policy was created.
+* `updated` - Timestamp when the policy was last updated.
+* `applied_to_groups` - List of group IDs this policy is applied to.
+* `applied_to_systems` - List of system IDs this policy is applied to.
+
+## Import
+
+Policies found using this data source can be used to import resources:
+
+```shell
+terraform import jumpcloud_policy.imported ${data.jumpcloud_policy.existing.id}
+``` 

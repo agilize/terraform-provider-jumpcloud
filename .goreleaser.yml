@@ -1,0 +1,81 @@
+# GoReleaser configuration for Terraform Provider JumpCloud
+# Para mais informações sobre GoReleaser: https://goreleaser.com/
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    mod_timestamp: '{{ .CommitTimestamp }}'
+    flags:
+      - -trimpath
+    ldflags:
+      - '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}}'
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    binary: '{{ .ProjectName }}_v{{ .Version }}'
+
+archives:
+  - format: zip
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+
+checksum:
+  name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
+  algorithm: sha256
+
+signs:
+  - artifacts: checksum
+    args:
+      # Este comando é um exemplo; você deve configurar a assinatura digital conforme necessário
+      - "--batch"
+      - "--local-user"
+      - "{{ .Env.GPG_FINGERPRINT }}"
+      - "--output"
+      - "${signature}"
+      - "--detach-sign"
+      - "${artifact}"
+
+release:
+  # Se você estiver usando o GitHub
+  github:
+    owner: ferreirafav
+    name: terraform-provider-jumpcloud
+  # Ajustes para a publicação da release
+  draft: false
+  prerelease: auto
+  name_template: "v{{.Version}}"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - '^build:'
+      - '^chore:'
+      - Merge pull request
+      - Merge branch
+
+# Configuração para publicação no Terraform Registry
+# Gera arquivos compatíveis com o protocolo de provedor do Terraform
+# Para mais informações: https://www.terraform.io/docs/registry/providers/publishing.html
+publishers:
+  - name: terraform-registry
+    # Este é um exemplo; você deve configurar conforme necessário para o seu caso específico
+    dir: '{{ dir .ArtifactPath }}'
+    cmd: |
+      set -e
+      echo "Preparing files for Terraform Registry..."
+      # Aqui você pode adicionar comandos para preparar os arquivos para o registro
+      # Exemplo:
+      # 1. Organize os arquivos de acordo com o protocolo do Terraform Registry
+      # 2. Gere a documentação necessária
+      # 3. Prepare o manifesto de provedor
+      echo "Files prepared for Terraform Registry." 

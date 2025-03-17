@@ -1,0 +1,129 @@
+name: Pull Request Check
+
+on:
+  pull_request:
+    branches: [ develop, main, master ]
+    paths-ignore:
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - 'docs/**'
+      - '.gitignore'
+
+jobs:
+  golangci:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+          cache: true
+      
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.53
+          args: --timeout=5m
+  
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+          cache: true
+      
+      - name: Unit Tests
+        run: make test-unit
+      
+      - name: Test Coverage
+        run: |
+          go test -v -coverprofile=coverage.out ./...
+          go tool cover -func=coverage.out
+  
+  govet:
+    name: Go Vet
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+          cache: true
+      
+      - name: Go Vet
+        run: go vet ./...
+  
+  gofmt:
+    name: Go Fmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+          cache: true
+      
+      - name: Check formatting
+        run: |
+          gofmt_files=$(gofmt -l .)
+          if [[ -n ${gofmt_files} ]]; then
+            echo "These files need to be formatted with gofmt:"
+            echo "${gofmt_files}"
+            exit 1
+          fi
+          echo "All Go files are properly formatted."
+  
+  tfproviderlint:
+    name: Terraform Provider Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+          cache: true
+      
+      - name: Install tfproviderlint
+        run: go install github.com/bflad/tfproviderlint/cmd/tfproviderlint@latest
+      
+      - name: Terraform Provider Lint
+        run: tfproviderlint -R001=false -R011=false -R012=false ./...
+  
+  tfsdk-version:
+    name: Check Terraform SDK version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+          cache: true
+      
+      - name: Check SDK version
+        run: |
+          CURRENT_SDK=$(go list -m github.com/hashicorp/terraform-plugin-sdk/v2 | awk '{print $2}')
+          echo "Current SDK version: $CURRENT_SDK"
+          
+          # Check if we're using a recent SDK version
+          # This is a simplistic check; you might want to adapt it
+          if [[ "$CURRENT_SDK" < "v2.10.0" ]]; then
+            echo "Warning: Using an older SDK version. Consider upgrading."
+          else
+            echo "SDK version is sufficiently recent."
+          fi 

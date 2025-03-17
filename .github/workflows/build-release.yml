@@ -1,0 +1,161 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main, master ]
+    paths-ignore:
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - 'docs/**'
+      - '.gitignore'
+  release:
+    types: [created]
+
+jobs:
+  # Executar testes antes do build
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+          cache: true
+      
+      - name: Unit Tests
+        run: make test-unit
+  
+  # Build para várias plataformas
+  build:
+    name: Build
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux, darwin, windows]
+        goarch: [amd64, arm64]
+        exclude:
+          - goarch: arm64
+            goos: windows
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+          cache: true
+      
+      - name: Build Provider
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          go build -o terraform-provider-jumpcloud_v0.1.0_${{ matrix.goos }}_${{ matrix.goarch }}
+      
+      - name: Upload Provider Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform-provider-jumpcloud_${{ matrix.goos }}_${{ matrix.goarch }}
+          path: terraform-provider-jumpcloud_v0.1.0_${{ matrix.goos }}_${{ matrix.goarch }}
+          if-no-files-found: error
+          retention-days: 7
+
+  # Release somente quando uma tag for criada
+  release:
+    name: Create Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v3
+      
+      - name: Create Release Directory
+        run: mkdir release
+      
+      - name: Move Artifacts to Release Directory
+        run: |
+          find terraform-provider-jumpcloud_* -type f -exec cp {} release/ \;
+      
+      - name: SHA256SUMS
+        run: |
+          cd release
+          sha256sum * > SHA256SUMS
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            release/*
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref, 'rc') || contains(github.ref, 'beta') || contains(github.ref, 'alpha') }}
+      
+      - name: Upload to Terraform Registry (mockup)
+        run: |
+          echo "Uploading provider to Terraform Registry..."
+          echo "This step is a placeholder for the actual Registry upload process."
+          echo "In a real-world scenario, this would involve API calls to the Terraform Registry."
+          echo "For official providers, this is typically handled by HashiCorp's systems."
+
+  # Build do provedor para a infraestrutura da Terraform Registry
+  registry-build:
+    name: Registry Build
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+          cache: true
+      
+      - name: Build Provider for Registry Protocols
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Building provider version ${VERSION}"
+          
+          # Criar diretório para os binários compilados
+          mkdir -p dist
+          
+          # Compilar para os sistemas suportados
+          GOOS=linux GOARCH=amd64 go build -o dist/terraform-provider-jumpcloud_v${VERSION}
+          GOOS=darwin GOARCH=amd64 go build -o dist/terraform-provider-jumpcloud_v${VERSION}_darwin_amd64
+          GOOS=darwin GOARCH=arm64 go build -o dist/terraform-provider-jumpcloud_v${VERSION}_darwin_arm64
+          GOOS=windows GOARCH=amd64 go build -o dist/terraform-provider-jumpcloud_v${VERSION}_windows_amd64.exe
+      
+      - name: Prepare Provider Package
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          
+          # Criar diretório para o pacote
+          mkdir -p terraform-provider-jumpcloud_${VERSION}
+          
+          # Copiar os binários compilados
+          cp dist/* terraform-provider-jumpcloud_${VERSION}/
+          
+          # Adicionar arquivos necessários
+          cp LICENSE terraform-provider-jumpcloud_${VERSION}/
+          cp README.md terraform-provider-jumpcloud_${VERSION}/
+          cp CHANGELOG.md terraform-provider-jumpcloud_${VERSION}/
+          
+          # Empacotar
+          tar -czvf terraform-provider-jumpcloud_${VERSION}.tar.gz terraform-provider-jumpcloud_${VERSION}
+      
+      - name: Upload Provider Package
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform-provider-jumpcloud-package
+          path: terraform-provider-jumpcloud_*.tar.gz
+          if-no-files-found: error 

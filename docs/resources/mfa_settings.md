@@ -1,75 +1,75 @@
 # jumpcloud_mfa_settings Resource
 
-Este recurso permite gerenciar as configurações de MFA (Multi-Factor Authentication) no JumpCloud. Como estas configurações são definidas por organização, este é um recurso singleton - apenas uma instância deve existir por organização JumpCloud.
+Manages MFA (Multi-Factor Authentication) settings in JumpCloud. Since these settings are defined per organization, this is a singleton resource - only one instance should exist per JumpCloud organization.
 
-## Exemplo de Uso
+## Example Usage
 
-### Configuração básica de MFA
+### Basic MFA Configuration
 
 ```hcl
 resource "jumpcloud_mfa_settings" "corporate_mfa" {
-  # Habilitar MFA baseado em System Insights
+  # Enable System Insights-based MFA
   system_insights_enrolled = true
   
-  # Configurar dias de janela de exclusão (período de graça)
+  # Configure exclusion window days (grace period)
   exclusion_window_days = 7
   
-  # Métodos MFA permitidos
+  # Allowed MFA methods
   enabled_methods = [
     "totp",      # Time-based One-Time Password (Google Authenticator, etc.)
-    "push",      # Notificações push
+    "push",      # Push notifications
     "webauthn"   # FIDO2/WebAuthn (Yubikey, etc.)
   ]
 }
 ```
 
-### Configuração de MFA em ambiente multi-tenant
+### MFA Configuration in a Multi-tenant Environment
 
 ```hcl
 resource "jumpcloud_mfa_settings" "child_org_mfa" {
-  # ID da organização específica (para implementações multi-tenant)
+  # Specific organization ID (for multi-tenant implementations)
   organization_id = var.child_organization_id
   
   system_insights_enrolled = true
   
-  # Configuração mais restritiva - apenas TOTP
+  # More restrictive configuration - TOTP only
   enabled_methods = ["totp"]
   
-  # Sem janela de exclusão - aplicação imediata
+  # No exclusion window - immediate enforcement
   exclusion_window_days = 0
 }
 ```
 
 ## Argument Reference
 
-Os seguintes argumentos são suportados:
+The following arguments are supported:
 
-* `system_insights_enrolled` - (Opcional) Se o System Insights está habilitado para MFA. Padrão: `false`.
-* `exclusion_window_days` - (Opcional) Número de dias de janela de exclusão para MFA. Esta é uma "janela de graça" durante a qual os usuários podem acessar sem MFA após a configuração ser ativada. Valores de 0 a 30, onde 0 significa aplicação imediata. Padrão: `0`.
-* `enabled_methods` - (Opcional) Lista de métodos MFA habilitados. Valores válidos: `totp`, `duo`, `push`, `sms`, `email`, `webauthn`, `security_questions`.
-* `organization_id` - (Opcional) ID da organização para implementações multi-tenant. Se não especificado, será usado o ID da organização atual configurada no provider.
+* `system_insights_enrolled` - (Optional) Whether System Insights is enabled for MFA. Default: `false`.
+* `exclusion_window_days` - (Optional) Number of days for the MFA exclusion window. This is a "grace period" during which users can access without MFA after the configuration is activated. Values from 0 to 30, where 0 means immediate enforcement. Default: `0`.
+* `enabled_methods` - (Optional) List of enabled MFA methods. Valid values: `totp`, `duo`, `push`, `sms`, `email`, `webauthn`, `security_questions`.
+* `organization_id` - (Optional) Organization ID for multi-tenant implementations. If not specified, the current organization ID configured in the provider will be used.
 
 ## Attribute Reference
 
-Além dos argumentos listados acima, os seguintes atributos são exportados:
+In addition to the arguments listed above, the following attributes are exported:
 
-* `id` - ID das configurações de MFA ou "current" para a organização atual.
-* `updated` - Data da última atualização das configurações de MFA.
+* `id` - ID of the MFA settings or "current" for the current organization.
+* `updated` - Date when the MFA settings were last updated.
 
 ## Import
 
-Configurações de MFA JumpCloud podem ser importadas usando o ID da organização ou "current" se houver apenas uma:
+JumpCloud MFA settings can be imported using the organization ID or "current" if there's only one:
 
 ```
 terraform import jumpcloud_mfa_settings.example {organization_id}
 ```
 
-ou
+or
 
 ```
 terraform import jumpcloud_mfa_settings.example current
 ```
 
-## Notas de Implementação
+## Implementation Notes
 
-Este recurso gerencia um singleton por organização JumpCloud. O comportamento de exclusão (`terraform destroy`) redefine as configurações de MFA para os valores padrão do JumpCloud em vez de excluí-los completamente, pois as configurações de MFA sempre existem para cada organização. 
+This resource manages a singleton per JumpCloud organization. The deletion behavior (`terraform destroy`) resets the MFA settings to JumpCloud default values instead of deleting them completely, as MFA settings always exist for each organization. 

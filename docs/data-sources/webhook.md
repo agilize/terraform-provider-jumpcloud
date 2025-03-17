@@ -1,28 +1,28 @@
 # jumpcloud_webhook Data Source
 
-Use este data source para recuperar informações sobre um webhook específico existente no JumpCloud.
+Use this data source to retrieve information about a specific existing webhook in JumpCloud.
 
-## Exemplo de Uso
+## Example Usage
 
 ```hcl
-# Obter um webhook por ID
+# Get a webhook by ID
 data "jumpcloud_webhook" "by_id" {
   id = "5f1b1bb2c9e9a9b7e8d6c5a4"
 }
 
-# Obter um webhook por nome
+# Get a webhook by name
 data "jumpcloud_webhook" "by_name" {
   name = "User Events Monitor"
 }
 
-# Usar o webhook encontrado em outra configuração
+# Use the found webhook in another configuration
 resource "jumpcloud_webhook_subscription" "additional_events" {
   webhook_id   = data.jumpcloud_webhook.by_name.id
   event_type   = "user.password_expired"
-  description  = "Adicionar notificação de expiração de senha ao webhook existente"
+  description  = "Add password expiration notification to existing webhook"
 }
 
-# Output com informações do webhook
+# Output with webhook information
 output "webhook_details" {
   value = {
     id          = data.jumpcloud_webhook.by_name.id
@@ -36,18 +36,18 @@ output "webhook_details" {
 
 ## Argument Reference
 
-Os seguintes argumentos são suportados. **Nota:** Exatamente um desses argumentos deve ser especificado:
+The following arguments are supported. **Note:** Exactly one of these arguments must be specified:
 
-* `id` - (Opcional) O ID do webhook a ser recuperado.
-* `name` - (Opcional) O nome do webhook a ser recuperado.
+* `id` - (Optional) The ID of the webhook to retrieve.
+* `name` - (Optional) The name of the webhook to retrieve.
 
 ## Attribute Reference
 
-Além de todos os argumentos acima, os seguintes atributos são exportados:
+In addition to all the arguments above, the following attributes are exported:
 
-* `url` - A URL de destino para o webhook.
-* `enabled` - Se o webhook está ativado ou não.
-* `event_types` - Lista de tipos de eventos que disparam o webhook.
-* `description` - A descrição do webhook.
-* `created` - A data de criação do webhook.
-* `updated` - A data da última atualização do webhook. 
+* `url` - The destination URL for the webhook.
+* `enabled` - Whether the webhook is enabled or not.
+* `event_types` - List of event types that trigger the webhook.
+* `description` - The description of the webhook.
+* `created` - The creation date of the webhook.
+* `updated` - The date of the last webhook update. 

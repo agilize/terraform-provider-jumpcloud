@@ -1,16 +1,16 @@
 # jumpcloud_application Resource
 
-Este recurso permite gerenciar aplicações no JumpCloud para fornecer Single Sign-On (SSO) para seus usuários. O JumpCloud suporta aplicações SAML, OAuth e OIDC.
+This resource allows you to manage applications in JumpCloud to provide Single Sign-On (SSO) for your users. JumpCloud supports SAML, OAuth, and OIDC applications.
 
-## Exemplo de Uso
+## Example Usage
 
-### Aplicação SAML básica
+### Basic SAML Application
 
 ```hcl
 resource "jumpcloud_application" "salesforce" {
   name         = "Salesforce"
   display_name = "Salesforce SSO"
-  description  = "Acesso SSO ao Salesforce para todos os funcionários"
+  description  = "SSO access to Salesforce for all employees"
   type         = "saml"
   sso_url      = "https://login.salesforce.com"
   
@@ -23,13 +23,13 @@ resource "jumpcloud_application" "salesforce" {
 }
 ```
 
-### Aplicação SAML com logo e atributos
+### SAML Application with Logo and Attributes
 
 ```hcl
 resource "jumpcloud_application" "jira" {
   name         = "Jira Cloud"
   display_name = "Jira"
-  description  = "Gerenciamento de projetos e tarefas"
+  description  = "Project and task management"
   type         = "saml"
   logo         = "https://example.com/jira-logo.png"
   sso_url      = "https://yourdomain.atlassian.net"
@@ -38,78 +38,83 @@ resource "jumpcloud_application" "jira" {
     idp_entity_id  = "https://sso.jumpcloud.com/saml2/jira"
     sp_entity_id   = "https://yourdomain.atlassian.net"
     acs_url        = "https://yourdomain.atlassian.net/plugins/servlet/saml/acs"
-    idp_initiated_login = "true"
-    name_id_format = "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
-    attribute_statements = jsonencode({
-      "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier" = "user.email"
-      "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/displayname" = "user.firstname user.lastname"
-      "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/groups" = "user.groups"
-    })
+    constant_attribute_name_format = "true"
+  }
+  
+  sso_attributes = {
+    "email"      = "email"
+    "firstName"  = "firstname"
+    "lastName"   = "lastname"
+    "displayName" = "displayname"
   }
 }
 ```
 
-### Aplicação OAuth
+### OAuth Application
 
 ```hcl
 resource "jumpcloud_application" "custom_oauth" {
-  name         = "API Portal"
-  display_name = "Portal de APIs"
-  description  = "Portal de acesso às APIs da empresa"
+  name         = "Internal Dashboard"
+  display_name = "Company Dashboard"
+  description  = "Internal analytics dashboard"
   type         = "oauth"
-  active       = true
+  sso_url      = "https://dashboard.example.com"
   
   config = {
-    client_id       = "api-portal-client"
-    client_secret   = "s3cr3t-n0t-1n-t3rr4f0rm"
-    redirect_uri    = "https://api.example.com/callback"
-    grant_types     = "authorization_code,refresh_token"
-    allowed_scopes  = "read:api,write:api"
+    client_id     = "dashboard-client-id"
+    client_secret = "dashboard-client-secret"
+    redirect_uri  = "https://dashboard.example.com/callback"
+    grant_types   = "authorization_code,refresh_token"
   }
 }
 ```
 
 ## Argument Reference
 
-Os seguintes argumentos são suportados:
+The following arguments are supported:
 
-* `name` - (Obrigatório) Nome da aplicação.
-* `type` - (Obrigatório, ForceNew) Tipo da aplicação. Valores válidos: `saml`, `oidc`, `oauth`.
-* `display_name` - (Opcional) Nome de exibição da aplicação que será mostrado na interface do JumpCloud.
-* `description` - (Opcional) Descrição da aplicação.
-* `sso_url` - (Opcional) URL de SSO para a aplicação. Geralmente usado para aplicações SAML.
-* `saml_metadata` - (Opcional) Metadados SAML para a aplicação. Pode ser um XML no formato de metadados SAML.
-* `logo` - (Opcional) URL ou string base64 da imagem do logo da aplicação.
-* `active` - (Opcional) Define se a aplicação está ativa. Padrão: `true`.
-* `config` - (Opcional) Mapa de configurações específicas para o tipo de aplicação. Os valores dependerão do tipo de aplicação:
-  
-  **Para SAML**:
-  * `idp_entity_id` - ID da entidade do provedor de identidade (JumpCloud).
-  * `sp_entity_id` - ID da entidade do provedor de serviço (aplicação).
-  * `acs_url` - URL do serviço de consumo de asserção.
-  * `idp_initiated_login` - "true" ou "false" para habilitar login iniciado pelo IdP.
-  * `name_id_format` - Formato do NameID.
-  * `attribute_statements` - JSON codificado com mapeamentos de atributos.
-  
-  **Para OAuth/OIDC**:
-  * `client_id` - ID do cliente.
-  * `client_secret` - Segredo do cliente (sensível).
-  * `redirect_uri` - URI de redirecionamento.
-  * `grant_types` - Tipos de concessão separados por vírgula.
-  * `allowed_scopes` - Escopos permitidos separados por vírgula.
+* `name` - (Required) The name of the application. Must be unique within the organization.
+* `display_name` - (Optional) The display name of the application that will be shown to users.
+* `description` - (Optional) A description of the application.
+* `type` - (Required) The type of application. Valid values are `saml`, `oauth`, and `oidc`.
+* `sso_url` - (Required) The URL where users will access the application.
+* `logo` - (Optional) URL or base64-encoded data of the application logo.
+* `config` - (Required) A map of configuration settings specific to the application type.
+* `sso_attributes` - (Optional) A map of attributes to send to the application during SSO.
+* `active` - (Optional) Whether the application is active. Default is `true`.
+
+### SAML-specific Configuration
+
+For SAML applications, the following `config` parameters are supported:
+
+* `idp_entity_id` - (Required) The Entity ID of the Identity Provider (JumpCloud).
+* `sp_entity_id` - (Required) The Entity ID of the Service Provider (your application).
+* `acs_url` - (Required) The Assertion Consumer Service URL of the Service Provider.
+* `constant_attribute_name_format` - (Optional) Whether to use a constant attribute name format.
+* `signature_algorithm` - (Optional) The signature algorithm to use. Default is `sha256`.
+* `idp_initiated_login` - (Optional) Whether to allow IdP-initiated login. Default is `false`.
+
+### OAuth-specific Configuration
+
+For OAuth applications, the following `config` parameters are supported:
+
+* `client_id` - (Required) The client ID for the OAuth application.
+* `client_secret` - (Required) The client secret for the OAuth application.
+* `redirect_uri` - (Required) The redirect URI for the OAuth application.
+* `grant_types` - (Required) Comma-separated list of grant types. E.g., `"authorization_code,refresh_token"`.
 
 ## Attribute Reference
 
-Além dos argumentos listados acima, os seguintes atributos são exportados:
+In addition to all arguments above, the following attributes are exported:
 
-* `id` - ID da aplicação.
-* `created` - Data de criação da aplicação.
-* `updated` - Data da última atualização da aplicação.
+* `id` - The unique identifier of the application.
+* `created` - The timestamp when the application was created.
+* `updated` - The timestamp when the application was last updated.
 
 ## Import
 
-Aplicações JumpCloud podem ser importadas usando o ID da aplicação:
+Applications can be imported using their ID:
 
-```
-terraform import jumpcloud_application.example {application_id}
+```shell
+terraform import jumpcloud_application.salesforce 5f1b881dc9e9a9b7e8d6c5a4
 ``` 

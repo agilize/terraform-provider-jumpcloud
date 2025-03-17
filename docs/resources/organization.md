@@ -1,38 +1,38 @@
 # jumpcloud_organization Resource
 
-Gerencia organizações no JumpCloud. Este recurso permite criar e gerenciar organizações em um ambiente multi-tenant, configurando detalhes como nome, contato, branding e domínios permitidos.
+Manages organizations in JumpCloud. This resource allows you to create and manage organizations in a multi-tenant environment, configuring details such as name, contact information, branding, and allowed domains.
 
-## Exemplo de Uso
+## Example Usage
 
-### Organização Subsidiária Básica
+### Basic Subsidiary Organization
 ```hcl
-# Criar uma organização subsidiária
+# Create a subsidiary organization
 resource "jumpcloud_organization" "subsidiary" {
   name           = "Subsidiary Corp"
   display_name   = "Subsidiary Corporation"
   parent_org_id  = var.parent_organization_id
   
-  # Informações de contato
+  # Contact information
   contact_name   = "John Doe"
   contact_email  = "john.doe@subsidiary.com"
   contact_phone  = "+1 555-0123"
   
-  # Detalhes da organização
+  # Organization details
   website        = "https://www.subsidiary.com"
   logo_url      = "https://assets.subsidiary.com/logo.png"
   
-  # Domínios permitidos
+  # Allowed domains
   allowed_domains = [
     "subsidiary.com",
     "sub.subsidiary.com"
   ]
 }
 
-# Configurar as configurações da organização
+# Configure organization settings
 resource "jumpcloud_organization_settings" "subsidiary_settings" {
   org_id = jumpcloud_organization.subsidiary.id
   
-  # Configurações de senha
+  # Password settings
   password_policy = {
     min_length            = 12
     min_numeric          = 1
@@ -43,40 +43,40 @@ resource "jumpcloud_organization_settings" "subsidiary_settings" {
     lockout_time_seconds = 300
   }
   
-  # Configurações de MFA
+  # MFA settings
   require_mfa             = true
   allow_multi_factor_auth = true
   
-  # Outras configurações
+  # Other settings
   system_insights_enabled = true
   retention_days         = 90
   timezone              = "America/New_York"
 }
 
-# Exportar o ID da organização subsidiária
+# Export the subsidiary organization ID
 output "subsidiary_org_id" {
   value = jumpcloud_organization.subsidiary.id
 }
 ```
 
-### Organização com Configurações Avançadas
+### Organization with Advanced Settings
 ```hcl
-# Criar uma organização com configurações avançadas
+# Create an organization with advanced settings
 resource "jumpcloud_organization" "enterprise" {
   name           = "Enterprise Division"
   display_name   = "Enterprise Solutions Division"
   parent_org_id  = var.parent_organization_id
   
-  # Informações de contato
+  # Contact information
   contact_name   = "Jane Smith"
   contact_email  = "jane.smith@enterprise.com"
   contact_phone  = "+1 555-4567"
   
-  # Detalhes da organização
+  # Organization details
   website        = "https://enterprise.example.com"
   logo_url      = "https://assets.enterprise.com/logo.png"
   
-  # Domínios permitidos com subdomínios
+  # Allowed domains with subdomains
   allowed_domains = [
     "enterprise.com",
     "*.enterprise.com",
@@ -84,11 +84,11 @@ resource "jumpcloud_organization" "enterprise" {
   ]
 }
 
-# Configurar configurações avançadas
+# Configure advanced settings
 resource "jumpcloud_organization_settings" "enterprise_settings" {
   org_id = jumpcloud_organization.enterprise.id
   
-  # Política de senha rigorosa
+  # Strict password policy
   password_policy = {
     min_length            = 16
     min_numeric          = 2
@@ -101,45 +101,45 @@ resource "jumpcloud_organization_settings" "enterprise_settings" {
     expire_days         = 90
   }
   
-  # Segurança avançada
+  # Advanced security
   require_mfa                = true
   allow_multi_factor_auth    = true
   allow_public_key_auth      = true
   allow_ssh_root_login      = false
   
-  # Configurações de sistema
+  # System settings
   system_insights_enabled    = true
   retention_days            = 180
   timezone                 = "UTC"
   
-  # Templates de email personalizados
+  # Custom email templates
   email_templates = {
     welcome = {
-      subject = "Bem-vindo à Enterprise Division"
+      subject = "Welcome to Enterprise Division"
       body    = file("${path.module}/templates/welcome.html")
     }
     password_reset = {
-      subject = "Redefinição de Senha Solicitada"
+      subject = "Password Reset Requested"
       body    = file("${path.module}/templates/password_reset.html")
     }
   }
 }
 
-# Criar uma chave de API para a organização
+# Create an API key for the organization
 resource "jumpcloud_api_key" "enterprise_api" {
   name        = "Enterprise API Key"
-  description = "Chave de API para automação da Enterprise Division"
-  expires     = timeadd(timestamp(), "8760h") # Expira em 1 ano
+  description = "API Key for Enterprise Division automation"
+  expires     = timeadd(timestamp(), "8760h") # Expire in 1 year
 }
 
-# Configurar permissões da chave de API
+# Configure API key permissions
 resource "jumpcloud_api_key_binding" "enterprise_api_access" {
   api_key_id    = jumpcloud_api_key.enterprise_api.id
   resource_type = "organization"
   permissions   = ["read", "list", "update"]
 }
 
-# Exportar informações da organização
+# Export organization information
 output "enterprise_info" {
   value = {
     org_id   = jumpcloud_organization.enterprise.id
@@ -150,24 +150,24 @@ output "enterprise_info" {
 }
 ```
 
-### Organização para Ambiente de Desenvolvimento
+### Organization for Development Environment
 ```hcl
-# Criar uma organização para desenvolvimento
+# Create an organization for development
 resource "jumpcloud_organization" "dev" {
   name           = "Development"
   display_name   = "Development Environment"
   parent_org_id  = var.parent_organization_id
   
-  # Informações de contato
+  # Contact information
   contact_name   = "Dev Team Lead"
   contact_email  = "devteam@example.com"
   contact_phone  = "+1 555-7890"
   
-  # Detalhes da organização
+  # Organization details
   website        = "https://dev.example.com"
   logo_url      = "https://assets.example.com/dev-logo.png"
   
-  # Domínios permitidos para desenvolvimento
+  # Allowed domains for development
   allowed_domains = [
     "dev.example.com",
     "test.example.com",
@@ -175,11 +175,11 @@ resource "jumpcloud_organization" "dev" {
   ]
 }
 
-# Configurar configurações menos restritivas para desenvolvimento
+# Configure less restrictive settings for development
 resource "jumpcloud_organization_settings" "dev_settings" {
   org_id = jumpcloud_organization.dev.id
   
-  # Política de senha para desenvolvimento
+  # Password policy for development
   password_policy = {
     min_length            = 8
     min_numeric          = 1
@@ -190,7 +190,7 @@ resource "jumpcloud_organization_settings" "dev_settings" {
     lockout_time_seconds = 300
   }
   
-  # Configurações de desenvolvimento
+  # Development settings
   require_mfa             = false
   allow_multi_factor_auth = true
   system_insights_enabled = true
@@ -198,22 +198,22 @@ resource "jumpcloud_organization_settings" "dev_settings" {
   timezone              = "UTC"
 }
 
-# Criar webhook para notificações de eventos
+# Create webhook for event notifications
 resource "jumpcloud_webhook" "dev_events" {
   name        = "Dev Environment Events"
   url         = "https://dev-monitor.example.com/events"
   enabled     = true
-  description = "Webhook para monitoramento do ambiente de desenvolvimento"
+  description = "Webhook for development environment monitoring"
 }
 
-# Configurar assinaturas do webhook
+# Configure webhook subscriptions
 resource "jumpcloud_webhook_subscription" "dev_user_events" {
   webhook_id   = jumpcloud_webhook.dev_events.id
   event_type   = "user.created"
-  description  = "Monitorar criação de usuários no ambiente de desenvolvimento"
+  description  = "Monitor user creation in development environment"
 }
 
-# Exportar configuração do ambiente de desenvolvimento
+# Export development environment configuration
 output "dev_environment" {
   value = {
     org_id    = jumpcloud_organization.dev.id
@@ -223,58 +223,58 @@ output "dev_environment" {
 }
 ```
 
-## Argumentos
+## Arguments
 
-Os seguintes argumentos são suportados:
+The following arguments are supported:
 
-* `name` - (Obrigatório) Nome da organização. Deve ser único dentro do tenant pai.
-* `display_name` - (Opcional) Nome de exibição da organização.
-* `parent_org_id` - (Obrigatório) ID da organização pai.
-* `contact_name` - (Opcional) Nome do contato principal da organização.
-* `contact_email` - (Opcional) Email do contato principal.
-* `contact_phone` - (Opcional) Telefone do contato principal.
-* `website` - (Opcional) Website da organização.
-* `logo_url` - (Opcional) URL do logo da organização.
-* `allowed_domains` - (Opcional) Lista de domínios permitidos para usuários da organização.
+* `name` - (Required) Name of the organization. Must be unique within the parent tenant.
+* `display_name` - (Optional) Display name of the organization.
+* `parent_org_id` - (Required) ID of the parent organization.
+* `contact_name` - (Optional) Name of the primary contact for the organization.
+* `contact_email` - (Optional) Email of the primary contact.
+* `contact_phone` - (Optional) Phone of the primary contact.
+* `website` - (Optional) Website of the organization.
+* `logo_url` - (Optional) URL of the organization's logo.
+* `allowed_domains` - (Optional) List of allowed domains for organization users.
 
-## Atributos Exportados
+## Exported Attributes
 
-Além dos argumentos acima, os seguintes atributos são exportados:
+In addition to the above arguments, the following attributes are exported:
 
-* `id` - ID único da organização.
-* `created` - Data de criação da organização no formato ISO 8601.
-* `updated` - Data da última atualização da organização no formato ISO 8601.
+* `id` - Unique ID of the organization.
+* `created` - Creation date of the organization in ISO 8601 format.
+* `updated` - Last update date of the organization in ISO 8601 format.
 
-## Importação
+## Import
 
-Organizações podem ser importadas usando seu ID:
+Organizations can be imported using their ID:
 
 ```shell
 terraform import jumpcloud_organization.subsidiary j1_org_1234567890
 ```
 
-## Notas de Uso
+## Usage Notes
 
-### Hierarquia de Organizações
+### Organization Hierarchy
 
-1. Uma organização deve ter exatamente uma organização pai.
-2. A hierarquia de organizações não pode ser alterada após a criação.
-3. A exclusão de uma organização pai não é permitida se houver organizações filhas.
+1. An organization must have exactly one parent organization.
+2. The organization hierarchy cannot be changed after creation.
+3. Deleting a parent organization is not allowed if there are child organizations.
 
-### Domínios Permitidos
+### Allowed Domains
 
-1. Use `*.domain.com` para permitir todos os subdomínios.
-2. Domínios devem ser únicos entre organizações irmãs.
-3. Subdomínios específicos têm precedência sobre wildcards.
+1. Use `*.domain.com` to allow all subdomains.
+2. Domains must be unique among sibling organizations.
+3. Specific subdomains take precedence over wildcards.
 
-### Boas Práticas
+### Best Practices
 
-1. Use nomes descritivos e consistentes.
-2. Mantenha a documentação de contato atualizada.
-3. Revise regularmente os domínios permitidos.
-4. Configure webhooks para monitorar eventos importantes.
+1. Use descriptive and consistent names.
+2. Keep contact information up to date.
+3. Regularly review allowed domains.
+4. Configure webhooks to monitor important events.
 
-### Exemplo de Validação de Domínio
+### Example of Domain Validation
 
 ```python
 from typing import List
@@ -282,13 +282,13 @@ import re
 
 def validate_domain_pattern(domain: str) -> bool:
     """
-    Valida se um padrão de domínio é válido.
+    Validates if a domain pattern is valid.
     
     Args:
-        domain: Padrão de domínio a ser validado
+        domain: Domain pattern to be validated
         
     Returns:
-        bool: True se o padrão é válido
+        bool: True if the pattern is valid
     """
     if domain.startswith('*.'):
         domain = domain[2:]
@@ -301,14 +301,14 @@ def validate_allowed_domains(
     existing_domains: List[str]
 ) -> List[str]:
     """
-    Valida uma lista de domínios permitidos.
+    Validates a list of allowed domains.
     
     Args:
-        domains: Lista de domínios a serem validados
-        existing_domains: Lista de domínios já em uso
+        domains: List of domains to be validated
+        existing_domains: List of domains already in use
         
     Returns:
-        List[str]: Lista de erros encontrados
+        List[str]: List of errors found
     """
     errors = []
     
@@ -330,7 +330,7 @@ def validate_allowed_domains(
     return errors
 ```
 
-### Exemplo de Auditoria de Organizações
+### Example of Organization Audit
 
 ```python
 from datetime import datetime
@@ -340,13 +340,13 @@ def audit_organization_hierarchy(
     organizations: List[Dict]
 ) -> Dict[str, List[str]]:
     """
-    Audita a hierarquia de organizações.
+    Audits the organization hierarchy.
     
     Args:
-        organizations: Lista de organizações com seus metadados
+        organizations: List of organizations with their metadata
         
     Returns:
-        Dict[str, List[str]]: Relatório de problemas encontrados
+        Dict[str, List[str]]: Report of issues found
     """
     issues = {}
     org_map = {org['id']: org for org in organizations}
@@ -354,17 +354,17 @@ def audit_organization_hierarchy(
     for org in organizations:
         org_issues = []
         
-        # Verificar organização pai
+        # Check parent organization
         if org.get('parent_org_id'):
             parent = org_map.get(org['parent_org_id'])
             if not parent:
                 org_issues.append("Parent organization not found")
         
-        # Verificar contatos
+        # Check contacts
         if not org.get('contact_email'):
             org_issues.append("Missing contact email")
         
-        # Verificar domínios
+        # Check domains
         domains = org.get('allowed_domains', [])
         domain_errors = validate_allowed_domains(
             domains,

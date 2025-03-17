@@ -1,0 +1,131 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  packages: write
+  issues: write
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+          cache: true
+
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@v5
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v4
+        with:
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+
+      - name: Upload assets
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform-provider-jumpcloud
+          path: dist/*
+          retention-days: 30
+
+  # Job para preparar a documentação para o Terraform Registry
+  terraform-registry:
+    needs: goreleaser
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+          cache: true
+      
+      - name: Download release assets
+        uses: actions/download-artifact@v3
+        with:
+          name: terraform-provider-jumpcloud
+          path: dist
+      
+      - name: Prepare Registry Files
+        run: |
+          # Instalar tfplugindocs para geração de documentação
+          go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
+          
+          # Gerar documentação
+          tfplugindocs generate
+          
+          # Preparar arquivo terraform-registry-manifest.json
+          VERSION=${GITHUB_REF#refs/tags/v}
+          cat << EOF > terraform-registry-manifest.json
+          {
+            "version": 1,
+            "metadata": {
+              "protocol_versions": ["5.0"]
+            },
+            "binaries": [
+              {
+                "os": "darwin",
+                "arch": "amd64",
+                "url": "https://github.com/ferreirafav/terraform-provider-jumpcloud/releases/download/v${VERSION}/terraform-provider-jumpcloud_${VERSION}_darwin_amd64.zip",
+                "checksum": "sha256:$(cat dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS | grep darwin_amd64.zip | cut -d ' ' -f 1)"
+              },
+              {
+                "os": "darwin",
+                "arch": "arm64",
+                "url": "https://github.com/ferreirafav/terraform-provider-jumpcloud/releases/download/v${VERSION}/terraform-provider-jumpcloud_${VERSION}_darwin_arm64.zip",
+                "checksum": "sha256:$(cat dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS | grep darwin_arm64.zip | cut -d ' ' -f 1)"
+              },
+              {
+                "os": "linux",
+                "arch": "amd64",
+                "url": "https://github.com/ferreirafav/terraform-provider-jumpcloud/releases/download/v${VERSION}/terraform-provider-jumpcloud_${VERSION}_linux_amd64.zip",
+                "checksum": "sha256:$(cat dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS | grep linux_amd64.zip | cut -d ' ' -f 1)"
+              },
+              {
+                "os": "linux",
+                "arch": "arm64",
+                "url": "https://github.com/ferreirafav/terraform-provider-jumpcloud/releases/download/v${VERSION}/terraform-provider-jumpcloud_${VERSION}_linux_arm64.zip",
+                "checksum": "sha256:$(cat dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS | grep linux_arm64.zip | cut -d ' ' -f 1)"
+              },
+              {
+                "os": "windows",
+                "arch": "amd64",
+                "url": "https://github.com/ferreirafav/terraform-provider-jumpcloud/releases/download/v${VERSION}/terraform-provider-jumpcloud_${VERSION}_windows_amd64.zip",
+                "checksum": "sha256:$(cat dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS | grep windows_amd64.zip | cut -d ' ' -f 1)"
+              }
+            ]
+          }
+          EOF
+      
+      - name: Upload Registry Assets
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform-registry-assets
+          path: |
+            terraform-registry-manifest.json
+            docs/
+          retention-days: 30
+      
+      - name: Simulate Registry Publishing
+        run: |
+          echo "Este é um passo simulado para publicação no Terraform Registry."
+          echo "Em um ambiente real, você utilizaria o Terraform Registry Provider API"
+          echo "ou seguiria o processo de publicação manual no Registry." 

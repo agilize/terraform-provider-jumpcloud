@@ -1,10 +1,10 @@
 # jumpcloud_radius_server Resource
 
-Este recurso permite gerenciar servidores RADIUS no JumpCloud. O RADIUS (Remote Authentication Dial-In User Service) é um protocolo de rede que fornece autenticação, autorização e contabilização centralizada para usuários que se conectam e usam serviços de rede.
+This resource allows you to manage RADIUS servers in JumpCloud. RADIUS (Remote Authentication Dial-In User Service) is a network protocol that provides centralized authentication, authorization, and accounting for users connecting to and using network services.
 
-## Exemplo de Uso
+## Example Usage
 
-### Configuração básica de servidor RADIUS
+### Basic RADIUS Server Configuration
 
 ```hcl
 resource "jumpcloud_radius_server" "corporate_vpn" {
@@ -12,17 +12,17 @@ resource "jumpcloud_radius_server" "corporate_vpn" {
   shared_secret = "s3cur3-sh4r3d-s3cr3t"
   mfa_required  = true
   
-  # IP de origem para comunicação com o servidor RADIUS
+  # Source IP for communication with the RADIUS server
   network_source_ip = "10.0.1.5"
   
-  # Configurações de autenticação
+  # Authentication settings
   user_attribute = "username"
   user_password_expiration_action = "deny"
   user_lockout_action = "deny"
 }
 ```
 
-### Servidor RADIUS associado a grupos de usuários
+### RADIUS Server Associated with User Groups
 
 ```hcl
 resource "jumpcloud_radius_server" "wifi_auth" {
@@ -30,10 +30,10 @@ resource "jumpcloud_radius_server" "wifi_auth" {
   shared_secret = var.radius_secret
   mfa_required  = false
   
-  # Configurar autenticação por e-mail ao invés de nome de usuário
+  # Configure authentication by email instead of username
   user_attribute = "email"
   
-  # Associar com grupos específicos
+  # Associate with specific groups
   targets = [
     jumpcloud_user_group.employees.id,
     jumpcloud_user_group.contractors.id
@@ -43,28 +43,28 @@ resource "jumpcloud_radius_server" "wifi_auth" {
 
 ## Argument Reference
 
-Os seguintes argumentos são suportados:
+The following arguments are supported:
 
-* `name` - (Obrigatório) Nome do servidor RADIUS.
-* `shared_secret` - (Obrigatório) Segredo compartilhado usado para autenticação entre cliente e servidor RADIUS. Este valor é sensível e não será exibido na saída do Terraform.
-* `network_source_ip` - (Opcional) IP de origem da rede que será usada para se comunicar com o servidor RADIUS.
-* `mfa_required` - (Opcional) Se a autenticação multifator é exigida para o servidor RADIUS. Padrão: `false`.
-* `user_password_expiration_action` - (Opcional) Ação a ser tomada quando a senha do usuário expirar. Valores válidos: `allow` ou `deny`. Padrão: `allow`.
-* `user_lockout_action` - (Opcional) Ação a ser tomada quando o usuário for bloqueado. Valores válidos: `allow` ou `deny`. Padrão: `deny`.
-* `user_attribute` - (Opcional) Atributo do usuário usado para autenticação. Valores válidos: `username` ou `email`. Padrão: `username`.
-* `targets` - (Opcional) Lista de IDs de grupos de usuários associados ao servidor RADIUS. Se não especificado, o servidor estará disponível para todos os usuários.
+* `name` - (Required) Name of the RADIUS server.
+* `shared_secret` - (Required) Shared secret used for authentication between the client and RADIUS server. This value is sensitive and will not be displayed in Terraform output.
+* `network_source_ip` - (Optional) Source network IP that will be used to communicate with the RADIUS server.
+* `mfa_required` - (Optional) Whether multi-factor authentication is required for the RADIUS server. Default: `false`.
+* `user_password_expiration_action` - (Optional) Action to take when a user's password expires. Valid values: `allow` or `deny`. Default: `allow`.
+* `user_lockout_action` - (Optional) Action to take when a user is locked out. Valid values: `allow` or `deny`. Default: `deny`.
+* `user_attribute` - (Optional) User attribute used for authentication. Valid values: `username` or `email`. Default: `username`.
+* `targets` - (Optional) List of user group IDs associated with the RADIUS server. If not specified, the server will be available to all users.
 
 ## Attribute Reference
 
-Além dos argumentos listados acima, os seguintes atributos são exportados:
+In addition to the arguments listed above, the following attributes are exported:
 
-* `id` - ID do servidor RADIUS.
-* `created` - Data de criação do servidor RADIUS.
-* `updated` - Data da última atualização do servidor RADIUS.
+* `id` - ID of the RADIUS server.
+* `created` - Creation date of the RADIUS server.
+* `updated` - Last update date of the RADIUS server.
 
 ## Import
 
-Servidores RADIUS JumpCloud podem ser importados usando o ID do servidor:
+JumpCloud RADIUS servers can be imported using the server ID:
 
 ```
 terraform import jumpcloud_radius_server.example {radius_server_id}
