@@ -274,18 +274,30 @@ jobs:
           echo "Versão: ${VERSION}"
           echo "Referência: ${{ github.ref }}"
           
+          # Criar o pacote no GitHub Packages (necessário antes de fazer upload dos arquivos)
+          echo "Criando pacote terraform-provider-jumpcloud no GitHub Packages..."
+          PACKAGE_CREATE_RESPONSE=$(curl -s -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -H "Content-Type: application/json" \
+            --data "{\"name\":\"terraform-provider-jumpcloud\",\"visibility\":\"public\"}" \
+            "https://api.github.com/orgs/${{ github.repository_owner }}/packages/generic/terraform-provider-jumpcloud/versions")
+          
+          echo "Resposta da criação do pacote: $PACKAGE_CREATE_RESPONSE"
+          
           # Publicar cada arquivo ZIP como um pacote no GitHub Packages
           PUBLISH_SUCCESS=true
           for zipfile in terraform-provider-jumpcloud_*.zip; do
             echo "Publishing $zipfile to GitHub Packages"
-            if curl -L \
+            if curl -s -L \
               -X PUT \
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
               -H "Content-Type: application/octet-stream" \
               --data-binary "@$zipfile" \
-              "https://api.github.com/repos/${{ github.repository }}/packages/generic/terraform-provider-jumpcloud/${VERSION}/$zipfile"; then
+              "https://api.github.com/user/packages/generic/terraform-provider-jumpcloud/${VERSION}/$zipfile"; then
               echo "✅ Sucesso ao publicar $zipfile"
             else
               echo "❌ Erro ao publicar $zipfile"
@@ -296,14 +308,14 @@ jobs:
           # Publicar checksums
           if [ -f SHA256SUMS ]; then
             echo "Publishing SHA256SUMS to GitHub Packages"
-            if curl -L \
+            if curl -s -L \
               -X PUT \
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
               -H "Content-Type: application/octet-stream" \
               --data-binary "@SHA256SUMS" \
-              "https://api.github.com/repos/${{ github.repository }}/packages/generic/terraform-provider-jumpcloud/${VERSION}/SHA256SUMS"; then
+              "https://api.github.com/user/packages/generic/terraform-provider-jumpcloud/${VERSION}/SHA256SUMS"; then
               echo "✅ Sucesso ao publicar SHA256SUMS"
             else
               echo "❌ Erro ao publicar SHA256SUMS"
@@ -369,7 +381,7 @@ jobs:
           ```hcl
           provider_installation {
             network_mirror {
-              url = "https://github.com/REPO_PATH/releases/download/vPROVIDER_VERSION/"
+              url = "https://github.com/REPO_OWNER/terraform-provider-jumpcloud/packages/generic/terraform-provider-jumpcloud/PROVIDER_VERSION/"
               include = ["github.com/REPO_OWNER/jumpcloud"]
             }
             direct {
@@ -394,7 +406,7 @@ jobs:
           Você pode baixar os binários diretamente usando:
           
           ```
-          curl -LO https://github.com/REPO_PATH/packages/generic/terraform-provider-jumpcloud/PROVIDER_VERSION/terraform-provider-jumpcloud_PROVIDER_VERSION_[sua_plataforma].zip
+          curl -LO https://github.com/REPO_OWNER/packages/generic/terraform-provider-jumpcloud/PROVIDER_VERSION/terraform-provider-jumpcloud_PROVIDER_VERSION_[sua_plataforma].zip
           ```
           
           Substitua [sua_plataforma] pela plataforma desejada (ex: darwin_amd64, linux_amd64, etc).
@@ -416,7 +428,6 @@ jobs:
           # Substituir as variáveis após a criação do arquivo
           sed -i "s/VERSAO_DESC/${VERSION_DESC}/g" README-PACKAGE.md
           sed -i "s/REPO_OWNER/${{ github.repository_owner }}/g" README-PACKAGE.md
-          sed -i "s|REPO_PATH|${{ github.repository }}|g" README-PACKAGE.md
           sed -i "s/PROVIDER_VERSION/${VERSION}/g" README-PACKAGE.md
           
           # Confirmar que o arquivo foi criado
@@ -425,14 +436,14 @@ jobs:
           
           # Publicar o README usando curl
           echo "Publicando documentação no GitHub Packages..."
-          if curl -L \
+          if curl -s -L \
             -X PUT \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             -H "Content-Type: application/octet-stream" \
             --data-binary "@README-PACKAGE.md" \
-            "https://api.github.com/repos/${{ github.repository }}/packages/generic/terraform-provider-jumpcloud/${VERSION}/README.md"; then
+            "https://api.github.com/user/packages/generic/terraform-provider-jumpcloud/${VERSION}/README.md"; then
             echo "✅ Documentação publicada com sucesso!"
           else
             echo "❌ Erro ao publicar a documentação"
