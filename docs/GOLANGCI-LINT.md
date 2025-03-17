@@ -27,11 +27,11 @@ In GitHub Actions, we use golangci-lint as part of the PR verification process:
   uses: golangci/golangci-lint-action@v3
   with:
     version: v1.57.0
-    args: --timeout=5m --disable=goanalysis_metalinter --config=.golangci.yml
+    args: --timeout=5m --config=.golangci.yml
     skip-cache: true
 ```
 
-We explicitly disable the `goanalysis_metalinter` to prevent compatibility issues with Go 1.22 and use a custom configuration file (`.golangci.yml`).
+We use a custom configuration file (`.golangci.yml`) that is configured to work with Go 1.22 by disabling problematic linters.
 
 ## Configuration File
 
@@ -67,9 +67,11 @@ output:
 ```
 
 This configuration:
-- Disables all linters by default and then selectively enables the ones we want
+- Disables all linters by default (`disable-all: true`) and then selectively enables only the linters we want to use
 - Sets a reasonable timeout
 - Configures output and issue limits
+
+By using `disable-all: true`, we prevent compatibility issues with problematic linters such as `goanalysis_metalinter` that may cause errors with Go 1.22.
 
 ## Common Errors and Solutions
 
@@ -83,11 +85,25 @@ level=error msg="Running error: 1 error occurred:\n\t* can't run linter goanalys
 **Cause:** Incompatibility between the Go version and the golangci-lint version, specifically with the `goanalysis_metalinter`.
 
 **Solution:** 
-1. Disable the problematic metalinter with `--disable=goanalysis_metalinter`
-2. Use a custom configuration file to control which linters are enabled
+1. Use a custom configuration file (`.golangci.yml`)
+2. In the configuration file, use `disable-all: true` and explicitly enable only compatible linters
 3. Make sure to use v1.57.0 or newer of golangci-lint
 
-### 2. Timeout During Execution
+### 2. "Can't combine options --disable-all and --disable" Error
+
+**Symptom:**
+```
+Error: can't combine options --disable-all and --disable
+```
+
+**Cause:** Trying to use both `disable-all: true` in the config file and `--disable` flag on the command line.
+
+**Solution:**
+Either:
+- Remove the `--disable` flag from the command line (preferred approach), or
+- Remove `disable-all: true` from the config file and list specific linters to disable
+
+### 3. Timeout During Execution
 
 **Symptom:** golangci-lint execution fails with a timeout error.
 
@@ -96,7 +112,7 @@ level=error msg="Running error: 1 error occurred:\n\t* can't run linter goanalys
 args: --timeout=10m
 ```
 
-### 3. Cache Problems
+### 4. Cache Problems
 
 **Symptom:** Inconsistent errors between executions.
 
@@ -114,7 +130,7 @@ To run golangci-lint locally with the same configuration as CI:
 go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.57.0
 
 # Run lint
-golangci-lint run --timeout=5m --disable=goanalysis_metalinter --config=.golangci.yml
+golangci-lint run --timeout=5m --config=.golangci.yml
 ```
 
 For more information on configuration, see the [official golangci-lint documentation](https://golangci-lint.run/usage/configuration/). 

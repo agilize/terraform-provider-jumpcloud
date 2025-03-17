@@ -29,7 +29,6 @@ echo -e "${GREEN}Using $VERSION${NC}"
 echo -e "${YELLOW}Running lint checks with configuration from .golangci.yml...${NC}"
 $LINTER_BIN run \
   --timeout=5m \
-  --disable=goanalysis_metalinter \
   --config=.golangci.yml
 
 # Check exit code
