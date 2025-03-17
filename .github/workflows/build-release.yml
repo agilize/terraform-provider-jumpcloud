@@ -8,8 +8,6 @@ on:
       - 'CHANGELOG.md'
       - 'docs/**'
       - '.gitignore'
-  pull_request:
-    branches: [ develop, main, master ]
   release:
     types: [created]
 
@@ -52,10 +50,6 @@ jobs:
             NEW_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}-beta"
           elif [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]]; then
             NEW_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
-          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            IS_BETA="true"
-            PR_NUMBER=$(echo $GITHUB_REF | sed -n 's/.*\/\([0-9]\+\)\/merge.*/\1/p')
-            NEW_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}-pr${PR_NUMBER}"
           else
             # Para outros casos (tag, etc)
             NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
