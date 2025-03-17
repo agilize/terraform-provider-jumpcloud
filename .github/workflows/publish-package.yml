@@ -1,0 +1,317 @@
+name: Publish to GitHub Packages
+
+on:
+  push:
+    tags:
+      - 'v*'
+  # Permite executar manualmente o workflow através da interface do GitHub
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (without v prefix)'
+        required: false
+        default: ''
+      is_beta:
+        description: 'Is this a beta version'
+        required: false
+        default: false
+        type: boolean
+  # Recebe evento do workflow build-release
+  repository_dispatch:
+    types: [trigger-publish]
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          # Se o evento for repository_dispatch, use o SHA do commit que disparou o evento
+          ref: ${{ github.event.client_payload.sha || github.sha }}
+
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+          cache: true
+
+      - name: Determine Version
+        id: version
+        run: |
+          # Determinar versão baseado no tipo de evento
+          if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
+            # Versão vem do evento dispatch
+            VERSION="${{ github.event.client_payload.version }}"
+            IS_BETA="${{ github.event.client_payload.is_beta }}"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ github.event.inputs.version }}" ]]; then
+            # Versão fornecida manualmente
+            VERSION="${{ github.event.inputs.version }}"
+            IS_BETA="${{ github.event.inputs.is_beta }}"
+          elif [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == refs/tags/* ]]; then
+            # Versão de uma tag
+            VERSION=${GITHUB_REF#refs/tags/v}
+            # Verificar se é beta baseado no nome da tag
+            if [[ "$VERSION" == *-beta* || "$VERSION" == *-alpha* || "$VERSION" == *-rc* ]]; then
+              IS_BETA="true"
+            else
+              IS_BETA="false"
+            fi
+          else
+            # Determinação automática como fallback
+            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+            VERSION=${LATEST_TAG#v}
+            
+            # Incrementar a versão patch
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+            PATCH=$(echo $PATCH | sed -E 's/([0-9]+).*/\1/')
+            NEW_PATCH=$((PATCH + 1))
+            
+            if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+              VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}-beta"
+              IS_BETA="true"
+            else
+              VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
+              IS_BETA="false"
+            fi
+          fi
+          
+          echo "Determined version: $VERSION (Beta: $IS_BETA)"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "is_beta=$IS_BETA" >> $GITHUB_OUTPUT
+
+      - name: Build Provider
+        id: build
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          echo "Building version: $VERSION"
+          
+          # Criar diretórios para os binários
+          mkdir -p dist/darwin_amd64
+          mkdir -p dist/darwin_arm64
+          mkdir -p dist/linux_amd64
+          mkdir -p dist/linux_arm64
+          mkdir -p dist/windows_amd64
+          
+          # Compilar para diferentes plataformas
+          GOOS=darwin GOARCH=amd64 go build -o dist/darwin_amd64/terraform-provider-jumpcloud_v${VERSION}
+          GOOS=darwin GOARCH=arm64 go build -o dist/darwin_arm64/terraform-provider-jumpcloud_v${VERSION}
+          GOOS=linux GOARCH=amd64 go build -o dist/linux_amd64/terraform-provider-jumpcloud_v${VERSION}
+          GOOS=linux GOARCH=arm64 go build -o dist/linux_arm64/terraform-provider-jumpcloud_v${VERSION}
+          GOOS=windows GOARCH=amd64 go build -o dist/windows_amd64/terraform-provider-jumpcloud_v${VERSION}.exe
+          
+          # Criar ZIP para cada binário
+          cd dist/darwin_amd64 && zip -r ../../terraform-provider-jumpcloud_${VERSION}_darwin_amd64.zip . && cd ../..
+          cd dist/darwin_arm64 && zip -r ../../terraform-provider-jumpcloud_${VERSION}_darwin_arm64.zip . && cd ../..
+          cd dist/linux_amd64 && zip -r ../../terraform-provider-jumpcloud_${VERSION}_linux_amd64.zip . && cd ../..
+          cd dist/linux_arm64 && zip -r ../../terraform-provider-jumpcloud_${VERSION}_linux_arm64.zip . && cd ../..
+          cd dist/windows_amd64 && zip -r ../../terraform-provider-jumpcloud_${VERSION}_windows_amd64.zip . && cd ../..
+          
+          # Gerar checksums
+          cd dist
+          sha256sum ../*.zip > SHA256SUMS
+          cd ..
+
+      - name: Create Tag if Not Exists
+        if: ${{ github.event_name != 'push' || !startsWith(github.ref, 'refs/tags/') }}
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Verificar se a tag já existe
+          if ! git rev-parse "v${VERSION}" >/dev/null 2>&1; then
+            echo "Creating tag v${VERSION}"
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            git tag -a "v${VERSION}" -m "Release v${VERSION}"
+            git push origin "v${VERSION}"
+          else
+            echo "Tag v${VERSION} already exists"
+          fi
+
+      - name: Publish to GitHub Packages
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Publicar cada arquivo ZIP como um pacote separado no GitHub Packages
+          for zipfile in terraform-provider-jumpcloud_*.zip; do
+            echo "Publishing $zipfile to GitHub Packages"
+            curl -L \
+              -X PUT \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary "@$zipfile" \
+              "https://api.github.com/users/${{ github.repository_owner }}/packages/generic/terraform-provider-jumpcloud/${VERSION}/$zipfile"
+          done
+          
+          # Publicar checksums
+          echo "Publishing SHA256SUMS to GitHub Packages"
+          curl -L \
+            -X PUT \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary "@dist/SHA256SUMS" \
+            "https://api.github.com/users/${{ github.repository_owner }}/packages/generic/terraform-provider-jumpcloud/${VERSION}/SHA256SUMS"
+
+      - name: Create GitHub Release
+        if: ${{ github.event_name != 'push' || !startsWith(github.ref, 'refs/tags/') }}
+        uses: softprops/action-gh-release@v1
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          IS_BETA: ${{ steps.version.outputs.is_beta }}
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Release v${{ steps.version.outputs.version }}
+          files: |
+            terraform-provider-jumpcloud_*.zip
+            dist/SHA256SUMS
+          draft: false
+          prerelease: ${{ steps.version.outputs.is_beta == 'true' }}
+          generate_release_notes: true
+
+      - name: Create Documentation for Package
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          IS_BETA: ${{ steps.version.outputs.is_beta }}
+        run: |
+          # Definir a descrição da versão
+          if [[ "$IS_BETA" == "true" ]]; then
+            VERSION_DESC="Esta é uma versão beta (${VERSION}) do provider JumpCloud para Terraform."
+          else
+            VERSION_DESC="Esta é a versão ${VERSION} do provider JumpCloud para Terraform."
+          fi
+          
+          cat << EOF > README-PACKAGE.md
+          # JumpCloud Terraform Provider
+          
+          ${VERSION_DESC}
+          
+          ## Como usar este pacote
+          
+          Para usar este provider publicado no GitHub Packages, adicione o seguinte ao seu arquivo de configuração Terraform:
+          
+          ```hcl
+          terraform {
+            required_providers {
+              jumpcloud = {
+                source  = "github.com/${{ github.repository_owner }}/jumpcloud"
+                version = "${VERSION}"
+              }
+            }
+          }
+          
+          provider "jumpcloud" {
+            # Configurações do provider
+          }
+          ```
+          
+          ## Arquivos disponíveis
+          
+          Os seguintes arquivos estão disponíveis:
+          
+          - terraform-provider-jumpcloud_${VERSION}_darwin_amd64.zip
+          - terraform-provider-jumpcloud_${VERSION}_darwin_arm64.zip
+          - terraform-provider-jumpcloud_${VERSION}_linux_amd64.zip
+          - terraform-provider-jumpcloud_${VERSION}_linux_arm64.zip
+          - terraform-provider-jumpcloud_${VERSION}_windows_amd64.zip
+          - SHA256SUMS (checksums para verificação)
+          
+          ## Download direto
+          
+          Você pode baixar os binários diretamente usando:
+          
+          \`\`\`
+          curl -LO https://github.com/${{ github.repository_owner }}/terraform-provider-jumpcloud/packages/generic/terraform-provider-jumpcloud/${VERSION}/terraform-provider-jumpcloud_${VERSION}_[sua_plataforma].zip
+          \`\`\`
+          
+          Substitua [sua_plataforma] pela plataforma desejada (ex: darwin_amd64, linux_amd64, etc).
+          EOF
+          
+          # Publicar o README
+          curl -L \
+            -X PUT \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary "@README-PACKAGE.md" \
+            "https://api.github.com/users/${{ github.repository_owner }}/packages/generic/terraform-provider-jumpcloud/${VERSION}/README.md"
+
+      - name: Update CHANGELOG
+        if: ${{ steps.version.outputs.is_beta != 'true' }}
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if [ ! -f CHANGELOG.md ]; then
+            echo "# Changelog" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+          fi
+          
+          # Gerar conteúdo para o changelog
+          TEMP_CHANGELOG=$(mktemp)
+          echo "# Changelog" > $TEMP_CHANGELOG
+          echo "" >> $TEMP_CHANGELOG
+          echo "## v${VERSION} ($(date +%Y-%m-%d))" >> $TEMP_CHANGELOG
+          echo "" >> $TEMP_CHANGELOG
+          
+          # Obter logs desde o último release não-beta
+          LAST_STABLE_TAG=$(git tag -l --sort=-v:refname | grep -v -E '-(beta|alpha|rc)' | head -n1)
+          if [ -n "$LAST_STABLE_TAG" ]; then
+            # Agrupar commits por tipo (feat, fix, etc)
+            echo "### Features" >> $TEMP_CHANGELOG
+            git log ${LAST_STABLE_TAG}..HEAD --pretty=format:"* %s" | grep -E '^feat(\([^)]+\))?:' | sed 's/^feat\([^)]*\): /* /' >> $TEMP_CHANGELOG || true
+            echo "" >> $TEMP_CHANGELOG
+            
+            echo "### Bug Fixes" >> $TEMP_CHANGELOG
+            git log ${LAST_STABLE_TAG}..HEAD --pretty=format:"* %s" | grep -E '^fix(\([^)]+\))?:' | sed 's/^fix\([^)]*\): /* /' >> $TEMP_CHANGELOG || true
+            echo "" >> $TEMP_CHANGELOG
+            
+            echo "### Documentation" >> $TEMP_CHANGELOG
+            git log ${LAST_STABLE_TAG}..HEAD --pretty=format:"* %s" | grep -E '^docs(\([^)]+\))?:' | sed 's/^docs\([^)]*\): /* /' >> $TEMP_CHANGELOG || true
+            echo "" >> $TEMP_CHANGELOG
+            
+            echo "### Other Changes" >> $TEMP_CHANGELOG
+            git log ${LAST_STABLE_TAG}..HEAD --pretty=format:"* %s" | grep -v -E '^(feat|fix|docs)(\([^)]+\))?:' >> $TEMP_CHANGELOG || true
+            echo "" >> $TEMP_CHANGELOG
+          else
+            echo "* Initial release" >> $TEMP_CHANGELOG
+            echo "" >> $TEMP_CHANGELOG
+          fi
+          
+          # Adicionar o changelog anterior
+          if [ -f CHANGELOG.md ]; then
+            tail -n +3 CHANGELOG.md >> $TEMP_CHANGELOG
+          fi
+          
+          # Substituir o changelog
+          mv $TEMP_CHANGELOG CHANGELOG.md
+          
+          # Commit e push das mudanças se houver algo para committar
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add CHANGELOG.md
+          if git diff --staged --quiet; then
+            echo "No changes to commit in CHANGELOG.md"
+          else
+            git commit -m "docs: atualizar CHANGELOG para v${VERSION}"
+            git push
+          fi
+
+      - name: Upload artifacts to workflow
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform-provider-jumpcloud-${{ steps.version.outputs.version }}
+          path: |
+            terraform-provider-jumpcloud_*.zip
+            dist/SHA256SUMS
+            README-PACKAGE.md
+          retention-days: 30 

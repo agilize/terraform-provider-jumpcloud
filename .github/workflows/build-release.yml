@@ -2,7 +2,7 @@ name: Build and Release
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, develop ]
     paths-ignore:
       - 'README.md'
       - 'CHANGELOG.md'
@@ -12,17 +12,65 @@ on:
     types: [created]
 
 jobs:
+  # Determinar a versão para o build
+  version:
+    name: Determine Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set-version.outputs.version }}
+      is_beta: ${{ steps.set-version.outputs.is_beta }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Set Version
+        id: set-version
+        run: |
+          # Obter último tag
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Latest tag: $LATEST_TAG"
+          
+          # Remover 'v' do início
+          LATEST_VERSION=${LATEST_TAG#v}
+          
+          # Dividir versão em partes: MAJOR.MINOR.PATCH
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_VERSION"
+          
+          # Remover qualquer sufixo do PATCH (como -beta)
+          PATCH=$(echo $PATCH | sed -E 's/([0-9]+).*/\1/')
+          
+          # Incrementar PATCH
+          NEW_PATCH=$((PATCH + 1))
+          
+          # Determinar se é beta baseado na branch
+          IS_BETA="false"
+          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            IS_BETA="true"
+            NEW_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}-beta"
+          elif [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]]; then
+            NEW_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
+          else
+            # Para outros casos (tag, etc)
+            NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          fi
+          
+          echo "New version: v${NEW_VERSION}"
+          echo "version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+          echo "is_beta=${IS_BETA}" >> $GITHUB_OUTPUT
+
   # Executar testes antes do build
   test:
     name: Test
     runs-on: ubuntu-latest
+    needs: version
     steps:
       - uses: actions/checkout@v3
       
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.22'
+          go-version: '1.20'
           cache: true
       
       - name: Unit Tests
@@ -31,7 +79,7 @@ jobs:
   # Build para várias plataformas
   build:
     name: Build
-    needs: test
+    needs: [test, version]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -46,23 +94,38 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.22'
+          go-version: '1.20'
           cache: true
       
       - name: Build Provider
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
+          VERSION: ${{ needs.version.outputs.version }}
         run: |
-          go build -o terraform-provider-jumpcloud_v0.1.0_${{ matrix.goos }}_${{ matrix.goarch }}
+          go build -o terraform-provider-jumpcloud_v${VERSION}_${{ matrix.goos }}_${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }}
       
       - name: Upload Provider Artifact
         uses: actions/upload-artifact@v3
         with:
           name: terraform-provider-jumpcloud_${{ matrix.goos }}_${{ matrix.goarch }}
-          path: terraform-provider-jumpcloud_v0.1.0_${{ matrix.goos }}_${{ matrix.goarch }}
+          path: terraform-provider-jumpcloud_v${{ needs.version.outputs.version }}_${{ matrix.goos }}_${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }}
           if-no-files-found: error
           retention-days: 7
+
+  # Trigger workflow de publicação
+  trigger-publish:
+    name: Trigger Publish
+    needs: [build, version]
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Publish Package Workflow
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: trigger-publish
+          client-payload: '{"version": "${{ needs.version.outputs.version }}", "is_beta": ${{ needs.version.outputs.is_beta }}, "ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
 
   # Release somente quando uma tag for criada
   release:
