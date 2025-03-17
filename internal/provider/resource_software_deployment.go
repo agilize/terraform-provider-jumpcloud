@@ -127,8 +127,8 @@ func resourceSoftwareDeployment() *schema.Resource {
 	}
 }
 
-func resourceSoftwareDeploymentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceSoftwareDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -208,13 +208,13 @@ func resourceSoftwareDeploymentCreate(ctx context.Context, d *schema.ResourceDat
 	d.SetId(createdDeployment.ID)
 
 	// Ler o recurso para atualizar o state com todos os campos computados
-	return resourceSoftwareDeploymentRead(ctx, d, m)
+	return resourceSoftwareDeploymentRead(ctx, d, meta)
 }
 
-func resourceSoftwareDeploymentRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSoftwareDeploymentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -292,8 +292,8 @@ func resourceSoftwareDeploymentRead(ctx context.Context, d *schema.ResourceData,
 	return diags
 }
 
-func resourceSoftwareDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceSoftwareDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -380,13 +380,13 @@ func resourceSoftwareDeploymentUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	// Ler o recurso para atualizar o state com todos os campos computados
-	return resourceSoftwareDeploymentRead(ctx, d, m)
+	return resourceSoftwareDeploymentRead(ctx, d, meta)
 }
 
-func resourceSoftwareDeploymentDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSoftwareDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

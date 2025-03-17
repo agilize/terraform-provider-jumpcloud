@@ -48,8 +48,8 @@ func resourcePolicyAssociation() *schema.Resource {
 }
 
 // Função para criar a associação
-func resourcePolicyAssociationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourcePolicyAssociationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -75,12 +75,12 @@ func resourcePolicyAssociationCreate(ctx context.Context, d *schema.ResourceData
 	// Definir o ID do recurso como uma combinação de policy_id, group_id e tipo
 	d.SetId(fmt.Sprintf("%s:%s:%s", policyID, groupID, groupType))
 
-	return resourcePolicyAssociationRead(ctx, d, m)
+	return resourcePolicyAssociationRead(ctx, d, meta)
 }
 
 // Função para ler a associação
-func resourcePolicyAssociationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourcePolicyAssociationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -141,8 +141,8 @@ func resourcePolicyAssociationRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 // Função para excluir a associação
-func resourcePolicyAssociationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourcePolicyAssociationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}

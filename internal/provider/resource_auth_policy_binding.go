@@ -89,8 +89,8 @@ func resourceAuthPolicyBinding() *schema.Resource {
 	}
 }
 
-func resourceAuthPolicyBindingCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAuthPolicyBindingCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -142,13 +142,13 @@ func resourceAuthPolicyBindingCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	d.SetId(createdBinding.ID)
-	return resourceAuthPolicyBindingRead(ctx, d, m)
+	return resourceAuthPolicyBindingRead(ctx, d, meta)
 }
 
-func resourceAuthPolicyBindingRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAuthPolicyBindingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -195,8 +195,8 @@ func resourceAuthPolicyBindingRead(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-func resourceAuthPolicyBindingUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAuthPolicyBindingUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -254,11 +254,11 @@ func resourceAuthPolicyBindingUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	return resourceAuthPolicyBindingRead(ctx, d, m)
+	return resourceAuthPolicyBindingRead(ctx, d, meta)
 }
 
-func resourceAuthPolicyBindingDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAuthPolicyBindingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

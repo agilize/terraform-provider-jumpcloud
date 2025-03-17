@@ -1,15 +1,15 @@
 # jumpcloud_application_group_mapping Resource
 
-Este recurso permite gerenciar mapeamentos entre grupos e aplicações no JumpCloud, concedendo acesso de grupos de usuários ou grupos de sistemas a aplicações SSO.
+Manages mappings between groups and applications in JumpCloud, granting access for user groups or system groups to SSO applications.
 
-## Exemplo de Uso
+## Example Usage
 
 ```hcl
-# Mapeamento de grupo de usuários para aplicação
+# Mapping a user group to an application
 resource "jumpcloud_application_group_mapping" "marketing_team" {
   application_id = jumpcloud_application.salesforce.id
   group_id       = jumpcloud_user_group.marketing.id
-  type           = "user_group"  # Padrão
+  type           = "user_group"  # Default
   
   attributes = {
     "access_level" = "standard"
@@ -17,14 +17,14 @@ resource "jumpcloud_application_group_mapping" "marketing_team" {
   }
 }
 
-# Mapeamento de grupo de sistemas para aplicação
+# Mapping a system group to an application
 resource "jumpcloud_application_group_mapping" "production_servers" {
   application_id = jumpcloud_application.monitoring_tool.id
   group_id       = jumpcloud_system_group.production.id
   type           = "system_group"
 }
 
-# Mapeamento usando data sources para recursos existentes
+# Mapping using data sources for existing resources
 resource "jumpcloud_application_group_mapping" "existing_mapping" {
   application_id = data.jumpcloud_application.existing_app.id
   group_id       = data.jumpcloud_user_group.existing_group.id
@@ -39,16 +39,16 @@ resource "jumpcloud_application_group_mapping" "existing_mapping" {
 
 ## Argument Reference
 
-Os seguintes argumentos são suportados:
+The following arguments are supported:
 
-* `application_id` - (Obrigatório) ID da aplicação JumpCloud.
-* `group_id` - (Obrigatório) ID do grupo JumpCloud.
-* `type` - (Opcional) Tipo de grupo: `user_group` (padrão) ou `system_group`.
-* `attributes` - (Opcional) Mapa de atributos personalizados para o mapeamento. Estes atributos são específicos para cada tipo de aplicação.
+* `application_id` - (Required) JumpCloud application ID.
+* `group_id` - (Required) JumpCloud group ID.
+* `type` - (Optional) Group type: `user_group` (default) or `system_group`.
+* `attributes` - (Optional) Map of custom attributes for the mapping. These attributes are specific to each application type.
 
 ## Import
 
-Mapeamentos de grupo-aplicação JumpCloud podem ser importados usando uma string separada por dois pontos no formato:
+JumpCloud application-group mappings can be imported using a colon-separated string in the format:
 
 ```
 terraform import jumpcloud_application_group_mapping.example {application_id}:{group_type}:{group_id}

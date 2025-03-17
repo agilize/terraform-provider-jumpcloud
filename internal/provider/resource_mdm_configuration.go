@@ -125,8 +125,8 @@ func resourceMDMConfiguration() *schema.Resource {
 	}
 }
 
-func resourceMDMConfigurationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceMDMConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -179,13 +179,13 @@ func resourceMDMConfigurationCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	d.SetId(createdConfig.ID)
-	return resourceMDMConfigurationRead(ctx, d, m)
+	return resourceMDMConfigurationRead(ctx, d, meta)
 }
 
-func resourceMDMConfigurationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMDMConfigurationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -237,8 +237,8 @@ func resourceMDMConfigurationRead(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-func resourceMDMConfigurationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceMDMConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -295,11 +295,11 @@ func resourceMDMConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	return resourceMDMConfigurationRead(ctx, d, m)
+	return resourceMDMConfigurationRead(ctx, d, meta)
 }
 
-func resourceMDMConfigurationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceMDMConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

@@ -1,0 +1,53 @@
+---
+page_title: "Provider: JumpCloud"
+description: |-
+  O Terraform Provider JumpCloud permite gerenciar recursos na plataforma JumpCloud.
+---
+
+# JumpCloud Provider
+
+O Provider JumpCloud permite ao Terraform gerenciar recursos na [plataforma JumpCloud](https://jumpcloud.com). 
+O provider precisa ser configurado com as credenciais adequadas antes de poder ser usado.
+
+## Exemplo de Uso
+
+{{tffile "examples/provider/provider.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Autenticação
+
+O JumpCloud Provider oferece dois métodos de autenticação:
+
+### Variáveis de ambiente
+
+Você pode fornecer suas credenciais através das variáveis de ambiente
+`JUMPCLOUD_API_KEY` e `JUMPCLOUD_ORG_ID`:
+
+```sh
+export JUMPCLOUD_API_KEY="sua-api-key"
+export JUMPCLOUD_ORG_ID="seu-organization-id"
+terraform plan
+```
+
+### Configuração do Provider
+
+Você pode fornecer suas credenciais também diretamente na configuração do provider:
+
+```hcl
+provider "jumpcloud" {
+  api_key = "sua-api-key"
+  org_id  = "seu-organization-id"
+}
+```
+
+{{ if .HasImport }}
+## Importação
+
+Recursos do JumpCloud podem ser importados usando o formato `id` ou um formato específico
+documentado para cada recurso.
+
+```sh
+terraform import jumpcloud_user.example user-id
+```
+{{ end }} 

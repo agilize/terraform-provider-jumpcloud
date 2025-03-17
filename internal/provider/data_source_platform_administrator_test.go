@@ -44,8 +44,8 @@ func mockDataSourcePlatformAdministratorSchema() map[string]*schema.Schema {
 }
 
 // Mock para a função de leitura do data source Platform Administrator
-func mockDataSourcePlatformAdministratorRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(JumpCloudClient)
+func mockDataSourcePlatformAdministratorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(JumpCloudClient)
 	var diags diag.Diagnostics
 
 	// Verificar se o ID foi fornecido

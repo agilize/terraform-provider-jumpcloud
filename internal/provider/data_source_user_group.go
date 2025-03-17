@@ -56,10 +56,10 @@ func dataSourceUserGroup() *schema.Resource {
 	}
 }
 
-func dataSourceUserGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceUserGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Lendo data source de grupo de usuários JumpCloud")
 
-	c, diags := ConvertToClientInterface(m)
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}

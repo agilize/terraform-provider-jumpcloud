@@ -78,8 +78,8 @@ func resourceAdminRoleBinding() *schema.Resource {
 	}
 }
 
-func resourceAdminRoleBindingCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAdminRoleBindingCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -127,13 +127,13 @@ func resourceAdminRoleBindingCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	d.SetId(createdBinding.ID)
-	return resourceAdminRoleBindingRead(ctx, d, m)
+	return resourceAdminRoleBindingRead(ctx, d, meta)
 }
 
-func resourceAdminRoleBindingRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAdminRoleBindingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -176,8 +176,8 @@ func resourceAdminRoleBindingRead(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-func resourceAdminRoleBindingUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAdminRoleBindingUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -226,11 +226,11 @@ func resourceAdminRoleBindingUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	return resourceAdminRoleBindingRead(ctx, d, m)
+	return resourceAdminRoleBindingRead(ctx, d, meta)
 }
 
-func resourceAdminRoleBindingDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAdminRoleBindingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

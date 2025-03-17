@@ -19,8 +19,8 @@ func expandStringListForMDMTests(list []interface{}) []string {
 }
 
 // Mock para a função de criação do resource MDM Devices
-func resourceMDMDevicesCreateTest(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(JumpCloudClient)
+func resourceMDMDevicesCreateTest(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(JumpCloudClient)
 
 	// Preparar os dados para a requisição
 	payload := map[string]interface{}{
@@ -50,12 +50,12 @@ func resourceMDMDevicesCreateTest(ctx context.Context, d *schema.ResourceData, m
 	d.SetId(result["_id"].(string))
 
 	// Ler o recurso para atualizar o state
-	return resourceMDMDevicesReadTest(ctx, d, m)
+	return resourceMDMDevicesReadTest(ctx, d, meta)
 }
 
 // Mock para a função de leitura do resource MDM Devices
-func resourceMDMDevicesReadTest(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(JumpCloudClient)
+func resourceMDMDevicesReadTest(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(JumpCloudClient)
 	var diags diag.Diagnostics
 
 	// Fazer a requisição para obter os dispositivos MDM
@@ -96,8 +96,8 @@ func resourceMDMDevicesReadTest(ctx context.Context, d *schema.ResourceData, m i
 }
 
 // Mock para a função de atualização do resource MDM Devices
-func resourceMDMDevicesUpdateTest(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(JumpCloudClient)
+func resourceMDMDevicesUpdateTest(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(JumpCloudClient)
 
 	// Preparar os dados para a requisição
 	payload := map[string]interface{}{
@@ -118,5 +118,5 @@ func resourceMDMDevicesUpdateTest(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	// Ler o recurso para atualizar o state
-	return resourceMDMDevicesReadTest(ctx, d, m)
+	return resourceMDMDevicesReadTest(ctx, d, meta)
 }

@@ -19,7 +19,7 @@ const (
 func setupIntegrationTest(t *testing.T) {
 	// Skip if not running integration tests
 	if os.Getenv(INTEGRATION_TEST_ENV) == "" {
-		t.Skip(fmt.Sprintf("Skipping integration test, set %s=1 to enable", INTEGRATION_TEST_ENV))
+		t.Skipf("Skipping integration test, set %s=1 to enable", INTEGRATION_TEST_ENV)
 	}
 
 	// Check for required environment variables

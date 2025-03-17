@@ -100,8 +100,8 @@ func resourceAPIKeyBinding() *schema.Resource {
 }
 
 // resourceAPIKeyBindingCreate cria uma nova vinculação de chave de API no JumpCloud
-func resourceAPIKeyBindingCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceAPIKeyBindingCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -146,12 +146,12 @@ func resourceAPIKeyBindingCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	d.SetId(newBinding.ID)
 
-	return resourceAPIKeyBindingRead(ctx, d, m)
+	return resourceAPIKeyBindingRead(ctx, d, meta)
 }
 
 // resourceAPIKeyBindingRead lê uma vinculação de chave de API existente no JumpCloud
-func resourceAPIKeyBindingRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceAPIKeyBindingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -201,8 +201,8 @@ func resourceAPIKeyBindingRead(ctx context.Context, d *schema.ResourceData, m in
 }
 
 // resourceAPIKeyBindingUpdate atualiza uma vinculação de chave de API existente no JumpCloud
-func resourceAPIKeyBindingUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceAPIKeyBindingUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -242,12 +242,12 @@ func resourceAPIKeyBindingUpdate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(fmt.Errorf("erro ao atualizar vinculação de chave de API: %v", err))
 	}
 
-	return resourceAPIKeyBindingRead(ctx, d, m)
+	return resourceAPIKeyBindingRead(ctx, d, meta)
 }
 
 // resourceAPIKeyBindingDelete exclui uma vinculação de chave de API existente no JumpCloud
-func resourceAPIKeyBindingDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceAPIKeyBindingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}

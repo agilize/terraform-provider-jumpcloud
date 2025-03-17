@@ -72,6 +72,11 @@ func (t TimeStamp) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf("%q", t.Time.Format(time.RFC3339))), nil
 }
 
+// Format passa a chamada para o campo Time subjacente
+func (t TimeStamp) Format(layout string) string {
+	return t.Time.Format(layout)
+}
+
 // ResourceType representa os tipos de recursos válidos para bindings de API
 type ResourceType string
 

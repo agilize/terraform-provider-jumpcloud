@@ -241,8 +241,8 @@ func flattenPasswordPolicy(policy *PasswordPolicy) []interface{} {
 }
 
 // resourceOrganizationSettingsCreate cria ou atualiza configurações de uma organização no JumpCloud
-func resourceOrganizationSettingsCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceOrganizationSettingsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -294,12 +294,12 @@ func resourceOrganizationSettingsCreate(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(newSettings.ID)
 
-	return resourceOrganizationSettingsRead(ctx, d, m)
+	return resourceOrganizationSettingsRead(ctx, d, meta)
 }
 
 // resourceOrganizationSettingsRead lê configurações de uma organização existente no JumpCloud
-func resourceOrganizationSettingsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceOrganizationSettingsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -373,8 +373,8 @@ func resourceOrganizationSettingsRead(ctx context.Context, d *schema.ResourceDat
 }
 
 // resourceOrganizationSettingsUpdate atualiza configurações de uma organização existente no JumpCloud
-func resourceOrganizationSettingsUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceOrganizationSettingsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -422,12 +422,12 @@ func resourceOrganizationSettingsUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("erro ao atualizar configurações de organização: %v", err))
 	}
 
-	return resourceOrganizationSettingsRead(ctx, d, m)
+	return resourceOrganizationSettingsRead(ctx, d, meta)
 }
 
 // resourceOrganizationSettingsDelete exclui configurações de uma organização existente no JumpCloud
-func resourceOrganizationSettingsDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceOrganizationSettingsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}

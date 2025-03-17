@@ -122,8 +122,8 @@ func resourceConditionalAccessRule() *schema.Resource {
 	}
 }
 
-func resourceConditionalAccessRuleCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceConditionalAccessRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -197,13 +197,13 @@ func resourceConditionalAccessRuleCreate(ctx context.Context, d *schema.Resource
 	}
 
 	d.SetId(createdRule.ID)
-	return resourceConditionalAccessRuleRead(ctx, d, m)
+	return resourceConditionalAccessRuleRead(ctx, d, meta)
 }
 
-func resourceConditionalAccessRuleRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceConditionalAccessRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -265,8 +265,8 @@ func resourceConditionalAccessRuleRead(ctx context.Context, d *schema.ResourceDa
 	return diags
 }
 
-func resourceConditionalAccessRuleUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceConditionalAccessRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -346,11 +346,11 @@ func resourceConditionalAccessRuleUpdate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	return resourceConditionalAccessRuleRead(ctx, d, m)
+	return resourceConditionalAccessRuleRead(ctx, d, meta)
 }
 
-func resourceConditionalAccessRuleDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceConditionalAccessRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

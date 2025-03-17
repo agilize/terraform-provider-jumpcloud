@@ -91,8 +91,8 @@ func resourcePolicy() *schema.Resource {
 }
 
 // resourcePolicyCreate cria uma nova política no JumpCloud
-func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -144,12 +144,12 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	d.SetId(policyID)
 
 	// Read the state to ensure it matches what we expect
-	return resourcePolicyRead(ctx, d, m)
+	return resourcePolicyRead(ctx, d, meta)
 }
 
 // resourcePolicyRead lê os detalhes de uma política do JumpCloud
-func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -235,8 +235,8 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, m interface
 }
 
 // resourcePolicyUpdate atualiza uma política existente no JumpCloud
-func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -276,12 +276,12 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	return resourcePolicyRead(ctx, d, m)
+	return resourcePolicyRead(ctx, d, meta)
 }
 
 // resourcePolicyDelete exclui uma política do JumpCloud
-func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}

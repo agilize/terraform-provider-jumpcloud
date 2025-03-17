@@ -111,9 +111,9 @@ func resourceApplication() *schema.Resource {
 }
 
 // resourceApplicationCreate cria uma nova aplicação no JumpCloud
-func resourceApplicationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceApplicationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -174,15 +174,15 @@ func resourceApplicationCreate(ctx context.Context, d *schema.ResourceData, m in
 	}
 
 	d.SetId(createdApp.ID)
-	return resourceApplicationRead(ctx, d, m)
+	return resourceApplicationRead(ctx, d, meta)
 }
 
 // resourceApplicationRead lê os detalhes de uma aplicação do JumpCloud
-func resourceApplicationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceApplicationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -230,11 +230,11 @@ func resourceApplicationRead(ctx context.Context, d *schema.ResourceData, m inte
 }
 
 // resourceApplicationUpdate atualiza uma aplicação existente no JumpCloud
-func resourceApplicationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceApplicationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -295,15 +295,15 @@ func resourceApplicationUpdate(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(fmt.Errorf("erro ao atualizar aplicação: %v", err))
 	}
 
-	return resourceApplicationRead(ctx, d, m)
+	return resourceApplicationRead(ctx, d, meta)
 }
 
 // resourceApplicationDelete exclui uma aplicação do JumpCloud
-func resourceApplicationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceApplicationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

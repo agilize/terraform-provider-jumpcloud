@@ -1,22 +1,22 @@
 # jumpcloud_user_system_association Resource
 
-Gerencia associações entre usuários e sistemas no JumpCloud. Este recurso permite criar e excluir vínculos entre usuários e sistemas, controlando quais usuários têm acesso a quais sistemas.
+Manages associations between users and systems in JumpCloud. This resource allows you to create and delete links between users and systems, controlling which users have access to which systems.
 
-## Referência da API JumpCloud
+## JumpCloud API Reference
 
-Para mais detalhes sobre a API subjacente, consulte:
-- [API JumpCloud - Associações de Usuários a Sistemas](https://docs.jumpcloud.com/api/2.0/index.html#tag/user-associations)
+For more details on the underlying API, see:
+- [JumpCloud API - User to System Associations](https://docs.jumpcloud.com/api/2.0/index.html#tag/user-associations)
 
-## Considerações de Segurança
+## Security Considerations
 
-- Utilize associações para implementar o princípio de menor privilégio, garantindo que os usuários tenham acesso apenas aos sistemas necessários para suas funções.
-- Audite regularmente as associações para identificar e remover acessos desnecessários ou obsoletos.
-- Considere usar grupos de usuários para gerenciar associações em escala, em vez de associar usuários individualmente.
-- As associações criadas por este recurso serão refletidas nas permissões de login do usuário para o sistema.
+- Use associations to implement the principle of least privilege, ensuring that users have access only to the systems necessary for their roles.
+- Regularly audit associations to identify and remove unnecessary or obsolete access.
+- Consider using user groups to manage associations at scale, rather than associating users individually.
+- Associations created by this resource will be reflected in the user's login permissions for the system.
 
-## Exemplos de Uso
+## Example Usage
 
-### Associação Básica entre Usuário e Sistema
+### Basic User to System Association
 
 ```hcl
 resource "jumpcloud_user_system_association" "basic_association" {
@@ -25,10 +25,10 @@ resource "jumpcloud_user_system_association" "basic_association" {
 }
 ```
 
-### Gerenciamento de Acesso para uma Equipe
+### Team Access Management
 
 ```hcl
-# Criar usuários para a equipe
+# Create users for the team
 resource "jumpcloud_user" "team_lead" {
   username  = "team.lead"
   email     = "team.lead@example.com"
@@ -45,18 +45,18 @@ resource "jumpcloud_user" "team_member" {
   password  = "SecurePassword456!"
 }
 
-# Configurar sistemas
+# Configure systems
 resource "jumpcloud_system" "production_server" {
   display_name = "production-server"
-  # ... outras configurações
+  # ... other configurations
 }
 
 resource "jumpcloud_system" "development_server" {
   display_name = "development-server"
-  # ... outras configurações
+  # ... other configurations
 }
 
-# Associar usuários a sistemas
+# Associate users with systems
 resource "jumpcloud_user_system_association" "lead_prod_access" {
   user_id   = jumpcloud_user.team_lead.id
   system_id = jumpcloud_system.production_server.id
@@ -73,61 +73,61 @@ resource "jumpcloud_user_system_association" "member_dev_access" {
 }
 ```
 
-### Uso com Dados de Usuários e Sistemas Existentes
+### Usage with Existing Users and Systems Data
 
 ```hcl
-# Buscar um usuário existente
+# Fetch an existing user
 data "jumpcloud_user" "existing_user" {
   email = "existing.user@example.com"
 }
 
-# Buscar um sistema existente
+# Fetch an existing system
 data "jumpcloud_system" "existing_system" {
   display_name = "existing-server"
 }
 
-# Associar o usuário ao sistema
+# Associate the user with the system
 resource "jumpcloud_user_system_association" "existing_association" {
   user_id   = data.jumpcloud_user.existing_user.id
   system_id = data.jumpcloud_system.existing_system.id
 }
 ```
 
-## Referência de Argumentos
+## Argument Reference
 
-Os seguintes argumentos são suportados:
+The following arguments are supported:
 
-* `user_id` - (Obrigatório) O ID do usuário JumpCloud a ser associado. Este valor não pode ser alterado após a criação.
-* `system_id` - (Obrigatório) O ID do sistema JumpCloud a ser associado. Este valor não pode ser alterado após a criação.
+* `user_id` - (Required) The ID of the JumpCloud user to associate. This value cannot be changed after creation.
+* `system_id` - (Required) The ID of the JumpCloud system to associate. This value cannot be changed after creation.
 
-## Referência de Atributos
+## Attribute Reference
 
-Além dos argumentos acima, os seguintes atributos são exportados:
+In addition to the arguments above, the following attributes are exported:
 
-* `id` - Um identificador composto no formato `user_id:system_id` que representa esta associação.
+* `id` - A composite identifier in the format `user_id:system_id` that represents this association.
 
-## Importação
+## Import
 
-Associações existentes entre usuário e sistema podem ser importadas usando um ID composto no formato `user_id:system_id`, por exemplo:
+Existing user-system associations can be imported using a composite ID in the format `user_id:system_id`, for example:
 
 ```bash
 terraform import jumpcloud_user_system_association.example 5f0c1b2c3d4e5f6g7h8i9j0k:6a7b8c9d0e1f2g3h4i5j6k7l
 ```
 
-## Melhores Práticas
+## Best Practices
 
-1. **Gerenciamento de Acesso**:
-   - Documente claramente por que cada associação existe para facilitar futuras auditorias.
-   - Implemente um processo de revisão regular para garantir que as associações permaneçam necessárias.
+1. **Access Management**:
+   - Clearly document why each association exists to facilitate future audits.
+   - Implement a regular review process to ensure associations remain necessary.
 
-2. **Escalabilidade**:
-   - Para grandes equipes, considere usar grupos de usuários e associações de grupo-sistema em vez de associações individuais.
-   - Utilize módulos Terraform para gerenciar conjuntos comuns de associações.
+2. **Scalability**:
+   - For large teams, consider using user groups and group-system associations instead of individual associations.
+   - Use Terraform modules to manage common sets of associations.
 
-3. **Segurança**:
-   - Combine com configurações do sistema que exigem MFA para login em sistemas críticos.
-   - Implemente automação para revogar acesso quando usuários mudam de função ou saem da organização.
+3. **Security**:
+   - Combine with system configurations that require MFA for login to critical systems.
+   - Implement automation to revoke access when users change roles or leave the organization.
 
-4. **Monitoramento**:
-   - Configure alertas para criação ou remoção não autorizada de associações críticas.
-   - Mantenha registros históricos de mudanças nas associações para fins de auditoria. 
+4. **Monitoring**:
+   - Configure alerts for unauthorized creation or removal of critical associations.
+   - Maintain historical records of changes to associations for audit purposes. 

@@ -85,8 +85,8 @@ func mockResourceAuthenticationPolicySchema() map[string]*schema.Schema {
 }
 
 // Mock para a função de criação do resource Authentication Policy
-func mockResourceAuthenticationPolicyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(JumpCloudClient)
+func mockResourceAuthenticationPolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(JumpCloudClient)
 	var diags diag.Diagnostics
 
 	// Construir o payload para a requisição
@@ -121,7 +121,7 @@ func mockResourceAuthenticationPolicyCreate(ctx context.Context, d *schema.Resou
 	d.SetId(policy["_id"].(string))
 
 	// Ler a política para atualizar o state
-	readDiags := mockResourceAuthenticationPolicyRead(ctx, d, m)
+	readDiags := mockResourceAuthenticationPolicyRead(ctx, d, meta)
 	if readDiags.HasError() {
 		return readDiags
 	}
@@ -130,8 +130,8 @@ func mockResourceAuthenticationPolicyCreate(ctx context.Context, d *schema.Resou
 }
 
 // Mock para a função de leitura do resource Authentication Policy
-func mockResourceAuthenticationPolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(JumpCloudClient)
+func mockResourceAuthenticationPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(JumpCloudClient)
 	var diags diag.Diagnostics
 
 	// Ler a política
@@ -207,8 +207,8 @@ func mockResourceAuthenticationPolicyRead(ctx context.Context, d *schema.Resourc
 }
 
 // Mock para a função de atualização do resource Authentication Policy
-func mockResourceAuthenticationPolicyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(JumpCloudClient)
+func mockResourceAuthenticationPolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(JumpCloudClient)
 	var diags diag.Diagnostics
 
 	// Ler a política atual
@@ -252,7 +252,7 @@ func mockResourceAuthenticationPolicyUpdate(ctx context.Context, d *schema.Resou
 	}
 
 	// Ler a política para atualizar o state
-	readDiags := mockResourceAuthenticationPolicyRead(ctx, d, m)
+	readDiags := mockResourceAuthenticationPolicyRead(ctx, d, meta)
 	if readDiags.HasError() {
 		return readDiags
 	}
@@ -261,8 +261,8 @@ func mockResourceAuthenticationPolicyUpdate(ctx context.Context, d *schema.Resou
 }
 
 // Mock para a função de exclusão do resource Authentication Policy
-func mockResourceAuthenticationPolicyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(JumpCloudClient)
+func mockResourceAuthenticationPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(JumpCloudClient)
 	var diags diag.Diagnostics
 
 	// Excluir a política

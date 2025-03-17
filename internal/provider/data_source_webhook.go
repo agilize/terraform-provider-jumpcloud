@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -55,20 +56,20 @@ func dataSourceWebhook() *schema.Resource {
 			"created": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Data de criação do webhook",
+				Description: "Data de criação do webhook em formato ISO 8601",
 			},
 			"updated": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Data da última atualização do webhook",
+				Description: "Data da última atualização do webhook em formato ISO 8601",
 			},
 		},
 	}
 }
 
 // dataSourceWebhookRead lê as informações de um webhook existente no JumpCloud
-func dataSourceWebhookRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func dataSourceWebhookRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -144,10 +145,10 @@ func dataSourceWebhookRead(ctx context.Context, d *schema.ResourceData, m interf
 	if err := d.Set("event_types", flattenStringList(webhook.EventTypes)); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("created", webhook.Created); err != nil {
+	if err := d.Set("created", webhook.Created.Format(time.RFC3339)); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("updated", webhook.Updated); err != nil {
+	if err := d.Set("updated", webhook.Updated.Format(time.RFC3339)); err != nil {
 		return diag.FromErr(err)
 	}
 

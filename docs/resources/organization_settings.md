@@ -1,11 +1,11 @@
 # jumpcloud_organization_settings Resource
 
-Este recurso permite gerenciar as configurações de uma organização no JumpCloud, incluindo políticas de senha, configurações de MFA, insights, templates de e-mail e outras configurações de segurança.
+This resource allows you to manage the settings of an organization in JumpCloud, including password policies, MFA configurations, insights, email templates, and other security settings.
 
-## Exemplo de Uso
+## Example Usage
 
 ```hcl
-# Configurações básicas de organização com política de senha personalizada
+# Basic organization settings with custom password policy
 resource "jumpcloud_organization_settings" "main_org" {
   org_id = var.jumpcloud_org_id
   
@@ -19,33 +19,33 @@ resource "jumpcloud_organization_settings" "main_org" {
     max_history           = 10
   }
   
-  # Configurar MFA
+  # Configure MFA
   allow_multi_factor_auth = true
   require_mfa             = true
   allowed_mfa_methods     = ["totp", "push", "webauthn"]
   
-  # Configurações adicionais
+  # Additional settings
   system_insights_enabled     = true
   directory_insights_enabled  = true
   ldap_integration_enabled    = false
   allow_public_key_authentication = true
 }
 
-# Configurações de organização com templates de e-mail personalizados
+# Organization settings with custom email templates
 resource "jumpcloud_organization_settings" "custom_emails" {
   org_id = var.child_org_id
   
-  # Templates de e-mail personalizados
+  # Custom email templates
   new_user_email_template  = file("${path.module}/templates/new_user_email.html")
   password_reset_template  = file("${path.module}/templates/password_reset.html")
   
-  # Configurações de segurança básicas
+  # Basic security settings
   password_policy {
     min_length      = 10
     expiration_days = 60
   }
   
-  # Desabilitar insights para economizar custos
+  # Disable insights to save costs
   system_insights_enabled    = false
   directory_insights_enabled = false
 }
@@ -53,82 +53,82 @@ resource "jumpcloud_organization_settings" "custom_emails" {
 
 ## Argument Reference
 
-Os seguintes argumentos são suportados:
+The following arguments are supported:
 
-* `org_id` - (Obrigatório) O ID da organização para a qual as configurações serão aplicadas.
+* `org_id` - (Required) The ID of the organization to which the settings will be applied.
 
-### Política de Senha
+### Password Policy
 
-* `password_policy` - (Opcional) Bloco de configuração da política de senha. Pode conter:
-  * `min_length` - (Opcional) Comprimento mínimo da senha. Deve estar entre 8 e 64 caracteres. Padrão: `8`.
-  * `requires_lowercase` - (Opcional) Exigir letras minúsculas. Padrão: `true`.
-  * `requires_uppercase` - (Opcional) Exigir letras maiúsculas. Padrão: `true`.
-  * `requires_number` - (Opcional) Exigir números. Padrão: `true`.
-  * `requires_special_char` - (Opcional) Exigir caracteres especiais. Padrão: `true`.
-  * `expiration_days` - (Opcional) Dias até a expiração da senha. `0` significa que a senha nunca expira. Deve estar entre 0 e 365. Padrão: `90`.
-  * `max_history` - (Opcional) Número de senhas antigas a serem lembradas. Deve estar entre 0 e 24. Padrão: `5`.
+* `password_policy` - (Optional) Password policy configuration block. May contain:
+  * `min_length` - (Optional) Minimum password length. Must be between 8 and 64 characters. Default: `8`.
+  * `requires_lowercase` - (Optional) Require lowercase letters. Default: `true`.
+  * `requires_uppercase` - (Optional) Require uppercase letters. Default: `true`.
+  * `requires_number` - (Optional) Require numbers. Default: `true`.
+  * `requires_special_char` - (Optional) Require special characters. Default: `true`.
+  * `expiration_days` - (Optional) Days until password expiration. `0` means the password never expires. Must be between 0 and 365. Default: `90`.
+  * `max_history` - (Optional) Number of old passwords to remember. Must be between 0 and 24. Default: `5`.
 
-### Configurações de Autenticação
+### Authentication Settings
 
-* `allow_multi_factor_auth` - (Opcional) Permitir autenticação multifator. Padrão: `true`.
-* `require_mfa` - (Opcional) Exigir MFA para todos os usuários. Padrão: `false`.
-* `allowed_mfa_methods` - (Opcional) Lista de métodos MFA permitidos na organização. Valores válidos: `totp`, `duo`, `push`, `sms`, `email`, `webauthn`, `security_questions`.
-* `allow_public_key_authentication` - (Opcional) Permitir autenticação por chave pública SSH. Padrão: `true`.
+* `allow_multi_factor_auth` - (Optional) Allow multi-factor authentication. Default: `true`.
+* `require_mfa` - (Optional) Require MFA for all users. Default: `false`.
+* `allowed_mfa_methods` - (Optional) List of MFA methods allowed in the organization. Valid values: `totp`, `duo`, `push`, `sms`, `email`, `webauthn`, `security_questions`.
+* `allow_public_key_authentication` - (Optional) Allow SSH public key authentication. Default: `true`.
 
-### Configurações de Insights e Integração
+### Insights and Integration Settings
 
-* `system_insights_enabled` - (Opcional) Habilitar System Insights. Padrão: `true`.
-* `directory_insights_enabled` - (Opcional) Habilitar Directory Insights. Padrão: `true`.
-* `ldap_integration_enabled` - (Opcional) Habilitar integração LDAP. Padrão: `false`.
+* `system_insights_enabled` - (Optional) Enable System Insights. Default: `true`.
+* `directory_insights_enabled` - (Optional) Enable Directory Insights. Default: `true`.
+* `ldap_integration_enabled` - (Optional) Enable LDAP integration. Default: `false`.
 
-### Configurações de Sistema e Usuário
+### System and User Settings
 
-* `new_system_user_state_managed` - (Opcional) Se o estado de usuários em novos sistemas é gerenciado pelo JumpCloud. Padrão: `true`.
-* `new_user_email_template` - (Opcional) Template HTML para e-mails de novos usuários.
-* `password_reset_template` - (Opcional) Template HTML para e-mails de redefinição de senha.
+* `new_system_user_state_managed` - (Optional) Whether the state of users on new systems is managed by JumpCloud. Default: `true`.
+* `new_user_email_template` - (Optional) HTML template for new user emails.
+* `password_reset_template` - (Optional) HTML template for password reset emails.
 
 ## Attribute Reference
 
-Além de todos os argumentos acima, os seguintes atributos são exportados:
+In addition to all arguments above, the following attributes are exported:
 
-* `id` - O ID das configurações da organização.
-* `created` - A data de criação das configurações.
-* `updated` - A data da última atualização das configurações.
+* `id` - The ID of the organization settings.
+* `created` - The creation date of the settings.
+* `updated` - The date of the last settings update.
 
 ## Import
 
-As configurações de organização podem ser importadas usando o ID da organização, por exemplo:
+Organization settings can be imported using the organization ID, for example:
 
 ```
 $ terraform import jumpcloud_organization_settings.main_org 5f1b1bb2c9e9a9b7e8d6c5a4
 ```
 
-## Exemplos Avançados
+## Advanced Examples
 
-### Configuração Completa com Integração Multi-Recurso
+### Complete Configuration with Multi-Resource Integration
 
 ```hcl
-# Configuração da organização subsidiária
-resource "jumpcloud_organization" "subsidiaria" {
-  name           = "Subsidiária Brasil"
-  display_name   = "Acme Brasil Ltda."
+# Subsidiary organization configuration
+resource "jumpcloud_organization" "subsidiary" {
+  name           = "Brazil Subsidiary"
+  display_name   = "Acme Brazil Ltd."
   parent_org_id  = var.parent_organization_id
-  contact_name   = "Gerente de TI"
-  contact_email  = "ti@acmebrasil.exemplo.com"
-  website        = "https://brasil.acme.exemplo.com"
+  contact_name   = "IT Manager"
+  contact_email  = "it@acmebrazil.example.com"
+  website        = "https://brazil.acme.example.com"
   
-  # Domínios permitidos para esta organização
+  # Allowed domains for this organization
   allowed_domains = [
-    "acmebrasil.exemplo.com",
-    "acme-br.exemplo.com"
+    "acmebrazil.example.com",
+    "acme-br.example.com"
   ]
 }
 
-# Configuração detalhada de segurança para a organização
-resource "jumpcloud_organization_settings" "subsidiaria_settings" {
-  org_id = jumpcloud_organization.subsidiaria.id
+# Detailed security configuration for the organization
+resource "jumpcloud_organization_settings" "subsidiary_settings" {
+  org_id = jumpcloud_organization.subsidiary.id
   
-  # Configuração de política de senha robusta
+  # Robust password policy configuration
   password_policy {
     min_length            = 14
     requires_lowercase    = true
@@ -136,32 +136,32 @@ resource "jumpcloud_organization_settings" "subsidiaria_settings" {
     requires_number       = true
     requires_special_char = true
     expiration_days       = 90
-    max_history           = 24  # Não permite reusar as últimas 24 senhas
+    max_history           = 24  # Does not allow reusing the last 24 passwords
   }
   
-  # Configuração de MFA obrigatório com métodos permitidos
+  # Mandatory MFA configuration with allowed methods
   allow_multi_factor_auth = true
   require_mfa             = true
   allowed_mfa_methods     = ["totp", "push", "webauthn"]
   
-  # Ativar monitoramento e insights
+  # Enable monitoring and insights
   system_insights_enabled    = true
   directory_insights_enabled = true
   
-  # Gerenciamento automático de status de usuário para sistemas
+  # Automatic user status management for systems
   new_system_user_state_managed = true
   
-  # Permitir autenticação por chave pública (SSH)
+  # Allow public key authentication (SSH)
   allow_public_key_authentication = true
 }
 
-# Configuração de webhook para eventos de segurança
+# Security event webhook configuration
 resource "jumpcloud_webhook" "security_alerts" {
-  name        = "Alertas de Segurança"
-  url         = "https://siem.acme.exemplo.com/api/jumpcloud"
+  name        = "Security Alerts"
+  url         = "https://siem.acme.example.com/api/jumpcloud"
   secret      = var.webhook_secret
   enabled     = true
-  description = "Webhook para alertas de segurança da subsidiária Brasil"
+  description = "Webhook for security alerts from Brazil subsidiary"
   
   event_types = [
     "user.login.failed",
@@ -171,48 +171,48 @@ resource "jumpcloud_webhook" "security_alerts" {
   ]
 }
 
-# Assinatura de evento específica para atualizações de configuração
+# Specific event subscription for configuration updates
 resource "jumpcloud_webhook_subscription" "settings_change" {
   webhook_id  = jumpcloud_webhook.security_alerts.id
   event_type  = "organization.settings.updated"
-  description = "Monitorar alterações nas configurações de segurança"
+  description = "Monitor changes to security settings"
 }
 
-# Criar API key para automação
+# Create API key for automation
 resource "jumpcloud_api_key" "automation" {
-  name        = "Automação Brasil"
-  description = "API Key para automação de tarefas na subsidiária Brasil"
-  expires     = timeadd(timestamp(), "8760h") # Expira em 1 ano
+  name        = "Brazil Automation"
+  description = "API Key for task automation in Brazil subsidiary"
+  expires     = timeadd(timestamp(), "8760h") # Expires in 1 year
 }
 
-# Configurar permissões para a API key (somente leitura)
+# Configure permissions for the API key (read-only)
 resource "jumpcloud_api_key_binding" "read_only" {
   api_key_id    = jumpcloud_api_key.automation.id
   resource_type = "organization"
-  resource_ids  = [jumpcloud_organization.subsidiaria.id]
+  resource_ids  = [jumpcloud_organization.subsidiary.id]
   permissions   = ["read"]
 }
 
-# Outputs importantes
+# Important outputs
 output "org_id" {
-  value = jumpcloud_organization.subsidiaria.id
-  description = "ID da organização subsidiária no JumpCloud"
+  value = jumpcloud_organization.subsidiary.id
+  description = "ID of the subsidiary organization in JumpCloud"
 }
 
 output "api_key" {
   value = jumpcloud_api_key.automation.key
-  description = "API key para automação (mostrado apenas durante a criação)"
+  description = "API key for automation (shown only during creation)"
   sensitive = true
 }
 ```
 
-### Configuração para Conformidade com Requisitos de Segurança
+### Configuration for Security Compliance Requirements
 
 ```hcl
 resource "jumpcloud_organization_settings" "compliance_settings" {
   org_id = var.org_id
   
-  # Política de senha conforme requisitos de conformidade
+  # Password policy according to compliance requirements
   password_policy {
     min_length            = 16
     requires_lowercase    = true
@@ -223,38 +223,38 @@ resource "jumpcloud_organization_settings" "compliance_settings" {
     max_history           = 24
   }
   
-  # MFA obrigatório para todos os usuários
+  # Mandatory MFA for all users
   allow_multi_factor_auth = true
   require_mfa             = true
   
-  # Restringir apenas a métodos de MFA mais seguros
-  # Não permitindo SMS que é mais vulnerável a ataques
+  # Restrict to only the most secure MFA methods
+  # Not allowing SMS which is more vulnerable to attacks
   allowed_mfa_methods     = ["totp", "webauthn"]
   
-  # Ativar todos os insights e monitoramento
+  # Enable all insights and monitoring
   system_insights_enabled    = true
   directory_insights_enabled = true
   
-  # Gerenciamento rigoroso de usuários e autenticação
+  # Strict user and authentication management
   new_system_user_state_managed = true
   allow_public_key_authentication = true
   
-  # Template personalizado para redefinição de senha
+  # Custom template for password reset
   password_reset_template = <<-EOT
-Prezado(a) {{user.firstname}},
+Dear {{user.firstname}},
 
-Uma redefinição de senha foi solicitada para a sua conta na Acme Brasil.
-Por motivos de segurança e conformidade, sua nova senha deve ter:
-- No mínimo 16 caracteres
-- Letras maiúsculas e minúsculas
-- Números
-- Caracteres especiais
+A password reset has been requested for your account at Acme Brazil.
+For security and compliance reasons, your new password must have:
+- At least 16 characters
+- Uppercase and lowercase letters
+- Numbers
+- Special characters
 
-A senha expirará em 60 dias, conforme nossa política de segurança.
+The password will expire in 60 days, according to our security policy.
 
-Atenciosamente,
-Equipe de Segurança da Informação
-Acme Brasil
+Sincerely,
+Information Security Team
+Acme Brazil
   EOT
 }
 ``` 

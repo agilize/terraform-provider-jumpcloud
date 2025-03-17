@@ -1,35 +1,35 @@
 # jumpcloud_user_group Resource
 
-Gerencia grupos de usuários no JumpCloud. Este recurso permite criar, atualizar e excluir grupos de usuários no JumpCloud, definindo propriedades como nome, descrição e atributos personalizados.
+Manages user groups in JumpCloud. This resource allows you to create, update, and delete user groups in JumpCloud, defining properties such as name, description, and custom attributes.
 
-## Referência da API JumpCloud
+## JumpCloud API Reference
 
-Para mais detalhes sobre a API subjacente, consulte:
-- [API JumpCloud - Grupos de Usuários](https://docs.jumpcloud.com/api/2.0/index.html#tag/user-groups)
+For more details on the underlying API, see:
+- [JumpCloud API - User Groups](https://docs.jumpcloud.com/api/2.0/index.html#tag/user-groups)
 
-## Considerações de Segurança
+## Security Considerations
 
-- Utilize grupos para implementar o princípio de menor privilégio, concedendo apenas as permissões necessárias para cada grupo.
-- Organize os usuários em grupos com base em funções e responsabilidades para facilitar o gerenciamento de permissões.
-- Revise periodicamente as associações de grupo para garantir que estejam atualizadas e alinhadas com as necessidades organizacionais.
+- Use groups to implement the principle of least privilege, granting only the necessary permissions for each group.
+- Organize users into groups based on roles and responsibilities to facilitate permission management.
+- Periodically review group memberships to ensure they are up-to-date and aligned with organizational needs.
 
-## Exemplos de Uso
+## Example Usage
 
-### Configuração Básica de Grupo de Usuários
+### Basic User Group Configuration
 
 ```hcl
 resource "jumpcloud_user_group" "basic_group" {
   name        = "developers"
-  description = "Grupo para desenvolvedores"
+  description = "Group for developers"
 }
 ```
 
-### Grupo com Atributos Personalizados
+### Group with Custom Attributes
 
 ```hcl
 resource "jumpcloud_user_group" "advanced_group" {
   name        = "finance-team"
-  description = "Grupo para o departamento financeiro"
+  description = "Group for the finance department"
   
   attributes = {
     department      = "Finance"
@@ -41,71 +41,66 @@ resource "jumpcloud_user_group" "advanced_group" {
 }
 ```
 
-### Múltiplos Grupos com Propósitos Diferentes
+### Group with Members
 
 ```hcl
-resource "jumpcloud_user_group" "it_admins" {
-  name        = "it-administrators"
-  description = "Administradores de TI com acesso privilegiado"
-  
-  attributes = {
-    department   = "IT"
-    access_level = "Full"
-    role         = "Admin"
-  }
+resource "jumpcloud_user" "john" {
+  username  = "john.doe"
+  email     = "john.doe@example.com"
+  firstname = "John"
+  lastname  = "Doe"
 }
 
-resource "jumpcloud_user_group" "contractors" {
-  name        = "external-contractors"
-  description = "Contratados externos com acesso temporário"
-  
-  attributes = {
-    department   = "Various"
-    access_level = "Limited"
-    role         = "Contractor"
-    expiry_date  = "2024-12-31"
-  }
+resource "jumpcloud_user" "jane" {
+  username  = "jane.smith"
+  email     = "jane.smith@example.com"
+  firstname = "Jane"
+  lastname  = "Smith"
+}
+
+resource "jumpcloud_user_group" "engineering" {
+  name        = "engineering"
+  description = "Engineering department group"
+}
+
+resource "jumpcloud_user_group_membership" "john_engineering" {
+  user_id       = jumpcloud_user.john.id
+  user_group_id = jumpcloud_user_group.engineering.id
+}
+
+resource "jumpcloud_user_group_membership" "jane_engineering" {
+  user_id       = jumpcloud_user.jane.id
+  user_group_id = jumpcloud_user_group.engineering.id
 }
 ```
 
-## Referência de Argumentos
+## Argument Reference
 
-Os seguintes argumentos são suportados:
+The following arguments are supported:
 
-* `name` - (Obrigatório) O nome do grupo de usuários.
-* `description` - (Opcional) Uma descrição do grupo de usuários.
-* `type` - (Opcional) O tipo do grupo. O padrão é `user_group`.
-* `attributes` - (Opcional) Um mapa de atributos personalizados para o grupo. Estes atributos podem ser usados para armazenar metadados adicionais sobre o grupo.
+* `name` - (Required) The name of the user group. Must be unique within the organization.
+* `description` - (Optional) A description of the user group and its purpose.
+* `attributes` - (Optional) A map of custom attributes to associate with the user group.
 
-## Referência de Atributos
+## Attribute Reference
 
-Além de todos os argumentos acima, os seguintes atributos são exportados:
+In addition to all arguments above, the following attributes are exported:
 
-* `id` - O ID único do grupo de usuários no JumpCloud.
-* `created` - A data de criação do grupo.
+* `id` - The unique identifier of the user group.
+* `created` - The timestamp when the user group was created.
+* `updated` - The timestamp when the user group was last updated.
 
-## Importação
+## Import
 
-Grupos de usuários existentes podem ser importados usando o ID, por exemplo:
+User groups can be imported using their ID:
 
-```bash
-terraform import jumpcloud_user_group.exemplo 5f0c1b2c3d4e5f6g7h8i9j0k
+```shell
+terraform import jumpcloud_user_group.engineering 5f1b881dc9e9a9b7e8d6c5a4
 ```
 
-## Melhores Práticas
+## Best Practices
 
-1. **Nomenclatura Consistente**:
-   - Use uma convenção de nomenclatura clara e consistente para todos os grupos.
-   - Inclua informações como finalidade do grupo, departamento ou nível de acesso no nome.
-
-2. **Documentação**:
-   - Utilize o campo `description` para documentar o propósito do grupo e quaisquer informações relevantes.
-   - Mantenha as descrições atualizadas quando as responsabilidades do grupo mudarem.
-
-3. **Gerenciamento de Grupos**:
-   - Evite a proliferação de grupos - consolide quando possível para simplificar o gerenciamento.
-   - Utilize grupos para implementar o controle de acesso baseado em funções (RBAC).
-
-4. **Integração com Outros Recursos**:
-   - Combine grupos de usuários com outros recursos JumpCloud para implementar políticas de segurança abrangentes.
-   - Utilize associações para conectar grupos de usuários a sistemas e aplicações. 
+1. **Naming Conventions**: Use consistent naming conventions for your groups to make them easier to identify and manage.
+2. **Group Organization**: Organize groups hierarchically or by function (e.g., department, role, project).
+3. **Attribute Management**: Use attributes to store additional metadata about the group that can be useful for reporting and automation.
+4. **Permission Management**: Use groups as the primary means to assign permissions rather than individual user assignments. 

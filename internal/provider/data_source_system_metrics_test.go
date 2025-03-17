@@ -109,4 +109,4 @@ output "paginated_total" {
   value = data.jumpcloud_system_metrics.paginated.total
 }
 `
-} 
+}

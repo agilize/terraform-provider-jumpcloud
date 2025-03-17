@@ -66,9 +66,9 @@ func resourceApplicationGroupMapping() *schema.Resource {
 }
 
 // resourceApplicationGroupMappingCreate cria um novo mapeamento entre grupo e aplicação
-func resourceApplicationGroupMappingCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceApplicationGroupMappingCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Conversão da interface para o cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -133,15 +133,15 @@ func resourceApplicationGroupMappingCreate(ctx context.Context, d *schema.Resour
 		d.SetId(createdMapping.ID)
 	}
 
-	return resourceApplicationGroupMappingRead(ctx, d, m)
+	return resourceApplicationGroupMappingRead(ctx, d, meta)
 }
 
 // resourceApplicationGroupMappingRead lê os dados de um mapeamento entre grupo e aplicação
-func resourceApplicationGroupMappingRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceApplicationGroupMappingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// Conversão da interface para o cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -194,9 +194,9 @@ func resourceApplicationGroupMappingRead(ctx context.Context, d *schema.Resource
 	found := false
 	var mapping ApplicationGroupMapping
 
-	for _, m := range mappings {
-		if m.GroupID == groupID {
-			mapping = m
+	for _, meta := range mappings {
+		if meta.GroupID == groupID {
+			mapping = meta
 			found = true
 			break
 		}
@@ -222,9 +222,9 @@ func resourceApplicationGroupMappingRead(ctx context.Context, d *schema.Resource
 }
 
 // resourceApplicationGroupMappingUpdate atualiza um mapeamento entre grupo e aplicação
-func resourceApplicationGroupMappingUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceApplicationGroupMappingUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Conversão da interface para o cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -236,7 +236,7 @@ func resourceApplicationGroupMappingUpdate(ctx context.Context, d *schema.Resour
 
 	// Se não houve alteração nos atributos, não precisamos atualizar
 	if !d.HasChange("attributes") {
-		return resourceApplicationGroupMappingRead(ctx, d, m)
+		return resourceApplicationGroupMappingRead(ctx, d, meta)
 	}
 
 	// Criação da estrutura de mapeamento atualizada
@@ -271,15 +271,15 @@ func resourceApplicationGroupMappingUpdate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("erro ao atualizar mapeamento de grupo: %v", err))
 	}
 
-	return resourceApplicationGroupMappingRead(ctx, d, m)
+	return resourceApplicationGroupMappingRead(ctx, d, meta)
 }
 
 // resourceApplicationGroupMappingDelete remove um mapeamento entre grupo e aplicação
-func resourceApplicationGroupMappingDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceApplicationGroupMappingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// Conversão da interface para o cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -312,7 +312,7 @@ func resourceApplicationGroupMappingDelete(ctx context.Context, d *schema.Resour
 }
 
 // resourceApplicationGroupMappingImport importa um mapeamento existente
-func resourceApplicationGroupMappingImport(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+func resourceApplicationGroupMappingImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	// Formato esperado: {application_id}:{group_type}:{group_id}
 	parts := strings.Split(d.Id(), ":")
 	if len(parts) != 3 {

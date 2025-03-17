@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -255,15 +254,16 @@ func testAccCheckJumpCloudCommandExists(n string) resource.TestCheckFunc {
 
 // testAccJumpCloudCommandConfig retorna uma configuração de teste para o recurso command
 func testAccJumpCloudCommandConfig() string {
-	return fmt.Sprintf(`
+	return `
 resource "jumpcloud_command" "test" {
-  name         = "tf-acc-test-command"
-  command      = "echo 'Hello from Terraform'"
+  name        = "test-command"
+  command     = "echo Hello World"
   command_type = "linux"
-  user         = "root"
-  sudo         = true
-  timeout      = 120
-  description  = "Test command created by Terraform"
+  user        = "root"
+  sudo        = true
+  schedule    = "* * * * *"
+  trigger     = "manual"
+  timeout     = 30
 }
-`)
+`
 }

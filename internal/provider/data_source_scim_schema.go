@@ -203,8 +203,8 @@ func dataSourceScimSchema() *schema.Resource {
 	}
 }
 
-func dataSourceScimSchemaRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func dataSourceScimSchemaRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -352,7 +352,7 @@ func flattenScimSchemaAttributes(attributes []ScimSchemaAttribute) []map[string]
 		}
 
 		// Processar sub-atributos se existirem
-		if attr.SubAttributes != nil && len(attr.SubAttributes) > 0 {
+		if len(attr.SubAttributes) > 0 {
 			subAttrs := flattenScimSchemaSubAttributes(attr.SubAttributes)
 			attrMap["sub_attributes"] = subAttrs
 		}

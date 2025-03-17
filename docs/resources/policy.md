@@ -1,128 +1,119 @@
 # jumpcloud_policy Resource
 
-Este recurso permite gerenciar políticas no JumpCloud. As políticas são configurações que podem ser aplicadas a usuários ou sistemas, controlando diferentes aspectos de segurança como complexidade de senha, MFA, bloqueio de conta e atualizações de sistema.
+This resource allows you to manage policies in JumpCloud. Policies are configurations that can be applied to users or systems, controlling different security aspects such as password complexity, MFA, account lockout, and system updates.
 
-## Exemplo de Uso
+## Example Usage
 
 ```hcl
-# Exemplo de política de complexidade de senha
+# Password complexity policy example
 resource "jumpcloud_policy" "password_complexity" {
   name        = "Secure Password Policy"
-  description = "Política de complexidade de senha segura para todos os usuários"
+  description = "Secure password complexity policy for all users"
   type        = "password_complexity"
   active      = true
   
-  # Configurações específicas para política de complexidade de senha
+  # Specific settings for password complexity policy
   configurations = {
-    min_length             = "12"         # Comprimento mínimo da senha
-    requires_uppercase     = "true"       # Requer letras maiúsculas
-    requires_lowercase     = "true"       # Requer letras minúsculas
-    requires_number        = "true"       # Requer números
-    requires_special_char  = "true"       # Requer caracteres especiais
-    password_expires_days  = "90"         # Senha expira em 90 dias
-    enable_password_expiry = "true"       # Ativar expiração de senha
+    min_length             = "12"         # Minimum password length
+    requires_uppercase     = "true"       # Requires uppercase letters
+    requires_lowercase     = "true"       # Requires lowercase letters
+    requires_number        = "true"       # Requires numbers
+    requires_special_char  = "true"       # Requires special characters
+    password_expires_days  = "90"         # Password expires in 90 days
+    enable_password_expiry = "true"       # Enable password expiration
   }
 }
 
-# Exemplo de política de MFA (Autenticação Multi-Fator)
+# MFA (Multi-Factor Authentication) policy example
 resource "jumpcloud_policy" "mfa_policy" {
   name        = "Required MFA Policy"
-  description = "Política que requer MFA para todos os usuários"
+  description = "Policy requiring MFA for all users"
   type        = "mfa"
   active      = true
   
   configurations = {
-    allow_sms_enrollment        = "true"   # Permitir MFA via SMS
-    allow_voice_call_enrollment = "true"   # Permitir MFA via chamada de voz
-    allow_totp_enrollment       = "true"   # Permitir MFA via aplicativo (TOTP)
-    allow_push_notification     = "true"   # Permitir MFA via notificação push
-    require_mfa_for_all_users   = "true"   # Exigir MFA para todos os usuários
+    allow_sms_enrollment        = "true"   # Allow MFA via SMS
+    allow_voice_call_enrollment = "true"   # Allow MFA via voice call
+    allow_totp_enrollment       = "true"   # Allow MFA via application (TOTP)
+    allow_push_notification     = "true"   # Allow MFA via push notification
+    require_mfa_for_all_users   = "true"   # Require MFA for all users
+  }
+}
+
+# Account lockout policy example
+resource "jumpcloud_policy" "account_lockout" {
+  name        = "Account Lockout Policy"
+  description = "Policy for account lockout after failed login attempts"
+  type        = "account_lockout_timeout"
+  active      = true
+  
+  configurations = {
+    failed_login_attempts_allowed = "5"        # Number of failed login attempts before lockout
+    lockout_time_period_minutes   = "30"       # Time period for lockout in minutes
+    failed_login_reset_after_mins = "15"       # Reset failed login count after minutes
+  }
+}
+
+# System update policy example for Windows
+resource "jumpcloud_policy" "windows_updates" {
+  name        = "Windows Update Policy"
+  description = "Policy managing Windows system updates"
+  type        = "windows_updates"
+  active      = true
+  
+  configurations = {
+    enable_automatic_updates = "true"           # Enable automatic updates
+    allow_updates_download   = "true"           # Allow updates download
+    schedule_updates_day     = "Sunday"         # Schedule day for updates
+    schedule_updates_time    = "01:00"          # Schedule time for updates
+    notify_users_before      = "true"           # Notify users before updating
   }
 }
 ```
 
-## Referência de Argumentos
+## Argument Reference
 
-Os seguintes argumentos são suportados:
+The following arguments are supported:
 
-* `name` - (Obrigatório) Nome da política.
-* `type` - (Obrigatório) Tipo da política. Valores válidos: `password_complexity`, `samba_ad_password_sync`, `password_expiration`, `custom`, `password_reused`, `password_failed_attempts`, `account_lockout_timeout`, `mfa`, `system_updates`.
-* `active` - (Opcional) Indica se a política está ativa. Padrão: `true`.
-* `description` - (Opcional) Descrição da política.
-* `template` - (Opcional) Template a ser usado pela política. Necessário para alguns tipos de política.
-* `configurations` - (Opcional) Mapa de configurações específicas para o tipo de política. Cada tipo de política requer diferentes configurações.
+* `name` - (Required) The name of the policy.
+* `description` - (Optional) A description of the policy and its purpose.
+* `type` - (Required) The type of policy. Possible values: `password_complexity`, `password_expiration`, `account_lockout_timeout`, `mfa`, `system_updates`, `windows_updates`, `mac_updates`, and others as supported by JumpCloud.
+* `active` - (Optional) Whether the policy is active or not. Default is `true`.
+* `configurations` - (Required) A map of configuration settings specific to the policy type. The available settings depend on the policy type.
 
-## Tipos de Políticas e Configurações
+## Attribute Reference
 
-### Complexidade de Senha (`password_complexity`)
+In addition to all arguments above, the following attributes are exported:
 
-Configurações disponíveis:
-* `min_length` - Comprimento mínimo da senha
-* `requires_uppercase` - Se requer letras maiúsculas ("true"/"false") 
-* `requires_lowercase` - Se requer letras minúsculas ("true"/"false")
-* `requires_number` - Se requer números ("true"/"false") 
-* `requires_special_char` - Se requer caracteres especiais ("true"/"false")
-* `password_expires_days` - Após quantos dias a senha expira
-* `enable_password_expiry` - Se ativa a expiração de senha ("true"/"false")
+* `id` - The unique identifier of the policy.
+* `organization_id` - The organization ID the policy belongs to.
+* `created` - The timestamp when the policy was created.
+* `updated` - The timestamp when the policy was last updated.
 
-### MFA (`mfa`)
+## Import
 
-Configurações disponíveis:
-* `allow_sms_enrollment` - Permite MFA via SMS ("true"/"false")
-* `allow_voice_call_enrollment` - Permite MFA via chamada de voz ("true"/"false")
-* `allow_totp_enrollment` - Permite MFA via aplicativo autenticador (TOTP) ("true"/"false")
-* `allow_push_notification` - Permite MFA via notificação push ("true"/"false")
-* `require_mfa_for_all_users` - Exige MFA para todos os usuários ("true"/"false")
-* `days_before_password_expiration` - Dias antes da expiração para lembrar o usuário
+Policies can be imported using their ID:
 
-### Bloqueio de Conta (`account_lockout_timeout`)
-
-Configurações disponíveis:
-* `max_failed_login_attempts` - Número máximo de tentativas de login falhas
-* `lockout_time_in_minutes` - Tempo de bloqueio em minutos
-* `reset_counter_after_minutes` - Minutos para resetar o contador após período de inatividade
-
-### Atualizações de Sistema (`system_updates`)
-
-Configurações disponíveis:
-* `auto_update_enabled` - Ativa atualizações automáticas ("true"/"false")
-* `auto_update_time` - Horário para realizar as atualizações (formato "HH:MM")
-* `notify_users` - Notifica usuários sobre atualizações pendentes ("true"/"false")
-
-## Referência de Atributos
-
-Além dos argumentos acima, os seguintes atributos são exportados:
-
-* `id` - O ID da política.
-* `created` - A data de criação da política.
-
-## Importação
-
-Políticas podem ser importadas usando o ID da política:
-
-```
-terraform import jumpcloud_policy.example 5f0c1b2c3d4e5f6g7h8i9j0k
+```shell
+terraform import jumpcloud_policy.password_complexity 5f8b0e1b9d81b81b33c92a1c
 ```
 
-## Relacionamentos com Outros Recursos
+## Policy Type Reference
 
-As políticas podem ser associadas a grupos de usuários ou sistemas usando o recurso `jumpcloud_policy_association`:
+The following policy types are supported by JumpCloud:
 
-```hcl
-resource "jumpcloud_user_group" "finance" {
-  name = "Finance Department"
-}
+* `password_complexity` - Password complexity requirements
+* `password_expiration` - Password expiration settings
+* `account_lockout_timeout` - Account lockout after failed login attempts
+* `mfa` - Multi-factor authentication settings
+* `system_updates` - General system update settings
+* `windows_updates` - Windows-specific update settings
+* `mac_updates` - macOS-specific update settings
+* `password_reused` - Password reuse restrictions
 
-resource "jumpcloud_policy_association" "finance_password_policy" {
-  policy_id = jumpcloud_policy.password_complexity.id
-  group_id  = jumpcloud_user_group.finance.id
-  type      = "user_group"
-}
-```
+## Best Practices
 
-## Considerações de Segurança
-
-* Recomenda-se definir políticas de senha fortes, especialmente para ambientes de produção.
-* Para políticas de MFA, considere o equilíbrio entre segurança e usabilidade ao escolher os métodos permitidos.
-* Para sistemas críticos, é aconselhável usar políticas mais restritivas.
-* Monitore regularmente a conformidade das políticas para garantir que estão sendo aplicadas corretamente. 
+1. **Start with Templates**: Use JumpCloud's policy templates as a starting point and customize as needed.
+2. **Test Before Deploying**: Test policies on a small group before rolling out to the entire organization.
+3. **Document**: Add clear descriptions to policies to document their purpose and scope.
+4. **Regular Reviews**: Periodically review and update policies to ensure they meet current security requirements. 

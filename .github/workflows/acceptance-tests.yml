@@ -1,0 +1,71 @@
+name: Acceptance Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_pattern:
+        description: 'Padrão de testes a executar (ex: TestAccJumpCloudUser)'
+        required: false
+        default: 'TestAcc'
+  schedule:
+    # Executar semanalmente às 00:00 de domingo
+    - cron: '0 0 * * 0'
+
+jobs:
+  acceptance:
+    name: Acceptance Tests
+    runs-on: ubuntu-latest
+    # Estas permissões são necessárias para que o workflow possa interagir com segredos
+    permissions:
+      contents: read
+      id-token: write
+    
+    env:
+      TF_ACC: "1"
+      JUMPCLOUD_API_KEY: ${{ secrets.JUMPCLOUD_API_KEY }}
+      JUMPCLOUD_ORG_ID: ${{ secrets.JUMPCLOUD_ORG_ID }}
+      # Desabilitar o uso colorido para melhor legibilidade nos logs
+      GO_TEST_COLORIZE: "0"
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22'
+          cache: true
+      
+      - name: Setup Test Dependencies
+        run: |
+          echo "Setting up test dependencies..."
+          go get github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource
+          go mod tidy
+      
+      - name: Execute Acceptance Tests
+        run: |
+          PATTERN="${{ github.event.inputs.test_pattern || 'TestAcc' }}"
+          echo "Executing acceptance tests with pattern: ${PATTERN}"
+          
+          go test -v -timeout 120m ./... -run="${PATTERN}" \
+            -cover -coverprofile=coverage.out
+      
+      - name: Generate Coverage Report
+        run: |
+          go tool cover -html=coverage.out -o coverage.html
+      
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: acceptance-test-coverage
+          path: coverage.html
+          retention-days: 14
+      
+      - name: Cleanup Test Resources
+        if: always()
+        run: |
+          echo "Executando limpeza de recursos de teste..."
+          # Este script idealmente removeria quaisquer recursos de teste que possam
+          # ter sido deixados para trás nos testes de aceitação
+          # Você pode adicionar aqui chamadas para um script ou código que limpe recursos
+          echo "Nota: Implementar lógica de limpeza adequada para o seu provedor" 

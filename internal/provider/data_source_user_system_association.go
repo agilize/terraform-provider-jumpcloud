@@ -35,7 +35,7 @@ func dataSourceUserSystemAssociation() *schema.Resource {
 	}
 }
 
-func dataSourceUserSystemAssociationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceUserSystemAssociationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Lendo data source de associação entre usuário e sistema JumpCloud")
 
 	var diags diag.Diagnostics
@@ -54,7 +54,7 @@ func dataSourceUserSystemAssociationRead(ctx context.Context, d *schema.Resource
 	}
 
 	// Converter meta-interface para ClientInterface
-	c, diags := ConvertToClientInterface(m)
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}

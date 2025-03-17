@@ -177,10 +177,10 @@ func dataSourcePasswordSafes() *schema.Resource {
 	}
 }
 
-func dataSourcePasswordSafesRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourcePasswordSafesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -293,11 +293,11 @@ func flattenPasswordSafes(safes []PasswordSafeItem) []map[string]interface{} {
 			safeMap["org_id"] = safe.OrgID
 		}
 
-		if safe.MemberIDs != nil && len(safe.MemberIDs) > 0 {
+		if len(safe.MemberIDs) > 0 {
 			safeMap["member_ids"] = safe.MemberIDs
 		}
 
-		if safe.GroupIDs != nil && len(safe.GroupIDs) > 0 {
+		if len(safe.GroupIDs) > 0 {
 			safeMap["group_ids"] = safe.GroupIDs
 		}
 

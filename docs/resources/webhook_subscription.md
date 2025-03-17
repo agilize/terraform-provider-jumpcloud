@@ -1,168 +1,168 @@
 # jumpcloud_webhook_subscription
 
-Gerencia assinaturas de eventos para webhooks no JumpCloud. Este recurso permite especificar quais eventos específicos um webhook deve monitorar, permitindo um controle granular sobre as notificações.
+Manages event subscriptions for webhooks in JumpCloud. This resource allows you to specify which specific events a webhook should monitor, enabling granular control over notifications.
 
-## Exemplo de Uso
+## Example Usage
 
-### Monitoramento de Segurança
+### Security Monitoring
 ```hcl
-# Criar webhook para monitoramento de segurança
+# Create webhook for security monitoring
 resource "jumpcloud_webhook" "security_monitor" {
   name        = "Security Events Monitor"
   url         = "https://security.example.com/jumpcloud-events"
   secret      = var.webhook_secret
   enabled     = true
-  description = "Webhook para monitoramento de eventos de segurança"
+  description = "Webhook for security event monitoring"
 }
 
-# Assinar eventos de falha de login
+# Subscribe to login failure events
 resource "jumpcloud_webhook_subscription" "failed_logins" {
   webhook_id   = jumpcloud_webhook.security_monitor.id
   event_type   = "user.login.failed"
-  description  = "Monitorar tentativas de login mal sucedidas"
+  description  = "Monitor unsuccessful login attempts"
 }
 
-# Assinar eventos de alteração de MFA
+# Subscribe to MFA change events
 resource "jumpcloud_webhook_subscription" "mfa_changes" {
   webhook_id   = jumpcloud_webhook.security_monitor.id
   event_type   = "mfa.disabled"
-  description  = "Monitorar desativação de MFA"
+  description  = "Monitor MFA deactivation"
 }
 
-# Assinar alertas de segurança
+# Subscribe to security alerts
 resource "jumpcloud_webhook_subscription" "security_alerts" {
   webhook_id   = jumpcloud_webhook.security_monitor.id
   event_type   = "security.alert"
-  description  = "Monitorar alertas de segurança"
+  description  = "Monitor security alerts"
 }
 ```
 
-### Automação de Usuários
+### User Automation
 ```hcl
-# Criar webhook para automação de usuários
+# Create webhook for user automation
 resource "jumpcloud_webhook" "user_automation" {
   name        = "User Management Automation"
   url         = "https://automation.example.com/users"
   secret      = var.webhook_secret
   enabled     = true
-  description = "Webhook para automação de gerenciamento de usuários"
+  description = "Webhook for user management automation"
 }
 
-# Assinar eventos de criação de usuário
+# Subscribe to user creation events
 resource "jumpcloud_webhook_subscription" "user_created" {
   webhook_id   = jumpcloud_webhook.user_automation.id
   event_type   = "user.created"
-  description  = "Notificar quando novos usuários são criados"
+  description  = "Notify when new users are created"
 }
 
-# Assinar eventos de atualização de usuário
+# Subscribe to user update events
 resource "jumpcloud_webhook_subscription" "user_updated" {
   webhook_id   = jumpcloud_webhook.user_automation.id
   event_type   = "user.updated"
-  description  = "Notificar quando usuários são atualizados"
+  description  = "Notify when users are updated"
 }
 
-# Assinar eventos de exclusão de usuário
+# Subscribe to user deletion events
 resource "jumpcloud_webhook_subscription" "user_deleted" {
   webhook_id   = jumpcloud_webhook.user_automation.id
   event_type   = "user.deleted"
-  description  = "Notificar quando usuários são excluídos"
+  description  = "Notify when users are deleted"
 }
 ```
 
-### Monitoramento de Sistemas
+### System Monitoring
 ```hcl
-# Criar webhook para monitoramento de sistemas
+# Create webhook for system monitoring
 resource "jumpcloud_webhook" "system_monitor" {
   name        = "System Events Monitor"
   url         = "https://monitoring.example.com/systems"
   secret      = var.webhook_secret
   enabled     = true
-  description = "Webhook para monitoramento de eventos de sistemas"
+  description = "Webhook for system event monitoring"
 }
 
-# Assinar eventos de criação de sistema
+# Subscribe to system creation events
 resource "jumpcloud_webhook_subscription" "system_created" {
   webhook_id   = jumpcloud_webhook.system_monitor.id
   event_type   = "system.created"
-  description  = "Notificar quando novos sistemas são adicionados"
+  description  = "Notify when new systems are added"
 }
 
-# Assinar eventos de atualização de sistema
+# Subscribe to system update events
 resource "jumpcloud_webhook_subscription" "system_updated" {
   webhook_id   = jumpcloud_webhook.system_monitor.id
   event_type   = "system.updated"
-  description  = "Notificar quando sistemas são atualizados"
+  description  = "Notify when systems are updated"
 }
 
-# Assinar eventos de remoção de sistema
+# Subscribe to system removal events
 resource "jumpcloud_webhook_subscription" "system_deleted" {
   webhook_id   = jumpcloud_webhook.system_monitor.id
   event_type   = "system.deleted"
-  description  = "Notificar quando sistemas são removidos"
+  description  = "Notify when systems are removed"
 }
 ```
 
-### Auditoria de Aplicações
+### Application Auditing
 ```hcl
-# Criar webhook para auditoria de aplicações
+# Create webhook for application auditing
 resource "jumpcloud_webhook" "application_audit" {
   name        = "Application Access Audit"
   url         = "https://audit.example.com/applications"
   secret      = var.webhook_secret
   enabled     = true
-  description = "Webhook para auditoria de acesso a aplicações"
+  description = "Webhook for application access auditing"
 }
 
-# Assinar eventos de concessão de acesso
+# Subscribe to access grant events
 resource "jumpcloud_webhook_subscription" "access_granted" {
   webhook_id   = jumpcloud_webhook.application_audit.id
   event_type   = "application.access.granted"
-  description  = "Notificar quando acesso é concedido a aplicações"
+  description  = "Notify when access is granted to applications"
 }
 
-# Assinar eventos de revogação de acesso
+# Subscribe to access revocation events
 resource "jumpcloud_webhook_subscription" "access_revoked" {
   webhook_id   = jumpcloud_webhook.application_audit.id
   event_type   = "application.access.revoked"
-  description  = "Notificar quando acesso é revogado de aplicações"
+  description  = "Notify when access is revoked from applications"
 }
 ```
 
-## Argumentos
+## Arguments
 
-Os seguintes argumentos são suportados:
+The following arguments are supported:
 
-* `webhook_id` - (Obrigatório) ID do webhook ao qual esta assinatura pertence.
-* `event_type` - (Obrigatório) Tipo de evento que será monitorado. Veja a lista completa de eventos suportados na documentação do recurso `jumpcloud_webhook`.
-* `description` - (Opcional) Descrição do propósito desta assinatura de evento.
+* `webhook_id` - (Required) ID of the webhook to which this subscription belongs.
+* `event_type` - (Required) Type of event to be monitored. See the complete list of supported events in the `jumpcloud_webhook` resource documentation.
+* `description` - (Optional) Description of the purpose of this event subscription.
 
-## Atributos Exportados
+## Exported Attributes
 
-Além dos argumentos acima, os seguintes atributos são exportados:
+In addition to the arguments above, the following attributes are exported:
 
-* `id` - ID único da assinatura do webhook.
-* `created` - Data de criação da assinatura no formato ISO 8601.
-* `updated` - Data da última atualização da assinatura no formato ISO 8601.
+* `id` - Unique ID of the webhook subscription.
+* `created` - Creation date of the subscription in ISO 8601 format.
+* `updated` - Date of the last update to the subscription in ISO 8601 format.
 
-## Importação
+## Import
 
-Assinaturas de webhook podem ser importadas usando seu ID:
+Webhook subscriptions can be imported using their ID:
 
 ```shell
 terraform import jumpcloud_webhook_subscription.failed_logins j1_webhook_sub_1234567890
 ```
 
-## Notas de Uso
+## Usage Notes
 
-### Boas Práticas
+### Best Practices
 
-1. Use descrições claras e específicas para cada assinatura, facilitando o entendimento do propósito.
-2. Agrupe assinaturas relacionadas com o mesmo webhook para melhor organização.
-3. Considere o volume de eventos ao assinar múltiplos tipos de eventos no mesmo webhook.
-4. Documente o propósito e o fluxo de processamento de cada tipo de evento assinado.
+1. Use clear and specific descriptions for each subscription, making it easy to understand the purpose.
+2. Group related subscriptions with the same webhook for better organization.
+3. Consider the volume of events when subscribing to multiple event types on the same webhook.
+4. Document the purpose and processing flow for each subscribed event type.
 
-### Exemplo de Processamento de Eventos
+### Example of Event Processing
 
 ```python
 from flask import Flask, request
@@ -173,16 +173,16 @@ app = Flask(__name__)
 def process_login_failed(event_data):
     user = event_data.get('user')
     ip = event_data.get('source_ip')
-    # Implementar lógica de alerta para falhas de login
+    # Implement alert logic for login failures
     
 def process_mfa_disabled(event_data):
     user = event_data.get('user')
     admin = event_data.get('admin')
-    # Implementar lógica de auditoria para desativação de MFA
+    # Implement audit logic for MFA deactivation
 
 def process_system_created(event_data):
     system = event_data.get('system')
-    # Implementar lógica de inventário para novos sistemas
+    # Implement inventory logic for new systems
 
 event_handlers = {
     'user.login.failed': process_login_failed,

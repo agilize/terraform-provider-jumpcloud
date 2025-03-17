@@ -133,8 +133,8 @@ func resourceMDMEnrollmentProfile() *schema.Resource {
 	}
 }
 
-func resourceMDMEnrollmentProfileCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceMDMEnrollmentProfileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -193,13 +193,13 @@ func resourceMDMEnrollmentProfileCreate(ctx context.Context, d *schema.ResourceD
 	}
 
 	d.SetId(createdProfile.ID)
-	return resourceMDMEnrollmentProfileRead(ctx, d, m)
+	return resourceMDMEnrollmentProfileRead(ctx, d, meta)
 }
 
-func resourceMDMEnrollmentProfileRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMDMEnrollmentProfileRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -255,8 +255,8 @@ func resourceMDMEnrollmentProfileRead(ctx context.Context, d *schema.ResourceDat
 	return diags
 }
 
-func resourceMDMEnrollmentProfileUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceMDMEnrollmentProfileUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -316,11 +316,11 @@ func resourceMDMEnrollmentProfileUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	return resourceMDMEnrollmentProfileRead(ctx, d, m)
+	return resourceMDMEnrollmentProfileRead(ctx, d, meta)
 }
 
-func resourceMDMEnrollmentProfileDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceMDMEnrollmentProfileDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

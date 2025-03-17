@@ -233,10 +233,10 @@ func dataSourcePasswordPolicies() *schema.Resource {
 	}
 }
 
-func dataSourcePasswordPoliciesRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourcePasswordPoliciesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -366,7 +366,7 @@ func flattenPasswordPolicies(policies []PasswordPolicyItem) []map[string]interfa
 			policyMap["org_id"] = policy.OrgID
 		}
 
-		if policy.TargetResources != nil && len(policy.TargetResources) > 0 {
+		if len(policy.TargetResources) > 0 {
 			policyMap["target_resources"] = policy.TargetResources
 		}
 

@@ -1,17 +1,17 @@
 # jumpcloud_webhook
 
-Gerencia webhooks no JumpCloud, permitindo que você configure notificações em tempo real para eventos específicos da sua organização.
+Manages webhooks in JumpCloud, allowing you to configure real-time notifications for specific events in your organization.
 
-## Exemplo de Uso
+## Example Usage
 
-### Webhook Básico para Monitoramento de Segurança
+### Basic Webhook for Security Monitoring
 ```hcl
 resource "jumpcloud_webhook" "security_monitoring" {
   name        = "Security Events Monitor"
   url         = "https://security.example.com/jumpcloud-events"
   secret      = var.webhook_secret
   enabled     = true
-  description = "Webhook para monitoramento de eventos de segurança"
+  description = "Webhook for security events monitoring"
   
   event_types = [
     "user.login.failed",
@@ -22,14 +22,14 @@ resource "jumpcloud_webhook" "security_monitoring" {
 }
 ```
 
-### Webhook para Automação de Usuários
+### Webhook for User Automation
 ```hcl
 resource "jumpcloud_webhook" "user_automation" {
   name        = "User Management Automation"
   url         = "https://automation.example.com/users"
   secret      = var.webhook_secret
   enabled     = true
-  description = "Webhook para automação de gerenciamento de usuários"
+  description = "Webhook for user management automation"
   
   event_types = [
     "user.created",
@@ -40,14 +40,14 @@ resource "jumpcloud_webhook" "user_automation" {
 }
 ```
 
-### Webhook para Monitoramento de Sistemas
+### Webhook for System Monitoring
 ```hcl
 resource "jumpcloud_webhook" "system_monitoring" {
   name        = "System Events Monitor"
   url         = "https://monitoring.example.com/systems"
   secret      = var.webhook_secret
   enabled     = true
-  description = "Webhook para monitoramento de eventos de sistemas"
+  description = "Webhook for system events monitoring"
   
   event_types = [
     "system.created",
@@ -57,14 +57,14 @@ resource "jumpcloud_webhook" "system_monitoring" {
 }
 ```
 
-### Webhook para Auditoria de Aplicações
+### Webhook for Application Auditing
 ```hcl
 resource "jumpcloud_webhook" "application_audit" {
   name        = "Application Access Audit"
   url         = "https://audit.example.com/applications"
   secret      = var.webhook_secret
   enabled     = true
-  description = "Webhook para auditoria de acesso a aplicações"
+  description = "Webhook for application access auditing"
   
   event_types = [
     "application.access.granted",
@@ -73,94 +73,94 @@ resource "jumpcloud_webhook" "application_audit" {
 }
 ```
 
-## Argumentos
+## Arguments
 
-Os seguintes argumentos são suportados:
+The following arguments are supported:
 
-* `name` - (Obrigatório) Nome do webhook. Deve ser único dentro da organização.
-* `url` - (Obrigatório) URL de destino para onde os eventos serão enviados. Deve usar HTTPS.
-* `secret` - (Opcional) Chave secreta usada para assinar as requisições webhook. Recomendado para segurança.
-* `enabled` - (Opcional) Define se o webhook está ativo. Padrão é `true`.
-* `event_types` - (Obrigatório) Lista de tipos de eventos que dispararão o webhook. Deve conter pelo menos um evento.
-* `description` - (Opcional) Descrição do webhook para documentação.
+* `name` - (Required) Name of the webhook. Must be unique within the organization.
+* `url` - (Required) Destination URL where events will be sent. Must use HTTPS.
+* `secret` - (Optional) Secret key used to sign webhook requests. Recommended for security.
+* `enabled` - (Optional) Defines whether the webhook is active. Default is `true`.
+* `event_types` - (Required) List of event types that will trigger the webhook. Must contain at least one event.
+* `description` - (Optional) Description of the webhook for documentation.
 
-### Tipos de Eventos Suportados
+### Supported Event Types
 
-Os seguintes tipos de eventos são suportados:
+The following event types are supported:
 
-**Eventos de Usuário:**
-* `user.created` - Usuário criado
-* `user.updated` - Usuário atualizado
-* `user.deleted` - Usuário excluído
-* `user.login.success` - Login bem-sucedido
-* `user.login.failed` - Tentativa de login falhou
-* `user.admin.updated` - Permissões administrativas alteradas
+**User Events:**
+* `user.created` - User created
+* `user.updated` - User updated
+* `user.deleted` - User deleted
+* `user.login.success` - Successful login
+* `user.login.failed` - Failed login attempt
+* `user.admin.updated` - Administrative permissions changed
 
-**Eventos de Sistema:**
-* `system.created` - Sistema adicionado
-* `system.updated` - Sistema atualizado
-* `system.deleted` - Sistema removido
+**System Events:**
+* `system.created` - System added
+* `system.updated` - System updated
+* `system.deleted` - System removed
 
-**Eventos de Organização:**
-* `organization.created` - Organização criada
-* `organization.updated` - Organização atualizada
-* `organization.deleted` - Organização excluída
+**Organization Events:**
+* `organization.created` - Organization created
+* `organization.updated` - Organization updated
+* `organization.deleted` - Organization deleted
 
-**Eventos de API Key:**
-* `api_key.created` - Chave de API criada
-* `api_key.updated` - Chave de API atualizada
-* `api_key.deleted` - Chave de API excluída
+**API Key Events:**
+* `api_key.created` - API key created
+* `api_key.updated` - API key updated
+* `api_key.deleted` - API key deleted
 
-**Eventos de Webhook:**
-* `webhook.created` - Webhook criado
-* `webhook.updated` - Webhook atualizado
-* `webhook.deleted` - Webhook excluído
+**Webhook Events:**
+* `webhook.created` - Webhook created
+* `webhook.updated` - Webhook updated
+* `webhook.deleted` - Webhook deleted
 
-**Eventos de Segurança:**
-* `security.alert` - Alerta de segurança gerado
-* `mfa.enabled` - MFA habilitado
-* `mfa.disabled` - MFA desabilitado
+**Security Events:**
+* `security.alert` - Security alert generated
+* `mfa.enabled` - MFA enabled
+* `mfa.disabled` - MFA disabled
 
-**Eventos de Política:**
-* `policy.applied` - Política aplicada
-* `policy.removed` - Política removida
+**Policy Events:**
+* `policy.applied` - Policy applied
+* `policy.removed` - Policy removed
 
-**Eventos de Aplicação:**
-* `application.access.granted` - Acesso concedido à aplicação
-* `application.access.revoked` - Acesso revogado da aplicação
+**Application Events:**
+* `application.access.granted` - Application access granted
+* `application.access.revoked` - Application access revoked
 
-## Atributos Exportados
+## Exported Attributes
 
-Além dos argumentos acima, os seguintes atributos são exportados:
+In addition to the arguments above, the following attributes are exported:
 
-* `id` - ID único do webhook.
-* `created` - Data de criação do webhook no formato ISO 8601.
-* `updated` - Data da última atualização do webhook no formato ISO 8601.
+* `id` - Unique ID of the webhook.
+* `created` - Creation date of the webhook in ISO 8601 format.
+* `updated` - Date of the last webhook update in ISO 8601 format.
 
-## Importação
+## Import
 
-Webhooks podem ser importados usando seu ID:
+Webhooks can be imported using their ID:
 
 ```shell
 terraform import jumpcloud_webhook.security_monitoring j1_webhook_1234567890
 ```
 
-## Notas de Uso
+## Usage Notes
 
-### Segurança
+### Security
 
-1. Sempre use HTTPS para a URL do webhook.
-2. Configure uma chave secreta forte para validar as requisições.
-3. Implemente validação da assinatura no endpoint que recebe os eventos.
+1. Always use HTTPS for the webhook URL.
+2. Configure a strong secret key to validate requests.
+3. Implement signature validation at the endpoint that receives events.
 
-### Boas Práticas
+### Best Practices
 
-1. Agrupe eventos relacionados em webhooks separados para melhor organização.
-2. Use descrições claras para documentar o propósito de cada webhook.
-3. Monitore a performance do seu endpoint para garantir que pode processar o volume de eventos.
-4. Implemente retry logic no seu endpoint para eventos importantes.
+1. Group related events in separate webhooks for better organization.
+2. Use clear descriptions to document the purpose of each webhook.
+3. Monitor your endpoint's performance to ensure it can handle the volume of events.
+4. Implement retry logic at your endpoint for important events.
 
-### Exemplo de Validação de Assinatura
+### Signature Validation Example
 
 ```python
 import hmac
@@ -175,7 +175,7 @@ def verify_signature(secret, payload, signature):
     return hmac.compare_digest(signature, expected)
 ```
 
-### Exemplo de Endpoint com Retry
+### Endpoint Example with Retry
 
 ```python
 from flask import Flask, request
@@ -204,6 +204,6 @@ def retry_on_failure(max_retries=3, delay=1):
 @app.route('/jumpcloud-events', methods=['POST'])
 @retry_on_failure()
 def handle_webhook():
-    # Implementar lógica de processamento do evento
+    # Implement event processing logic
     return '', 200
 ``` 

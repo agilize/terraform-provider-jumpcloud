@@ -154,9 +154,9 @@ func resourceMFAConfiguration() *schema.Resource {
 }
 
 // resourceMFAConfigurationCreate cria uma nova configuração de MFA
-func resourceMFAConfigurationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMFAConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -220,15 +220,15 @@ func resourceMFAConfigurationCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	d.SetId(createdConfig.ID)
-	return resourceMFAConfigurationRead(ctx, d, m)
+	return resourceMFAConfigurationRead(ctx, d, meta)
 }
 
 // resourceMFAConfigurationRead lê os detalhes da configuração de MFA
-func resourceMFAConfigurationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMFAConfigurationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -281,9 +281,9 @@ func resourceMFAConfigurationRead(ctx context.Context, d *schema.ResourceData, m
 }
 
 // resourceMFAConfigurationUpdate atualiza uma configuração existente de MFA
-func resourceMFAConfigurationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMFAConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -351,13 +351,13 @@ func resourceMFAConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	return resourceMFAConfigurationRead(ctx, d, m)
+	return resourceMFAConfigurationRead(ctx, d, meta)
 }
 
 // resourceMFAConfigurationDelete desativa a configuração de MFA
-func resourceMFAConfigurationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMFAConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

@@ -71,10 +71,10 @@ func resourceUserGroup() *schema.Resource {
 }
 
 // resourceUserGroupCreate cria um novo grupo de usuários no JumpCloud
-func resourceUserGroupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserGroupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Criando grupo de usuários JumpCloud")
 
-	c, diags := ConvertToClientInterface(m)
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -109,14 +109,14 @@ func resourceUserGroupCreate(ctx context.Context, d *schema.ResourceData, m inte
 	d.SetId(userGroupResp.ID)
 
 	// Ler o recurso para obter todos os dados
-	return resourceUserGroupRead(ctx, d, m)
+	return resourceUserGroupRead(ctx, d, meta)
 }
 
 // resourceUserGroupRead lê as informações de um grupo de usuários do JumpCloud
-func resourceUserGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, fmt.Sprintf("Lendo grupo de usuários JumpCloud: %s", d.Id()))
 
-	c, diags := ConvertToClientInterface(m)
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -157,17 +157,17 @@ func resourceUserGroupRead(ctx context.Context, d *schema.ResourceData, m interf
 }
 
 // resourceUserGroupUpdate atualiza um grupo de usuários existente no JumpCloud
-func resourceUserGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserGroupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, fmt.Sprintf("Atualizando grupo de usuários JumpCloud: %s", d.Id()))
 
-	c, diags := ConvertToClientInterface(m)
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
 
 	// Verificar se houve alterações
 	if !d.HasChanges("name", "description", "attributes") {
-		return resourceUserGroupRead(ctx, d, m)
+		return resourceUserGroupRead(ctx, d, meta)
 	}
 
 	// Preparar o corpo da requisição com os dados atualizados
@@ -190,14 +190,14 @@ func resourceUserGroupUpdate(ctx context.Context, d *schema.ResourceData, m inte
 		return diag.FromErr(fmt.Errorf("erro ao atualizar grupo de usuários: %v", err))
 	}
 
-	return resourceUserGroupRead(ctx, d, m)
+	return resourceUserGroupRead(ctx, d, meta)
 }
 
 // resourceUserGroupDelete exclui um grupo de usuários do JumpCloud
-func resourceUserGroupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserGroupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, fmt.Sprintf("Excluindo grupo de usuários JumpCloud: %s", d.Id()))
 
-	c, diags := ConvertToClientInterface(m)
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}

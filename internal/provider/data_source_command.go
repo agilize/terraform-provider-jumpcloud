@@ -133,12 +133,12 @@ func dataSourceCommand() *schema.Resource {
 	}
 }
 
-func dataSourceCommandRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceCommandRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Lendo data source de comando do JumpCloud")
 
 	var diags diag.Diagnostics
 
-	c, convDiags := ConvertToClientInterface(m)
+	c, convDiags := ConvertToClientInterface(meta)
 	if convDiags != nil {
 		return convDiags
 	}

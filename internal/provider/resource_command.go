@@ -159,10 +159,10 @@ func resourceCommand() *schema.Resource {
 }
 
 // resourceCommandCreate cria um novo comando no JumpCloud
-func resourceCommandCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceCommandCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Criando comando no JumpCloud")
 
-	c, diags := ConvertToClientInterface(m)
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -219,16 +219,16 @@ func resourceCommandCreate(ctx context.Context, d *schema.ResourceData, m interf
 	d.SetId(createdCommand.ID)
 
 	// Ler o recurso para atualizar o estado
-	return resourceCommandRead(ctx, d, m)
+	return resourceCommandRead(ctx, d, meta)
 }
 
 // resourceCommandRead lê as informações de um comando do JumpCloud
-func resourceCommandRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceCommandRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Lendo comando do JumpCloud")
 
 	var diags diag.Diagnostics
 
-	c, convDiags := ConvertToClientInterface(m)
+	c, convDiags := ConvertToClientInterface(meta)
 	if convDiags != nil {
 		return convDiags
 	}
@@ -295,10 +295,10 @@ func resourceCommandRead(ctx context.Context, d *schema.ResourceData, m interfac
 }
 
 // resourceCommandUpdate atualiza um comando existente no JumpCloud
-func resourceCommandUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceCommandUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Atualizando comando no JumpCloud")
 
-	c, diags := ConvertToClientInterface(m)
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -307,7 +307,7 @@ func resourceCommandUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	if !d.HasChanges("name", "command", "command_type", "user", "schedule", "schedule_repeat",
 		"trigger", "shell", "sudo", "launch_type", "timeout", "files", "environments",
 		"description", "attributes") {
-		return resourceCommandRead(ctx, d, m)
+		return resourceCommandRead(ctx, d, meta)
 	}
 
 	// Preparar objeto de atualização
@@ -354,16 +354,16 @@ func resourceCommandUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	// Ler o recurso para atualizar o estado
-	return resourceCommandRead(ctx, d, m)
+	return resourceCommandRead(ctx, d, meta)
 }
 
 // resourceCommandDelete exclui um comando do JumpCloud
-func resourceCommandDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceCommandDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Excluindo comando do JumpCloud")
 
 	var diags diag.Diagnostics
 
-	c, convDiags := ConvertToClientInterface(m)
+	c, convDiags := ConvertToClientInterface(meta)
 	if convDiags != nil {
 		return convDiags
 	}

@@ -79,14 +79,14 @@ func resourceMFASettings() *schema.Resource {
 }
 
 // resourceMFASettingsCreate cria configurações de MFA no JumpCloud
-func resourceMFASettingsCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMFASettingsCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// As configurações MFA são um singleton per organização,
 	// então primeiro verificamos se já existem
-	existingDiags := resourceMFASettingsRead(ctx, d, m)
+	existingDiags := resourceMFASettingsRead(ctx, d, meta)
 
 	// Se encontrarmos configurações existentes, fizemos o update
 	if d.Id() != "" {
-		return resourceMFASettingsUpdate(ctx, d, m)
+		return resourceMFASettingsUpdate(ctx, d, meta)
 	}
 
 	// Se houver erros diferentes de "não encontrado", retornamos os erros
@@ -102,7 +102,7 @@ func resourceMFASettingsCreate(ctx context.Context, d *schema.ResourceData, m in
 	}
 
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -134,15 +134,15 @@ func resourceMFASettingsCreate(ctx context.Context, d *schema.ResourceData, m in
 	}
 
 	d.SetId(createdMFASettings.ID)
-	return resourceMFASettingsRead(ctx, d, m)
+	return resourceMFASettingsRead(ctx, d, meta)
 }
 
 // resourceMFASettingsRead lê as configurações de MFA do JumpCloud
-func resourceMFASettingsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMFASettingsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -198,9 +198,9 @@ func resourceMFASettingsRead(ctx context.Context, d *schema.ResourceData, m inte
 }
 
 // resourceMFASettingsUpdate atualiza as configurações de MFA existentes no JumpCloud
-func resourceMFASettingsUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMFASettingsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -229,16 +229,16 @@ func resourceMFASettingsUpdate(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(fmt.Errorf("erro ao atualizar configurações MFA: %v", err))
 	}
 
-	return resourceMFASettingsRead(ctx, d, m)
+	return resourceMFASettingsRead(ctx, d, meta)
 }
 
 // resourceMFASettingsDelete "exclui" as configurações de MFA do JumpCloud
 // Como MFA settings não podem ser realmente excluídas, fazemos um reset para os valores padrão
-func resourceMFASettingsDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMFASettingsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

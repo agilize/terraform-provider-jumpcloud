@@ -137,8 +137,8 @@ func resourceScimServer() *schema.Resource {
 	}
 }
 
-func resourceScimServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceScimServerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -230,13 +230,13 @@ func resourceScimServerCreate(ctx context.Context, d *schema.ResourceData, m int
 	d.SetId(createdServer.ID)
 
 	// Ler o recurso para atualizar o state com todos os campos computados
-	return resourceScimServerRead(ctx, d, m)
+	return resourceScimServerRead(ctx, d, meta)
 }
 
-func resourceScimServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceScimServerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -320,8 +320,8 @@ func resourceScimServerRead(ctx context.Context, d *schema.ResourceData, m inter
 	return diags
 }
 
-func resourceScimServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceScimServerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -408,13 +408,13 @@ func resourceScimServerUpdate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	// Ler o recurso para atualizar o state com todos os campos computados
-	return resourceScimServerRead(ctx, d, m)
+	return resourceScimServerRead(ctx, d, meta)
 }
 
-func resourceScimServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceScimServerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

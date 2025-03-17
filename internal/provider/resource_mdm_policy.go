@@ -108,8 +108,8 @@ func resourceMDMPolicy() *schema.Resource {
 	}
 }
 
-func resourceMDMPolicyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceMDMPolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -181,13 +181,13 @@ func resourceMDMPolicyCreate(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	d.SetId(createdPolicy.ID)
-	return resourceMDMPolicyRead(ctx, d, m)
+	return resourceMDMPolicyRead(ctx, d, meta)
 }
 
-func resourceMDMPolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMDMPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -245,8 +245,8 @@ func resourceMDMPolicyRead(ctx context.Context, d *schema.ResourceData, m interf
 	return diags
 }
 
-func resourceMDMPolicyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceMDMPolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -319,11 +319,11 @@ func resourceMDMPolicyUpdate(ctx context.Context, d *schema.ResourceData, m inte
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	return resourceMDMPolicyRead(ctx, d, m)
+	return resourceMDMPolicyRead(ctx, d, meta)
 }
 
-func resourceMDMPolicyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceMDMPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

@@ -101,8 +101,8 @@ func resourceWebhookSubscription() *schema.Resource {
 }
 
 // resourceWebhookSubscriptionCreate cria uma nova assinatura de webhook no JumpCloud
-func resourceWebhookSubscriptionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceWebhookSubscriptionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -134,12 +134,12 @@ func resourceWebhookSubscriptionCreate(ctx context.Context, d *schema.ResourceDa
 
 	d.SetId(newSubscription.ID)
 
-	return resourceWebhookSubscriptionRead(ctx, d, m)
+	return resourceWebhookSubscriptionRead(ctx, d, meta)
 }
 
 // resourceWebhookSubscriptionRead lê uma assinatura de webhook existente no JumpCloud
-func resourceWebhookSubscriptionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceWebhookSubscriptionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -186,8 +186,8 @@ func resourceWebhookSubscriptionRead(ctx context.Context, d *schema.ResourceData
 }
 
 // resourceWebhookSubscriptionUpdate atualiza uma assinatura de webhook existente no JumpCloud
-func resourceWebhookSubscriptionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceWebhookSubscriptionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -215,12 +215,12 @@ func resourceWebhookSubscriptionUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(fmt.Errorf("erro ao atualizar assinatura de webhook: %v", err))
 	}
 
-	return resourceWebhookSubscriptionRead(ctx, d, m)
+	return resourceWebhookSubscriptionRead(ctx, d, meta)
 }
 
 // resourceWebhookSubscriptionDelete exclui uma assinatura de webhook existente no JumpCloud
-func resourceWebhookSubscriptionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceWebhookSubscriptionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}

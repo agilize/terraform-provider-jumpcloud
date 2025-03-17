@@ -210,10 +210,10 @@ func dataSourceSystemMetrics() *schema.Resource {
 	}
 }
 
-func dataSourceSystemMetricsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceSystemMetricsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -318,7 +318,7 @@ func dataSourceSystemMetricsRead(ctx context.Context, d *schema.ResourceData, m 
 		}
 
 		// Processar tags
-		if metric.Tags != nil && len(metric.Tags) > 0 {
+		if len(metric.Tags) > 0 {
 			metricMap["tags"] = metric.Tags
 		}
 

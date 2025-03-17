@@ -89,8 +89,8 @@ func resourceAdminRole() *schema.Resource {
 	}
 }
 
-func resourceAdminRoleCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAdminRoleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -143,13 +143,13 @@ func resourceAdminRoleCreate(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	d.SetId(createdRole.ID)
-	return resourceAdminRoleRead(ctx, d, m)
+	return resourceAdminRoleRead(ctx, d, meta)
 }
 
-func resourceAdminRoleRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAdminRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -193,8 +193,8 @@ func resourceAdminRoleRead(ctx context.Context, d *schema.ResourceData, m interf
 	return diags
 }
 
-func resourceAdminRoleUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAdminRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -248,11 +248,11 @@ func resourceAdminRoleUpdate(ctx context.Context, d *schema.ResourceData, m inte
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	return resourceAdminRoleRead(ctx, d, m)
+	return resourceAdminRoleRead(ctx, d, meta)
 }
 
-func resourceAdminRoleDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAdminRoleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

@@ -116,9 +116,9 @@ func resourceCommandSchedule() *schema.Resource {
 }
 
 // resourceCommandScheduleCreate cria um novo agendamento de comando
-func resourceCommandScheduleCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceCommandScheduleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -191,15 +191,15 @@ func resourceCommandScheduleCreate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	d.SetId(createdSchedule.ID)
-	return resourceCommandScheduleRead(ctx, d, m)
+	return resourceCommandScheduleRead(ctx, d, meta)
 }
 
 // resourceCommandScheduleRead lê os detalhes de um agendamento de comando
-func resourceCommandScheduleRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceCommandScheduleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -254,9 +254,9 @@ func resourceCommandScheduleRead(ctx context.Context, d *schema.ResourceData, m 
 }
 
 // resourceCommandScheduleUpdate atualiza um agendamento de comando existente
-func resourceCommandScheduleUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceCommandScheduleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -330,13 +330,13 @@ func resourceCommandScheduleUpdate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	return resourceCommandScheduleRead(ctx, d, m)
+	return resourceCommandScheduleRead(ctx, d, meta)
 }
 
 // resourceCommandScheduleDelete exclui um agendamento de comando
-func resourceCommandScheduleDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceCommandScheduleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
