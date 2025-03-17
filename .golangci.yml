@@ -1,0 +1,29 @@
+# Configuration file for golangci-lint
+# See: https://golangci-lint.run/usage/configuration/
+
+run:
+  timeout: 5m
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - gosec
+    - gofmt
+    - goimports
+    - misspell
+    - unconvert
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+# Output configuration
+output:
+  sort-results: true 

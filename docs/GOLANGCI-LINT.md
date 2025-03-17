@@ -27,9 +27,49 @@ In GitHub Actions, we use golangci-lint as part of the PR verification process:
   uses: golangci/golangci-lint-action@v3
   with:
     version: v1.57.0
-    args: --timeout=5m
+    args: --timeout=5m --disable=goanalysis_metalinter --config=.golangci.yml
     skip-cache: true
 ```
+
+We explicitly disable the `goanalysis_metalinter` to prevent compatibility issues with Go 1.22 and use a custom configuration file (`.golangci.yml`).
+
+## Configuration File
+
+We use a `.golangci.yml` file in the project root with the following configuration:
+
+```yaml
+# Configuration file for golangci-lint
+run:
+  timeout: 5m
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - gosec
+    - gofmt
+    - goimports
+    - misspell
+    - unconvert
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+output:
+  sort-results: true
+```
+
+This configuration:
+- Disables all linters by default and then selectively enables the ones we want
+- Sets a reasonable timeout
+- Configures output and issue limits
 
 ## Common Errors and Solutions
 
@@ -40,9 +80,12 @@ In GitHub Actions, we use golangci-lint as part of the PR verification process:
 level=error msg="Running error: 1 error occurred:\n\t* can't run linter goanalysis_metalinter: buildir: failed to load package goarch: could not load export data: internal error in importing \"internal/goarch\" (unsupported version: 2); please report an issue\n\n"
 ```
 
-**Cause:** Incompatibility between the Go version and the golangci-lint version.
+**Cause:** Incompatibility between the Go version and the golangci-lint version, specifically with the `goanalysis_metalinter`.
 
-**Solution:** Update the golangci-lint version to one that supports the Go version in use.
+**Solution:** 
+1. Disable the problematic metalinter with `--disable=goanalysis_metalinter`
+2. Use a custom configuration file to control which linters are enabled
+3. Make sure to use v1.57.0 or newer of golangci-lint
 
 ### 2. Timeout During Execution
 
@@ -71,26 +114,7 @@ To run golangci-lint locally with the same configuration as CI:
 go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.57.0
 
 # Run lint
-golangci-lint run --timeout=5m
-```
-
-## Linter Customization
-
-To customize which linters are enabled, create a `.golangci.yml` file in the project root:
-
-```yaml
-linters:
-  enable:
-    - errcheck
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - typecheck
-    - unused
-    - gosec
-  disable:
-    - lintername  # Disable problematic linters here
+golangci-lint run --timeout=5m --disable=goanalysis_metalinter --config=.golangci.yml
 ```
 
 For more information on configuration, see the [official golangci-lint documentation](https://golangci-lint.run/usage/configuration/). 

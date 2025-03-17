@@ -6,6 +6,8 @@ This document describes the linting errors identified in the project and the pla
 
 We use the `tfproviderlint` tool to check code compliance with best practices for Terraform providers. Several issues have been identified and will be fixed in phases.
 
+We also use `golangci-lint` for general Go linting and static analysis.
+
 ## Fixed Errors
 
 - ✅ **R014**: Parameters of type `interface{}` must be named `meta`. This error has been fixed in all files.
@@ -58,12 +60,15 @@ As each correction phase is completed, the workflow will be updated to enable ve
 
 In addition to tfproviderlint, we also use golangci-lint for more comprehensive static code analysis. For information on configuration and troubleshooting with golangci-lint, see the [GOLANGCI-LINT.md](./GOLANGCI-LINT.md) document.
 
+We've configured golangci-lint to work properly with Go 1.22 by disabling problematic linters and using a custom configuration.
+
 ### Local Scripts
 
-We provide two scripts in the `scripts/linting/` directory to help with local verification:
+We provide several scripts in the `scripts/linting/` directory to help with local verification:
 
-- `scripts/linting/check_required_lint.sh`: Checks only critical errors, ignoring those to be addressed in phases.
-- `scripts/linting/run_linter.sh`: Provides options for checking specific errors and information on how to run the linter.
+- `scripts/linting/check_required_lint.sh`: Checks only critical tfproviderlint errors, ignoring those to be addressed in phases.
+- `scripts/linting/run_linter.sh`: Provides options for checking specific tfproviderlint errors and information on how to run the linter.
+- `scripts/linting/run_golangci_lint.sh`: Runs golangci-lint with the same configuration as CI to ensure consistent results.
 
 ## How to Contribute to Corrections
 
@@ -78,9 +83,13 @@ If you want to contribute to fixing linting errors, follow these steps:
    ```
    ./scripts/linting/run_linter.sh
    ```
-3. Make the necessary corrections to the indicated files.
-4. Run tests to ensure your changes haven't caused regressions.
-5. Submit a PR with a clear description of the corrections made.
+3. For general Go linting, use:
+   ```
+   ./scripts/linting/run_golangci_lint.sh
+   ```
+4. Make the necessary corrections to the indicated files.
+5. Run tests to ensure your changes haven't caused regressions.
+6. Submit a PR with a clear description of the corrections made.
 
 ## Linting Error Details
 
