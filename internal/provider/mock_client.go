@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"testing"
 	"time"
 
 	"github.com/ferreirafav/terraform-provider-jumpcloud/internal/client"
@@ -54,6 +55,16 @@ func (m *MockClient) GetOrgID() string {
 	return args.Get(0).(string)
 }
 
+// On fornece acesso ao método On do mock subjacente
+func (m *MockClient) On(methodName string, arguments ...interface{}) *mock.Call {
+	return m.Mock.On(methodName, arguments...)
+}
+
+// AssertExpectations fornece acesso ao método AssertExpectations do mock subjacente
+func (m *MockClient) AssertExpectations(t *testing.T) bool {
+	return m.Mock.AssertExpectations(t)
+}
+
 // mockClient provides a mock implementation of the client interface for testing
 type mockClient struct {
 	mock.Mock
@@ -63,6 +74,21 @@ type mockClient struct {
 	systems map[string]map[string]interface{}
 	// Counter for generating IDs
 	idCounter int
+}
+
+// Called fornece acesso ao método Called do mock subjacente
+func (m *mockClient) Called(arguments ...interface{}) mock.Arguments {
+	return m.Mock.Called(arguments...)
+}
+
+// On fornece acesso ao método On do mock subjacente
+func (m *mockClient) On(methodName string, arguments ...interface{}) *mock.Call {
+	return m.Mock.On(methodName, arguments...)
+}
+
+// AssertExpectations fornece acesso ao método AssertExpectations do mock subjacente
+func (m *mockClient) AssertExpectations(t *testing.T) bool {
+	return m.Mock.AssertExpectations(t)
 }
 
 // CreateUser mocks the client's CreateUser method
