@@ -26,6 +26,7 @@ on:
   release:
     types: [created]
 
+# Permissões aplicadas a todo o workflow
 permissions:
   contents: write
   packages: write
@@ -141,16 +142,20 @@ jobs:
         run: |
           echo "Building for $GOOS/$GOARCH - version v${VERSION}"
           
-          # Criar diretório para o binário
-          mkdir -p dist/${{ matrix.platform.goos }}_${{ matrix.platform.goarch }}
+          # Estrutura de diretórios compatível com Terraform
+          # terraform-provider-jumpcloud_v${VERSION}_${OS}_${ARCH}/terraform-provider-jumpcloud_v${VERSION}
+          PLUGIN_DIR=terraform-provider-jumpcloud_v${VERSION}_${{ matrix.platform.goos }}_${{ matrix.platform.goarch }}
+          mkdir -p ${PLUGIN_DIR}
           
-          # Compilar para a plataforma
-          go build -o dist/${{ matrix.platform.goos }}_${{ matrix.platform.goarch }}/terraform-provider-jumpcloud_v${VERSION}${{ matrix.platform.suffix }}
+          # Compilar para a plataforma com nome correto
+          go build -o ${PLUGIN_DIR}/terraform-provider-jumpcloud_v${VERSION}${{ matrix.platform.suffix }}
           
-          # Criar ZIP para o binário
-          cd dist/${{ matrix.platform.goos }}_${{ matrix.platform.goarch }}
-          zip -r ../../terraform-provider-jumpcloud_${VERSION}_${{ matrix.platform.goos }}_${{ matrix.platform.goarch }}.zip .
-          cd ../..
+          # Criar ZIP para o binário com a estrutura esperada pelo Terraform
+          zip -j terraform-provider-jumpcloud_${VERSION}_${{ matrix.platform.goos }}_${{ matrix.platform.goarch }}.zip ${PLUGIN_DIR}/terraform-provider-jumpcloud_v${VERSION}${{ matrix.platform.suffix }}
+          
+          # Adicionar informações importantes dentro do ZIP
+          echo "github.com/${{ github.repository_owner }}/jumpcloud/${VERSION}" > ${PLUGIN_DIR}/registry-url.txt
+          zip -r terraform-provider-jumpcloud_${VERSION}_${{ matrix.platform.goos }}_${{ matrix.platform.goarch }}.zip ${PLUGIN_DIR}
       
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -233,6 +238,9 @@ jobs:
         (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
       )
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
       
@@ -242,36 +250,83 @@ jobs:
           name: release-artifacts
           path: release
       
+      - name: Set up GitHub CLI
+        run: |
+          type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+          && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+          && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+          && sudo apt update \
+          && sudo apt install gh -y
+      
       - name: Publish to GitHub Packages
         env:
           VERSION: ${{ needs.version.outputs.version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd release
+          echo "Publishing packages to GitHub Packages..."
           
-          # Publicar cada arquivo ZIP como um pacote separado no GitHub Packages
+          # Verificar conteúdo do diretório
+          ls -la
+          
+          # Informações sobre o ambiente
+          echo "Repositório: ${{ github.repository }}"
+          echo "Owner: ${{ github.repository_owner }}"
+          echo "Versão: ${VERSION}"
+          echo "Referência: ${{ github.ref }}"
+          
+          # Autenticar com o GitHub CLI
+          echo "Autenticando com GitHub CLI..."
+          echo "$GITHUB_TOKEN" | gh auth login --with-token
+          gh auth status
+          
+          # Verificar se o pacote já existe 
+          echo "Verificando pacotes existentes..."
+          gh api -H "Accept: application/vnd.github+json" "/users/${{ github.repository_owner }}/packages" || echo "Erro ao verificar pacotes, mas continuando..."
+          
+          # Publicar cada arquivo ZIP como um pacote no GitHub Packages
+          PUBLISH_SUCCESS=true
           for zipfile in terraform-provider-jumpcloud_*.zip; do
             echo "Publishing $zipfile to GitHub Packages"
-            curl -L \
-              -X PUT \
+            if gh api \
+              --method PUT \
               -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
-              -H "Content-Type: application/octet-stream" \
-              --data-binary "@$zipfile" \
-              "https://api.github.com/users/${{ github.repository_owner }}/packages/generic/terraform-provider-jumpcloud/${VERSION}/$zipfile"
+              --input "$zipfile" \
+              "/users/${{ github.repository_owner }}/packages/generic/terraform-provider-jumpcloud/${VERSION}/${zipfile}"; then
+              echo "✅ Sucesso ao publicar $zipfile"
+            else
+              echo "❌ Erro ao publicar $zipfile"
+              PUBLISH_SUCCESS=false
+            fi
           done
           
           # Publicar checksums
-          echo "Publishing SHA256SUMS to GitHub Packages"
-          curl -L \
-            -X PUT \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            -H "Content-Type: application/octet-stream" \
-            --data-binary "@SHA256SUMS" \
-            "https://api.github.com/users/${{ github.repository_owner }}/packages/generic/terraform-provider-jumpcloud/${VERSION}/SHA256SUMS"
+          if [ -f SHA256SUMS ]; then
+            echo "Publishing SHA256SUMS to GitHub Packages"
+            if gh api \
+              --method PUT \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              --input SHA256SUMS \
+              "/users/${{ github.repository_owner }}/packages/generic/terraform-provider-jumpcloud/${VERSION}/SHA256SUMS"; then
+              echo "✅ Sucesso ao publicar SHA256SUMS"
+            else
+              echo "❌ Erro ao publicar SHA256SUMS"
+              PUBLISH_SUCCESS=false
+            fi
+          else
+            echo "⚠️ Warning: SHA256SUMS file not found!"
+          fi
+          
+          # Verificar se todos os uploads foram bem-sucedidos
+          if [ "$PUBLISH_SUCCESS" = true ]; then
+            echo "🎉 Todos os pacotes foram publicados com sucesso!"
+          else
+            echo "⚠️ Alguns pacotes não foram publicados corretamente."
+            exit 1
+          fi
       
       - name: Create Documentation for Package
         env:
@@ -279,6 +334,8 @@ jobs:
           IS_BETA: ${{ needs.version.outputs.is_beta }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo "Criando documentação para o pacote versão ${VERSION}..."
+          
           # Definir a descrição da versão
           if [[ "$IS_BETA" == "true" ]]; then
             VERSION_DESC="Esta é uma versão beta (${VERSION}) do provider JumpCloud para Terraform."
@@ -307,6 +364,23 @@ jobs:
           
           provider "jumpcloud" {
             # Configurações do provider
+            api_key = "sua_api_key"
+          }
+          ```
+          
+          ## Configuração do Terraform para usar GitHub Packages como fonte
+          
+          Para que o Terraform use o GitHub Packages como fonte do provider, você precisa configurar o arquivo `~/.terraformrc` (Linux/Mac) ou `%APPDATA%\terraform.rc` (Windows):
+          
+          ```hcl
+          provider_installation {
+            network_mirror {
+              url = "https://github.com/${{ github.repository_owner }}/terraform-provider-jumpcloud/releases/download/v${VERSION}/"
+              include = ["github.com/${{ github.repository_owner }}/jumpcloud"]
+            }
+            direct {
+              exclude = ["github.com/${{ github.repository_owner }}/jumpcloud"]
+            }
           }
           ```
           
@@ -330,17 +404,39 @@ jobs:
           \`\`\`
           
           Substitua [sua_plataforma] pela plataforma desejada (ex: darwin_amd64, linux_amd64, etc).
+          
+          ## Instalação manual (alternativa)
+          
+          Para instalação manual, extraia o arquivo ZIP correspondente à sua plataforma na pasta de plugins do Terraform:
+          
+          - Linux/Mac: `~/.terraform.d/plugins/github.com/${{ github.repository_owner }}/jumpcloud/${VERSION}/[os]_[arch]/`
+          - Windows: `%APPDATA%\terraform.d\plugins\github.com\${{ github.repository_owner }}\jumpcloud\${VERSION}\[os]_[arch]\`
+          
+          Por exemplo, para Linux AMD64:
+          ```bash
+          mkdir -p ~/.terraform.d/plugins/github.com/${{ github.repository_owner }}/jumpcloud/${VERSION}/linux_amd64/
+          unzip terraform-provider-jumpcloud_${VERSION}_linux_amd64.zip -d ~/.terraform.d/plugins/github.com/${{ github.repository_owner }}/jumpcloud/${VERSION}/linux_amd64/
+          ```
+          
           EOF
           
-          # Publicar o README
-          curl -L \
-            -X PUT \
+          # Confirmar que o arquivo foi criado
+          echo "Arquivo README-PACKAGE.md criado:"
+          cat README-PACKAGE.md
+          
+          # Publicar o README usando GitHub CLI
+          echo "Publicando documentação no GitHub Packages..."
+          if gh api \
+            --method PUT \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            -H "Content-Type: application/octet-stream" \
-            --data-binary "@README-PACKAGE.md" \
-            "https://api.github.com/users/${{ github.repository_owner }}/packages/generic/terraform-provider-jumpcloud/${VERSION}/README.md"
+            --input README-PACKAGE.md \
+            "/users/${{ github.repository_owner }}/packages/generic/terraform-provider-jumpcloud/${VERSION}/README.md"; then
+            echo "✅ Documentação publicada com sucesso!"
+          else
+            echo "❌ Erro ao publicar a documentação"
+            exit 1
+          fi
 
   # Criar Release no GitHub (para qualquer versão, marcando beta quando apropriado)
   create-github-release:
