@@ -101,8 +101,8 @@ func resourceOAuthAuthorization() *schema.Resource {
 	}
 }
 
-func resourceOAuthAuthorizationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceOAuthAuthorizationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -176,11 +176,11 @@ func resourceOAuthAuthorizationCreate(ctx context.Context, d *schema.ResourceDat
 	d.SetId(createdAuth.ID)
 
 	// Ler o recurso para carregar todos os campos computados
-	return resourceOAuthAuthorizationRead(ctx, d, m)
+	return resourceOAuthAuthorizationRead(ctx, d, meta)
 }
 
-func resourceOAuthAuthorizationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceOAuthAuthorizationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -229,8 +229,8 @@ func resourceOAuthAuthorizationRead(ctx context.Context, d *schema.ResourceData,
 	return diag.Diagnostics{}
 }
 
-func resourceOAuthAuthorizationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceOAuthAuthorizationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -241,7 +241,7 @@ func resourceOAuthAuthorizationUpdate(ctx context.Context, d *schema.ResourceDat
 	// Verificar se algum campo relevante foi alterado
 	if !d.HasChanges("expires_at", "client_name", "client_description", "client_contact_email", "client_redirect_uris", "scopes") {
 		// Nenhuma alteração a ser feita
-		return resourceOAuthAuthorizationRead(ctx, d, m)
+		return resourceOAuthAuthorizationRead(ctx, d, meta)
 	}
 
 	// Extrair valores do schema
@@ -305,11 +305,11 @@ func resourceOAuthAuthorizationUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	// Ler o recurso para carregar todos os campos computados
-	return resourceOAuthAuthorizationRead(ctx, d, m)
+	return resourceOAuthAuthorizationRead(ctx, d, meta)
 }
 
-func resourceOAuthAuthorizationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceOAuthAuthorizationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

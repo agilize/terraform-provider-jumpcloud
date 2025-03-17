@@ -49,10 +49,10 @@ func resourceSystemGroupMembership() *schema.Resource {
 }
 
 // resourceSystemGroupMembershipCreate cria uma nova associação entre sistema e grupo de sistemas
-func resourceSystemGroupMembershipCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSystemGroupMembershipCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Criando associação de sistema a grupo de sistemas no JumpCloud")
 
-	c, diags := ConvertToClientInterface(m)
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -82,16 +82,16 @@ func resourceSystemGroupMembershipCreate(ctx context.Context, d *schema.Resource
 	// Definir ID do recurso como uma combinação dos IDs do grupo e do sistema
 	d.SetId(fmt.Sprintf("%s:%s", systemGroupID, systemID))
 
-	return resourceSystemGroupMembershipRead(ctx, d, m)
+	return resourceSystemGroupMembershipRead(ctx, d, meta)
 }
 
 // resourceSystemGroupMembershipRead lê informações de uma associação entre sistema e grupo de sistemas
-func resourceSystemGroupMembershipRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSystemGroupMembershipRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Lendo associação de sistema a grupo de sistemas do JumpCloud")
 
 	var diags diag.Diagnostics
 
-	c, convDiags := ConvertToClientInterface(m)
+	c, convDiags := ConvertToClientInterface(meta)
 	if convDiags != nil {
 		return convDiags
 	}
@@ -154,12 +154,12 @@ func resourceSystemGroupMembershipRead(ctx context.Context, d *schema.ResourceDa
 }
 
 // resourceSystemGroupMembershipDelete remove uma associação entre sistema e grupo de sistemas
-func resourceSystemGroupMembershipDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSystemGroupMembershipDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Removendo associação de sistema a grupo de sistemas do JumpCloud")
 
 	var diags diag.Diagnostics
 
-	c, convDiags := ConvertToClientInterface(m)
+	c, convDiags := ConvertToClientInterface(meta)
 	if convDiags != nil {
 		return convDiags
 	}

@@ -61,12 +61,12 @@ func dataSourceSystemGroup() *schema.Resource {
 	}
 }
 
-func dataSourceSystemGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceSystemGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Lendo data source de grupo de sistemas do JumpCloud")
 
 	var diags diag.Diagnostics
 
-	c, convDiags := ConvertToClientInterface(m)
+	c, convDiags := ConvertToClientInterface(meta)
 	if convDiags != nil {
 		return convDiags
 	}

@@ -67,8 +67,8 @@ func mockResourceAppCatalogApplicationSchema() map[string]*schema.Schema {
 }
 
 // Mock para a função de criação do resource App Catalog Application
-func mockResourceAppCatalogApplicationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(JumpCloudClient)
+func mockResourceAppCatalogApplicationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(JumpCloudClient)
 	var diags diag.Diagnostics
 
 	// Extrair configurações da aplicação
@@ -129,7 +129,7 @@ func mockResourceAppCatalogApplicationCreate(ctx context.Context, d *schema.Reso
 	d.SetId(app["_id"].(string))
 
 	// Ler a aplicação para atualizar o state
-	readDiags := mockResourceAppCatalogApplicationRead(ctx, d, m)
+	readDiags := mockResourceAppCatalogApplicationRead(ctx, d, meta)
 	if readDiags.HasError() {
 		return readDiags
 	}
@@ -138,8 +138,8 @@ func mockResourceAppCatalogApplicationCreate(ctx context.Context, d *schema.Reso
 }
 
 // Mock para a função de leitura do resource App Catalog Application
-func mockResourceAppCatalogApplicationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(JumpCloudClient)
+func mockResourceAppCatalogApplicationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(JumpCloudClient)
 	var diags diag.Diagnostics
 
 	// Ler a aplicação
@@ -212,8 +212,8 @@ func mockResourceAppCatalogApplicationRead(ctx context.Context, d *schema.Resour
 }
 
 // Mock para a função de atualização do resource App Catalog Application
-func mockResourceAppCatalogApplicationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(JumpCloudClient)
+func mockResourceAppCatalogApplicationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(JumpCloudClient)
 	var diags diag.Diagnostics
 
 	// Extrair configurações da aplicação
@@ -271,7 +271,7 @@ func mockResourceAppCatalogApplicationUpdate(ctx context.Context, d *schema.Reso
 	}
 
 	// Ler a aplicação para atualizar o state
-	readDiags := mockResourceAppCatalogApplicationRead(ctx, d, m)
+	readDiags := mockResourceAppCatalogApplicationRead(ctx, d, meta)
 	if readDiags.HasError() {
 		return readDiags
 	}
@@ -280,8 +280,8 @@ func mockResourceAppCatalogApplicationUpdate(ctx context.Context, d *schema.Reso
 }
 
 // Mock para a função de exclusão do resource App Catalog Application
-func mockResourceAppCatalogApplicationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(JumpCloudClient)
+func mockResourceAppCatalogApplicationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(JumpCloudClient)
 	var diags diag.Diagnostics
 
 	// Excluir a aplicação

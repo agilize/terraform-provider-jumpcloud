@@ -135,8 +135,8 @@ func resourceMonitoringThreshold() *schema.Resource {
 	}
 }
 
-func resourceMonitoringThresholdCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceMonitoringThresholdCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -204,13 +204,13 @@ func resourceMonitoringThresholdCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	d.SetId(createdThreshold.ID)
-	return resourceMonitoringThresholdRead(ctx, d, m)
+	return resourceMonitoringThresholdRead(ctx, d, meta)
 }
 
-func resourceMonitoringThresholdRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMonitoringThresholdRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -270,8 +270,8 @@ func resourceMonitoringThresholdRead(ctx context.Context, d *schema.ResourceData
 	return diags
 }
 
-func resourceMonitoringThresholdUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceMonitoringThresholdUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -340,11 +340,11 @@ func resourceMonitoringThresholdUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	return resourceMonitoringThresholdRead(ctx, d, m)
+	return resourceMonitoringThresholdRead(ctx, d, meta)
 }
 
-func resourceMonitoringThresholdDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceMonitoringThresholdDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

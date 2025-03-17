@@ -108,8 +108,8 @@ func resourceAppCatalogAssignment() *schema.Resource {
 	}
 }
 
-func resourceAppCatalogAssignmentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAppCatalogAssignmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -165,13 +165,13 @@ func resourceAppCatalogAssignmentCreate(ctx context.Context, d *schema.ResourceD
 	}
 
 	d.SetId(createdAssignment.ID)
-	return resourceAppCatalogAssignmentRead(ctx, d, m)
+	return resourceAppCatalogAssignmentRead(ctx, d, meta)
 }
 
-func resourceAppCatalogAssignmentRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAppCatalogAssignmentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -226,8 +226,8 @@ func resourceAppCatalogAssignmentRead(ctx context.Context, d *schema.ResourceDat
 	return diags
 }
 
-func resourceAppCatalogAssignmentUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAppCatalogAssignmentUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -284,11 +284,11 @@ func resourceAppCatalogAssignmentUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	return resourceAppCatalogAssignmentRead(ctx, d, m)
+	return resourceAppCatalogAssignmentRead(ctx, d, meta)
 }
 
-func resourceAppCatalogAssignmentDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAppCatalogAssignmentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

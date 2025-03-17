@@ -70,10 +70,10 @@ func resourceSystemGroup() *schema.Resource {
 }
 
 // resourceSystemGroupCreate cria um novo grupo de sistemas no JumpCloud
-func resourceSystemGroupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSystemGroupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Criando grupo de sistemas no JumpCloud")
 
-	c, diags := ConvertToClientInterface(m)
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -112,16 +112,16 @@ func resourceSystemGroupCreate(ctx context.Context, d *schema.ResourceData, m in
 	d.SetId(createdGroup.ID)
 
 	// Ler o recurso para atualizar o estado
-	return resourceSystemGroupRead(ctx, d, m)
+	return resourceSystemGroupRead(ctx, d, meta)
 }
 
 // resourceSystemGroupRead lê as informações de um grupo de sistemas do JumpCloud
-func resourceSystemGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSystemGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Lendo grupo de sistemas do JumpCloud")
 
 	var diags diag.Diagnostics
 
-	c, convDiags := ConvertToClientInterface(m)
+	c, convDiags := ConvertToClientInterface(meta)
 	if convDiags != nil {
 		return convDiags
 	}
@@ -174,17 +174,17 @@ func resourceSystemGroupRead(ctx context.Context, d *schema.ResourceData, m inte
 }
 
 // resourceSystemGroupUpdate atualiza um grupo de sistemas existente no JumpCloud
-func resourceSystemGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSystemGroupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Atualizando grupo de sistemas no JumpCloud")
 
-	c, diags := ConvertToClientInterface(m)
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
 
 	// Verificar se houve mudanças nos campos
 	if !d.HasChanges("name", "description", "attributes") {
-		return resourceSystemGroupRead(ctx, d, m)
+		return resourceSystemGroupRead(ctx, d, meta)
 	}
 
 	// Preparar objeto de atualização
@@ -212,16 +212,16 @@ func resourceSystemGroupUpdate(ctx context.Context, d *schema.ResourceData, m in
 	}
 
 	// Ler o recurso para atualizar o estado
-	return resourceSystemGroupRead(ctx, d, m)
+	return resourceSystemGroupRead(ctx, d, meta)
 }
 
 // resourceSystemGroupDelete exclui um grupo de sistemas do JumpCloud
-func resourceSystemGroupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSystemGroupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Excluindo grupo de sistemas do JumpCloud")
 
 	var diags diag.Diagnostics
 
-	c, convDiags := ConvertToClientInterface(m)
+	c, convDiags := ConvertToClientInterface(meta)
 	if convDiags != nil {
 		return convDiags
 	}

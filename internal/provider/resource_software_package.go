@@ -144,8 +144,8 @@ func resourceSoftwarePackage() *schema.Resource {
 	}
 }
 
-func resourceSoftwarePackageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceSoftwarePackageCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -246,13 +246,13 @@ func resourceSoftwarePackageCreate(ctx context.Context, d *schema.ResourceData, 
 	d.SetId(createdPackage.ID)
 
 	// Ler o recurso para atualizar o state com todos os campos computados
-	return resourceSoftwarePackageRead(ctx, d, m)
+	return resourceSoftwarePackageRead(ctx, d, meta)
 }
 
-func resourceSoftwarePackageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSoftwarePackageRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -332,8 +332,8 @@ func resourceSoftwarePackageRead(ctx context.Context, d *schema.ResourceData, m 
 	return diags
 }
 
-func resourceSoftwarePackageUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceSoftwarePackageUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -429,13 +429,13 @@ func resourceSoftwarePackageUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	// Ler o recurso para atualizar o state com todos os campos computados
-	return resourceSoftwarePackageRead(ctx, d, m)
+	return resourceSoftwarePackageRead(ctx, d, meta)
 }
 
-func resourceSoftwarePackageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSoftwarePackageDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

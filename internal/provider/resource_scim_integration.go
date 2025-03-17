@@ -173,8 +173,8 @@ func suppressEquivalentJSONDiffs(k, old, new string, d *schema.ResourceData) boo
 	return string(oldNormalized) == string(newNormalized)
 }
 
-func resourceScimIntegrationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceScimIntegrationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -212,8 +212,8 @@ func resourceScimIntegrationCreate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := d.GetOk("mapping_ids"); ok {
 		mappingList := v.([]interface{})
 		mappings := make([]string, len(mappingList))
-		for i, m := range mappingList {
-			mappings[i] = m.(string)
+		for i, meta := range mappingList {
+			mappings[i] = meta.(string)
 		}
 		integration.MappingIDs = mappings
 	}
@@ -247,13 +247,13 @@ func resourceScimIntegrationCreate(ctx context.Context, d *schema.ResourceData, 
 	d.SetId(createdIntegration.ID)
 
 	// Ler o recurso para atualizar o state com todos os campos computados
-	return resourceScimIntegrationRead(ctx, d, m)
+	return resourceScimIntegrationRead(ctx, d, meta)
 }
 
-func resourceScimIntegrationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceScimIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -354,8 +354,8 @@ func resourceScimIntegrationRead(ctx context.Context, d *schema.ResourceData, m 
 	return diags
 }
 
-func resourceScimIntegrationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceScimIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -397,8 +397,8 @@ func resourceScimIntegrationUpdate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := d.GetOk("mapping_ids"); ok {
 		mappingList := v.([]interface{})
 		mappings := make([]string, len(mappingList))
-		for i, m := range mappingList {
-			mappings[i] = m.(string)
+		for i, meta := range mappingList {
+			mappings[i] = meta.(string)
 		}
 		integration.MappingIDs = mappings
 	}
@@ -423,13 +423,13 @@ func resourceScimIntegrationUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	// Ler o recurso para atualizar o state com todos os campos computados
-	return resourceScimIntegrationRead(ctx, d, m)
+	return resourceScimIntegrationRead(ctx, d, meta)
 }
 
-func resourceScimIntegrationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceScimIntegrationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

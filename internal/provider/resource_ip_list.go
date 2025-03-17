@@ -98,8 +98,8 @@ func resourceIPList() *schema.Resource {
 	}
 }
 
-func resourceIPListCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceIPListCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -159,13 +159,13 @@ func resourceIPListCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	d.SetId(createdIPList.ID)
-	return resourceIPListRead(ctx, d, m)
+	return resourceIPListRead(ctx, d, meta)
 }
 
-func resourceIPListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIPListRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -219,8 +219,8 @@ func resourceIPListRead(ctx context.Context, d *schema.ResourceData, m interface
 	return diags
 }
 
-func resourceIPListUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceIPListUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -281,11 +281,11 @@ func resourceIPListUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	return resourceIPListRead(ctx, d, m)
+	return resourceIPListRead(ctx, d, meta)
 }
 
-func resourceIPListDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceIPListDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

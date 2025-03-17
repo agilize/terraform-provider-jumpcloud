@@ -19,12 +19,12 @@ type MockClient struct {
 }
 
 // Called fornece acesso ao método Called do mock subjacente
-func (m *MockClient) Called(arguments ...interface{}) mock.Arguments {
-	return m.Mock.Called(arguments...)
+func (meta *MockClient) Called(arguments ...interface{}) mock.Arguments {
+	return meta.Mock.Called(arguments...)
 }
 
 // DoRequest implements the mock request method for tests
-func (m *MockClient) DoRequest(method, path string, body interface{}) ([]byte, error) {
+func (meta *MockClient) DoRequest(method, path string, body interface{}) ([]byte, error) {
 	var bodyBytes []byte
 	var err error
 
@@ -41,7 +41,8 @@ func (m *MockClient) DoRequest(method, path string, body interface{}) ([]byte, e
 		}
 	}
 
-	args := m.Called(method, path, bodyBytes)
+	// Primeiro verificamos se há um mock específico configurado para esta chamada exata
+	args := meta.Mock.Called(method, path, bodyBytes)
 	if args.Get(0) == nil {
 		return []byte{}, args.Error(1)
 	}
@@ -49,25 +50,25 @@ func (m *MockClient) DoRequest(method, path string, body interface{}) ([]byte, e
 }
 
 // GetApiKey implementa o método necessário para a interface JumpCloudClient
-func (m *MockClient) GetApiKey() string {
-	args := m.Called()
+func (meta *MockClient) GetApiKey() string {
+	args := meta.Called()
 	return args.Get(0).(string)
 }
 
 // GetOrgID implementa o método necessário para a interface JumpCloudClient
-func (m *MockClient) GetOrgID() string {
-	args := m.Called()
+func (meta *MockClient) GetOrgID() string {
+	args := meta.Called()
 	return args.Get(0).(string)
 }
 
 // On fornece acesso ao método On do mock subjacente
-func (m *MockClient) On(methodName string, arguments ...interface{}) *mock.Call {
-	return m.Mock.On(methodName, arguments...)
+func (meta *MockClient) On(methodName string, arguments ...interface{}) *mock.Call {
+	return meta.Mock.On(methodName, arguments...)
 }
 
 // AssertExpectations fornece acesso ao método AssertExpectations do mock subjacente
-func (m *MockClient) AssertExpectations(t *testing.T) bool {
-	return m.Mock.AssertExpectations(t)
+func (meta *MockClient) AssertExpectations(t *testing.T) bool {
+	return meta.Mock.AssertExpectations(t)
 }
 
 // mockClient provides a mock implementation of the client interface for testing
@@ -82,29 +83,29 @@ type mockClient struct {
 }
 
 // Called fornece acesso ao método Called do mock subjacente
-func (m *mockClient) Called(arguments ...interface{}) mock.Arguments {
-	return m.Mock.Called(arguments...)
+func (meta *mockClient) Called(arguments ...interface{}) mock.Arguments {
+	return meta.Mock.Called(arguments...)
 }
 
 // On fornece acesso ao método On do mock subjacente
-func (m *mockClient) On(methodName string, arguments ...interface{}) *mock.Call {
-	return m.Mock.On(methodName, arguments...)
+func (meta *mockClient) On(methodName string, arguments ...interface{}) *mock.Call {
+	return meta.Mock.On(methodName, arguments...)
 }
 
 // AssertExpectations fornece acesso ao método AssertExpectations do mock subjacente
-func (m *mockClient) AssertExpectations(t *testing.T) bool {
-	return m.Mock.AssertExpectations(t)
+func (meta *mockClient) AssertExpectations(t *testing.T) bool {
+	return meta.Mock.AssertExpectations(t)
 }
 
 // CreateUser mocks the client's CreateUser method
-func (m *mockClient) CreateUser(ctx context.Context, userData map[string]interface{}) (map[string]interface{}, error) {
-	if m.users == nil {
-		m.users = make(map[string]map[string]interface{})
+func (meta *mockClient) CreateUser(ctx context.Context, userData map[string]interface{}) (map[string]interface{}, error) {
+	if meta.users == nil {
+		meta.users = make(map[string]map[string]interface{})
 	}
 
 	// Generate a new ID
-	userID := fmt.Sprintf("user-%d", m.idCounter)
-	m.idCounter++
+	userID := fmt.Sprintf("user-%d", meta.idCounter)
+	meta.idCounter++
 
 	// Create a copy of the user data and add an ID and creation timestamp
 	user := make(map[string]interface{})
@@ -115,18 +116,18 @@ func (m *mockClient) CreateUser(ctx context.Context, userData map[string]interfa
 	user["created"] = time.Now().Format(time.RFC3339)
 
 	// Store the user
-	m.users[userID] = user
+	meta.users[userID] = user
 
 	return user, nil
 }
 
 // GetUser mocks the client's GetUser method
-func (m *mockClient) GetUser(ctx context.Context, id string) (map[string]interface{}, error) {
-	if m.users == nil {
-		m.users = make(map[string]map[string]interface{})
+func (meta *mockClient) GetUser(ctx context.Context, id string) (map[string]interface{}, error) {
+	if meta.users == nil {
+		meta.users = make(map[string]map[string]interface{})
 	}
 
-	user, exists := m.users[id]
+	user, exists := meta.users[id]
 	if !exists {
 		return nil, &client.JumpCloudError{
 			StatusCode: http.StatusNotFound,
@@ -139,12 +140,12 @@ func (m *mockClient) GetUser(ctx context.Context, id string) (map[string]interfa
 }
 
 // UpdateUser mocks the client's UpdateUser method
-func (m *mockClient) UpdateUser(ctx context.Context, id string, userData map[string]interface{}) (map[string]interface{}, error) {
-	if m.users == nil {
-		m.users = make(map[string]map[string]interface{})
+func (meta *mockClient) UpdateUser(ctx context.Context, id string, userData map[string]interface{}) (map[string]interface{}, error) {
+	if meta.users == nil {
+		meta.users = make(map[string]map[string]interface{})
 	}
 
-	user, exists := m.users[id]
+	user, exists := meta.users[id]
 	if !exists {
 		return nil, &client.JumpCloudError{
 			StatusCode: http.StatusNotFound,
@@ -159,18 +160,18 @@ func (m *mockClient) UpdateUser(ctx context.Context, id string, userData map[str
 	}
 
 	// Store the updated user
-	m.users[id] = user
+	meta.users[id] = user
 
 	return user, nil
 }
 
 // DeleteUser mocks the client's DeleteUser method
-func (m *mockClient) DeleteUser(ctx context.Context, id string) error {
-	if m.users == nil {
-		m.users = make(map[string]map[string]interface{})
+func (meta *mockClient) DeleteUser(ctx context.Context, id string) error {
+	if meta.users == nil {
+		meta.users = make(map[string]map[string]interface{})
 	}
 
-	_, exists := m.users[id]
+	_, exists := meta.users[id]
 	if !exists {
 		return &client.JumpCloudError{
 			StatusCode: http.StatusNotFound,
@@ -180,20 +181,20 @@ func (m *mockClient) DeleteUser(ctx context.Context, id string) error {
 	}
 
 	// Remove the user
-	delete(m.users, id)
+	delete(meta.users, id)
 
 	return nil
 }
 
 // CreateSystem mocks the client's CreateSystem method
-func (m *mockClient) CreateSystem(ctx context.Context, systemData map[string]interface{}) (map[string]interface{}, error) {
-	if m.systems == nil {
-		m.systems = make(map[string]map[string]interface{})
+func (meta *mockClient) CreateSystem(ctx context.Context, systemData map[string]interface{}) (map[string]interface{}, error) {
+	if meta.systems == nil {
+		meta.systems = make(map[string]map[string]interface{})
 	}
 
 	// Generate a new ID
-	systemID := fmt.Sprintf("system-%d", m.idCounter)
-	m.idCounter++
+	systemID := fmt.Sprintf("system-%d", meta.idCounter)
+	meta.idCounter++
 
 	// Create a copy of the system data and add an ID and creation timestamp
 	system := make(map[string]interface{})
@@ -204,18 +205,18 @@ func (m *mockClient) CreateSystem(ctx context.Context, systemData map[string]int
 	system["created"] = time.Now().Format(time.RFC3339)
 
 	// Store the system
-	m.systems[systemID] = system
+	meta.systems[systemID] = system
 
 	return system, nil
 }
 
 // GetSystem mocks the client's GetSystem method
-func (m *mockClient) GetSystem(ctx context.Context, id string) (map[string]interface{}, error) {
-	if m.systems == nil {
-		m.systems = make(map[string]map[string]interface{})
+func (meta *mockClient) GetSystem(ctx context.Context, id string) (map[string]interface{}, error) {
+	if meta.systems == nil {
+		meta.systems = make(map[string]map[string]interface{})
 	}
 
-	system, exists := m.systems[id]
+	system, exists := meta.systems[id]
 	if !exists {
 		return nil, &client.JumpCloudError{
 			StatusCode: http.StatusNotFound,
@@ -228,12 +229,12 @@ func (m *mockClient) GetSystem(ctx context.Context, id string) (map[string]inter
 }
 
 // UpdateSystem mocks the client's UpdateSystem method
-func (m *mockClient) UpdateSystem(ctx context.Context, id string, systemData map[string]interface{}) (map[string]interface{}, error) {
-	if m.systems == nil {
-		m.systems = make(map[string]map[string]interface{})
+func (meta *mockClient) UpdateSystem(ctx context.Context, id string, systemData map[string]interface{}) (map[string]interface{}, error) {
+	if meta.systems == nil {
+		meta.systems = make(map[string]map[string]interface{})
 	}
 
-	system, exists := m.systems[id]
+	system, exists := meta.systems[id]
 	if !exists {
 		return nil, &client.JumpCloudError{
 			StatusCode: http.StatusNotFound,
@@ -248,18 +249,18 @@ func (m *mockClient) UpdateSystem(ctx context.Context, id string, systemData map
 	}
 
 	// Store the updated system
-	m.systems[id] = system
+	meta.systems[id] = system
 
 	return system, nil
 }
 
 // DeleteSystem mocks the client's DeleteSystem method
-func (m *mockClient) DeleteSystem(ctx context.Context, id string) error {
-	if m.systems == nil {
-		m.systems = make(map[string]map[string]interface{})
+func (meta *mockClient) DeleteSystem(ctx context.Context, id string) error {
+	if meta.systems == nil {
+		meta.systems = make(map[string]map[string]interface{})
 	}
 
-	_, exists := m.systems[id]
+	_, exists := meta.systems[id]
 	if !exists {
 		return &client.JumpCloudError{
 			StatusCode: http.StatusNotFound,
@@ -269,7 +270,7 @@ func (m *mockClient) DeleteSystem(ctx context.Context, id string) error {
 	}
 
 	// Remove the system
-	delete(m.systems, id)
+	delete(meta.systems, id)
 
 	return nil
 }

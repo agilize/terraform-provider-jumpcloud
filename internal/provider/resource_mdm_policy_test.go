@@ -59,8 +59,8 @@ func mockResourceMDMPolicySchema() map[string]*schema.Schema {
 }
 
 // Mock para a função de criação do resource MDM Policy
-func mockResourceMDMPolicyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(JumpCloudClient)
+func mockResourceMDMPolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(JumpCloudClient)
 	var diags diag.Diagnostics
 
 	// Construir o payload para a requisição
@@ -94,7 +94,7 @@ func mockResourceMDMPolicyCreate(ctx context.Context, d *schema.ResourceData, m 
 	d.SetId(policy["id"].(string))
 
 	// Ler a política para atualizar o state
-	readDiags := mockResourceMDMPolicyRead(ctx, d, m)
+	readDiags := mockResourceMDMPolicyRead(ctx, d, meta)
 	if readDiags.HasError() {
 		return readDiags
 	}
@@ -103,8 +103,8 @@ func mockResourceMDMPolicyCreate(ctx context.Context, d *schema.ResourceData, m 
 }
 
 // Mock para a função de leitura do resource MDM Policy
-func mockResourceMDMPolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(JumpCloudClient)
+func mockResourceMDMPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(JumpCloudClient)
 	var diags diag.Diagnostics
 
 	// Ler a política
@@ -155,8 +155,8 @@ func mockResourceMDMPolicyRead(ctx context.Context, d *schema.ResourceData, m in
 }
 
 // Mock para a função de atualização do resource MDM Policy
-func mockResourceMDMPolicyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(JumpCloudClient)
+func mockResourceMDMPolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(JumpCloudClient)
 	var diags diag.Diagnostics
 
 	// Ler a política atual
@@ -199,7 +199,7 @@ func mockResourceMDMPolicyUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	// Ler a política para atualizar o state
-	readDiags := mockResourceMDMPolicyRead(ctx, d, m)
+	readDiags := mockResourceMDMPolicyRead(ctx, d, meta)
 	if readDiags.HasError() {
 		return readDiags
 	}
@@ -208,8 +208,8 @@ func mockResourceMDMPolicyUpdate(ctx context.Context, d *schema.ResourceData, m 
 }
 
 // Mock para a função de exclusão do resource MDM Policy
-func mockResourceMDMPolicyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(JumpCloudClient)
+func mockResourceMDMPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(JumpCloudClient)
 	var diags diag.Diagnostics
 
 	// Excluir a política

@@ -57,10 +57,10 @@ func resourceCommandAssociation() *schema.Resource {
 }
 
 // resourceCommandAssociationCreate cria uma nova associação entre comando e sistema/grupo
-func resourceCommandAssociationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceCommandAssociationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Criando associação de comando no JumpCloud")
 
-	c, diags := ConvertToClientInterface(m)
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -91,16 +91,16 @@ func resourceCommandAssociationCreate(ctx context.Context, d *schema.ResourceDat
 	// Definir ID do recurso como uma combinação dos IDs do comando, tipo de alvo e alvo
 	d.SetId(fmt.Sprintf("%s:%s:%s", commandID, targetType, targetID))
 
-	return resourceCommandAssociationRead(ctx, d, m)
+	return resourceCommandAssociationRead(ctx, d, meta)
 }
 
 // resourceCommandAssociationRead lê informações de uma associação entre comando e sistema/grupo
-func resourceCommandAssociationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceCommandAssociationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Lendo associação de comando do JumpCloud")
 
 	var diags diag.Diagnostics
 
-	c, convDiags := ConvertToClientInterface(m)
+	c, convDiags := ConvertToClientInterface(meta)
 	if convDiags != nil {
 		return convDiags
 	}
@@ -168,12 +168,12 @@ func resourceCommandAssociationRead(ctx context.Context, d *schema.ResourceData,
 }
 
 // resourceCommandAssociationDelete remove uma associação entre comando e sistema/grupo
-func resourceCommandAssociationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceCommandAssociationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Removendo associação de comando do JumpCloud")
 
 	var diags diag.Diagnostics
 
-	c, convDiags := ConvertToClientInterface(m)
+	c, convDiags := ConvertToClientInterface(meta)
 	if convDiags != nil {
 		return convDiags
 	}

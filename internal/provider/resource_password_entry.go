@@ -135,8 +135,8 @@ func resourcePasswordEntry() *schema.Resource {
 	}
 }
 
-func resourcePasswordEntryCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourcePasswordEntryCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -219,13 +219,13 @@ func resourcePasswordEntryCreate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	d.SetId(createdEntry.ID)
-	return resourcePasswordEntryRead(ctx, d, m)
+	return resourcePasswordEntryRead(ctx, d, meta)
 }
 
-func resourcePasswordEntryRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourcePasswordEntryRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -288,8 +288,8 @@ func resourcePasswordEntryRead(ctx context.Context, d *schema.ResourceData, m in
 	return diags
 }
 
-func resourcePasswordEntryUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourcePasswordEntryUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -378,11 +378,11 @@ func resourcePasswordEntryUpdate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	return resourcePasswordEntryRead(ctx, d, m)
+	return resourcePasswordEntryRead(ctx, d, meta)
 }
 
-func resourcePasswordEntryDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourcePasswordEntryDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

@@ -101,8 +101,8 @@ func validateExpiresDate(expiresStr string) error {
 }
 
 // resourceAPIKeyCreate cria uma nova chave de API no JumpCloud
-func resourceAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceAPIKeyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -150,12 +150,12 @@ func resourceAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 	}
 
-	return resourceAPIKeyRead(ctx, d, m)
+	return resourceAPIKeyRead(ctx, d, meta)
 }
 
 // resourceAPIKeyRead lê uma chave de API existente no JumpCloud
-func resourceAPIKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceAPIKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -214,8 +214,8 @@ func resourceAPIKeyRead(ctx context.Context, d *schema.ResourceData, m interface
 }
 
 // resourceAPIKeyUpdate atualiza uma chave de API existente no JumpCloud
-func resourceAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -269,12 +269,12 @@ func resourceAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	return resourceAPIKeyRead(ctx, d, m)
+	return resourceAPIKeyRead(ctx, d, meta)
 }
 
 // resourceAPIKeyDelete exclui uma chave de API existente no JumpCloud
-func resourceAPIKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceAPIKeyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}

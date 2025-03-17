@@ -136,8 +136,8 @@ func resourceSoftwareUpdatePolicy() *schema.Resource {
 	}
 }
 
-func resourceSoftwareUpdatePolicyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceSoftwareUpdatePolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -239,13 +239,13 @@ func resourceSoftwareUpdatePolicyCreate(ctx context.Context, d *schema.ResourceD
 	d.SetId(createdPolicy.ID)
 
 	// Read the resource to update state with all computed fields
-	return resourceSoftwareUpdatePolicyRead(ctx, d, m)
+	return resourceSoftwareUpdatePolicyRead(ctx, d, meta)
 }
 
-func resourceSoftwareUpdatePolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSoftwareUpdatePolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -336,8 +336,8 @@ func resourceSoftwareUpdatePolicyRead(ctx context.Context, d *schema.ResourceDat
 	return diags
 }
 
-func resourceSoftwareUpdatePolicyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceSoftwareUpdatePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -434,13 +434,13 @@ func resourceSoftwareUpdatePolicyUpdate(ctx context.Context, d *schema.ResourceD
 	}
 
 	// Read the resource to update state with all computed fields
-	return resourceSoftwareUpdatePolicyRead(ctx, d, m)
+	return resourceSoftwareUpdatePolicyRead(ctx, d, meta)
 }
 
-func resourceSoftwareUpdatePolicyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSoftwareUpdatePolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

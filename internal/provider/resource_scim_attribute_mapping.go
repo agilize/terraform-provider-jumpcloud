@@ -157,8 +157,8 @@ func resourceScimAttributeMapping() *schema.Resource {
 	}
 }
 
-func resourceScimAttributeMappingCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceScimAttributeMappingCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -190,8 +190,8 @@ func resourceScimAttributeMappingCreate(ctx context.Context, d *schema.ResourceD
 		mappingsList := v.([]interface{})
 		attributeMappings := make([]AttributeMapping, len(mappingsList))
 
-		for i, m := range mappingsList {
-			mapData := m.(map[string]interface{})
+		for i, meta := range mappingsList {
+			mapData := meta.(map[string]interface{})
 
 			attributeMapping := AttributeMapping{
 				SourcePath:  mapData["source_path"].(string),
@@ -248,13 +248,13 @@ func resourceScimAttributeMappingCreate(ctx context.Context, d *schema.ResourceD
 	d.SetId(createdMapping.ID)
 
 	// Ler o recurso para atualizar o state com todos os campos computados
-	return resourceScimAttributeMappingRead(ctx, d, m)
+	return resourceScimAttributeMappingRead(ctx, d, meta)
 }
 
-func resourceScimAttributeMappingRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceScimAttributeMappingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -333,24 +333,24 @@ func resourceScimAttributeMappingRead(ctx context.Context, d *schema.ResourceDat
 	// Processar mapeamentos de atributos
 	if mapping.Mappings != nil {
 		attributeMappings := make([]map[string]interface{}, len(mapping.Mappings))
-		for i, m := range mapping.Mappings {
+		for i, meta := range mapping.Mappings {
 			attributeMapping := map[string]interface{}{
-				"source_path": m.SourcePath,
-				"target_path": m.TargetPath,
-				"required":    m.Required,
-				"multivalued": m.Multivalued,
+				"source_path": meta.SourcePath,
+				"target_path": meta.TargetPath,
+				"required":    meta.Required,
+				"multivalued": meta.Multivalued,
 			}
 
-			if m.Constant != "" {
-				attributeMapping["constant"] = m.Constant
+			if meta.Constant != "" {
+				attributeMapping["constant"] = meta.Constant
 			}
 
-			if m.Expression != "" {
-				attributeMapping["expression"] = m.Expression
+			if meta.Expression != "" {
+				attributeMapping["expression"] = meta.Expression
 			}
 
-			if m.Transform != "" {
-				attributeMapping["transform"] = m.Transform
+			if meta.Transform != "" {
+				attributeMapping["transform"] = meta.Transform
 			}
 
 			attributeMappings[i] = attributeMapping
@@ -369,8 +369,8 @@ func resourceScimAttributeMappingRead(ctx context.Context, d *schema.ResourceDat
 	return diags
 }
 
-func resourceScimAttributeMappingUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceScimAttributeMappingUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -406,8 +406,8 @@ func resourceScimAttributeMappingUpdate(ctx context.Context, d *schema.ResourceD
 		mappingsList := v.([]interface{})
 		attributeMappings := make([]AttributeMapping, len(mappingsList))
 
-		for i, m := range mappingsList {
-			mapData := m.(map[string]interface{})
+		for i, meta := range mappingsList {
+			mapData := meta.(map[string]interface{})
 
 			attributeMapping := AttributeMapping{
 				SourcePath:  mapData["source_path"].(string),
@@ -455,13 +455,13 @@ func resourceScimAttributeMappingUpdate(ctx context.Context, d *schema.ResourceD
 	}
 
 	// Ler o recurso para atualizar o state com todos os campos computados
-	return resourceScimAttributeMappingRead(ctx, d, m)
+	return resourceScimAttributeMappingRead(ctx, d, meta)
 }
 
-func resourceScimAttributeMappingDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceScimAttributeMappingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

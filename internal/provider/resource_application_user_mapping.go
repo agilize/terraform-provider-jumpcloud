@@ -56,9 +56,9 @@ func resourceApplicationUserMapping() *schema.Resource {
 }
 
 // resourceApplicationUserMappingCreate cria um novo mapeamento entre usuário e aplicação
-func resourceApplicationUserMappingCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceApplicationUserMappingCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Conversão da interface para o cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -113,15 +113,15 @@ func resourceApplicationUserMappingCreate(ctx context.Context, d *schema.Resourc
 		d.SetId(createdMapping.ID)
 	}
 
-	return resourceApplicationUserMappingRead(ctx, d, m)
+	return resourceApplicationUserMappingRead(ctx, d, meta)
 }
 
 // resourceApplicationUserMappingRead lê os dados de um mapeamento entre usuário e aplicação
-func resourceApplicationUserMappingRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceApplicationUserMappingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// Conversão da interface para o cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -164,9 +164,9 @@ func resourceApplicationUserMappingRead(ctx context.Context, d *schema.ResourceD
 	found := false
 	var mapping ApplicationUserMapping
 
-	for _, m := range mappings {
-		if m.UserID == userID {
-			mapping = m
+	for _, meta := range mappings {
+		if meta.UserID == userID {
+			mapping = meta
 			found = true
 			break
 		}
@@ -191,9 +191,9 @@ func resourceApplicationUserMappingRead(ctx context.Context, d *schema.ResourceD
 }
 
 // resourceApplicationUserMappingUpdate atualiza um mapeamento entre usuário e aplicação
-func resourceApplicationUserMappingUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceApplicationUserMappingUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Conversão da interface para o cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -204,7 +204,7 @@ func resourceApplicationUserMappingUpdate(ctx context.Context, d *schema.Resourc
 
 	// Se não houve alteração nos atributos, não precisamos atualizar
 	if !d.HasChange("attributes") {
-		return resourceApplicationUserMappingRead(ctx, d, m)
+		return resourceApplicationUserMappingRead(ctx, d, meta)
 	}
 
 	// Criação da estrutura de mapeamento atualizada
@@ -231,15 +231,15 @@ func resourceApplicationUserMappingUpdate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(fmt.Errorf("erro ao atualizar mapeamento de usuário: %v", err))
 	}
 
-	return resourceApplicationUserMappingRead(ctx, d, m)
+	return resourceApplicationUserMappingRead(ctx, d, meta)
 }
 
 // resourceApplicationUserMappingDelete remove um mapeamento entre usuário e aplicação
-func resourceApplicationUserMappingDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceApplicationUserMappingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// Conversão da interface para o cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -263,7 +263,7 @@ func resourceApplicationUserMappingDelete(ctx context.Context, d *schema.Resourc
 }
 
 // resourceApplicationUserMappingImport importa um mapeamento existente
-func resourceApplicationUserMappingImport(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+func resourceApplicationUserMappingImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	// Formato esperado: {application_id}:{user_id}
 	parts := strings.Split(d.Id(), ":")
 	if len(parts) != 2 {

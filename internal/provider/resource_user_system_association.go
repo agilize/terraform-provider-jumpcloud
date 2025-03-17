@@ -40,10 +40,10 @@ func resourceUserSystemAssociation() *schema.Resource {
 }
 
 // resourceUserSystemAssociationCreate cria uma associação entre usuário e sistema
-func resourceUserSystemAssociationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserSystemAssociationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Criando associação entre usuário e sistema no JumpCloud")
 
-	c, diags := ConvertToClientInterface(m)
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -61,14 +61,14 @@ func resourceUserSystemAssociationCreate(ctx context.Context, d *schema.Resource
 	// O ID da associação é uma combinação dos IDs do usuário e do sistema
 	d.SetId(fmt.Sprintf("%s:%s", userID, systemID))
 
-	return resourceUserSystemAssociationRead(ctx, d, m)
+	return resourceUserSystemAssociationRead(ctx, d, meta)
 }
 
 // resourceUserSystemAssociationRead lê uma associação entre usuário e sistema
-func resourceUserSystemAssociationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserSystemAssociationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, fmt.Sprintf("Lendo associação entre usuário e sistema no JumpCloud: %s", d.Id()))
 
-	c, diags := ConvertToClientInterface(m)
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -119,10 +119,10 @@ func resourceUserSystemAssociationRead(ctx context.Context, d *schema.ResourceDa
 }
 
 // resourceUserSystemAssociationDelete remove uma associação entre usuário e sistema
-func resourceUserSystemAssociationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserSystemAssociationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, fmt.Sprintf("Removendo associação entre usuário e sistema no JumpCloud: %s", d.Id()))
 
-	c, diags := ConvertToClientInterface(m)
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}

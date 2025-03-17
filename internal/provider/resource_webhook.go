@@ -159,8 +159,8 @@ func ValidateEventTypes(eventTypes []string) error {
 }
 
 // resourceWebhookCreate cria um novo webhook no JumpCloud
-func resourceWebhookCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceWebhookCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -213,12 +213,12 @@ func resourceWebhookCreate(ctx context.Context, d *schema.ResourceData, m interf
 
 	d.SetId(newWebhook.ID)
 
-	return resourceWebhookRead(ctx, d, m)
+	return resourceWebhookRead(ctx, d, meta)
 }
 
 // resourceWebhookRead lê um webhook existente no JumpCloud
-func resourceWebhookRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceWebhookRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -283,8 +283,8 @@ func resourceWebhookRead(ctx context.Context, d *schema.ResourceData, m interfac
 }
 
 // resourceWebhookUpdate atualiza um webhook existente no JumpCloud
-func resourceWebhookUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceWebhookUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -334,12 +334,12 @@ func resourceWebhookUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.Errorf("erro ao atualizar webhook: %v", err)
 	}
 
-	return resourceWebhookRead(ctx, d, m)
+	return resourceWebhookRead(ctx, d, meta)
 }
 
 // resourceWebhookDelete exclui um webhook existente no JumpCloud
-func resourceWebhookDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceWebhookDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}

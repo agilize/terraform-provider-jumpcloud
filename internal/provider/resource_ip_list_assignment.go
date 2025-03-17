@@ -75,8 +75,8 @@ func resourceIPListAssignment() *schema.Resource {
 	}
 }
 
-func resourceIPListAssignmentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceIPListAssignmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -117,13 +117,13 @@ func resourceIPListAssignmentCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	d.SetId(createdAssignment.ID)
-	return resourceIPListAssignmentRead(ctx, d, m)
+	return resourceIPListAssignmentRead(ctx, d, meta)
 }
 
-func resourceIPListAssignmentRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIPListAssignmentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -165,8 +165,8 @@ func resourceIPListAssignmentRead(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-func resourceIPListAssignmentUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceIPListAssignmentUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -213,11 +213,11 @@ func resourceIPListAssignmentUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	return resourceIPListAssignmentRead(ctx, d, m)
+	return resourceIPListAssignmentRead(ctx, d, meta)
 }
 
-func resourceIPListAssignmentDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceIPListAssignmentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

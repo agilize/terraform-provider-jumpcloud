@@ -135,8 +135,8 @@ func resourceAuthPolicy() *schema.Resource {
 	}
 }
 
-func resourceAuthPolicyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAuthPolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -218,13 +218,13 @@ func resourceAuthPolicyCreate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	d.SetId(createdPolicy.ID)
-	return resourceAuthPolicyRead(ctx, d, m)
+	return resourceAuthPolicyRead(ctx, d, meta)
 }
 
-func resourceAuthPolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAuthPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -288,8 +288,8 @@ func resourceAuthPolicyRead(ctx context.Context, d *schema.ResourceData, m inter
 	return diags
 }
 
-func resourceAuthPolicyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAuthPolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -372,11 +372,11 @@ func resourceAuthPolicyUpdate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	return resourceAuthPolicyRead(ctx, d, m)
+	return resourceAuthPolicyRead(ctx, d, meta)
 }
 
-func resourceAuthPolicyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAuthPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

@@ -96,8 +96,8 @@ func resourceOAuthUser() *schema.Resource {
 	}
 }
 
-func resourceOAuthUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceOAuthUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -147,11 +147,11 @@ func resourceOAuthUserCreate(ctx context.Context, d *schema.ResourceData, m inte
 	d.SetId(createdUser.ID)
 
 	// Ler o recurso para carregar todos os campos computados
-	return resourceOAuthUserRead(ctx, d, m)
+	return resourceOAuthUserRead(ctx, d, meta)
 }
 
-func resourceOAuthUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceOAuthUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -199,8 +199,8 @@ func resourceOAuthUserRead(ctx context.Context, d *schema.ResourceData, m interf
 	return diag.Diagnostics{}
 }
 
-func resourceOAuthUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceOAuthUserUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -211,7 +211,7 @@ func resourceOAuthUserUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	// Verificar se algum campo foi alterado
 	if !d.HasChange("scopes") {
 		// Nenhuma alteração a ser feita
-		return resourceOAuthUserRead(ctx, d, m)
+		return resourceOAuthUserRead(ctx, d, meta)
 	}
 
 	// Extrair valores do schema
@@ -250,11 +250,11 @@ func resourceOAuthUserUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	// Ler o recurso para carregar todos os campos computados
-	return resourceOAuthUserRead(ctx, d, m)
+	return resourceOAuthUserRead(ctx, d, meta)
 }
 
-func resourceOAuthUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceOAuthUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

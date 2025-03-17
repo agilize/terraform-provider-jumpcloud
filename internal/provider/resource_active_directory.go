@@ -108,8 +108,8 @@ func resourceActiveDirectory() *schema.Resource {
 	}
 }
 
-func resourceActiveDirectoryCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceActiveDirectoryCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -170,13 +170,13 @@ func resourceActiveDirectoryCreate(ctx context.Context, d *schema.ResourceData, 
 	d.SetId(createdAD.ID)
 
 	// Ler o recurso para atualizar o state com todos os campos computados
-	return resourceActiveDirectoryRead(ctx, d, m)
+	return resourceActiveDirectoryRead(ctx, d, meta)
 }
 
-func resourceActiveDirectoryRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceActiveDirectoryRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -231,8 +231,8 @@ func resourceActiveDirectoryRead(ctx context.Context, d *schema.ResourceData, m 
 	return diags
 }
 
-func resourceActiveDirectoryUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceActiveDirectoryUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -288,13 +288,13 @@ func resourceActiveDirectoryUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	// Ler o recurso para atualizar o state com todos os campos computados
-	return resourceActiveDirectoryRead(ctx, d, m)
+	return resourceActiveDirectoryRead(ctx, d, meta)
 }
 
-func resourceActiveDirectoryDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceActiveDirectoryDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

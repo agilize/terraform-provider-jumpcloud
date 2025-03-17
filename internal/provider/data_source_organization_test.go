@@ -94,8 +94,8 @@ func mockDataSourceOrganizationSchema() map[string]*schema.Schema {
 }
 
 // Mock para a função de leitura do data source Organization
-func mockDataSourceOrganizationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(JumpCloudClient)
+func mockDataSourceOrganizationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(JumpCloudClient)
 	var diags diag.Diagnostics
 
 	// Buscar dados da organização

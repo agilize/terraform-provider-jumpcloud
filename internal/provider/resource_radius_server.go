@@ -108,9 +108,9 @@ func resourceRadiusServer() *schema.Resource {
 }
 
 // resourceRadiusServerCreate cria um novo servidor RADIUS no JumpCloud
-func resourceRadiusServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceRadiusServerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -171,15 +171,15 @@ func resourceRadiusServerCreate(ctx context.Context, d *schema.ResourceData, m i
 	}
 
 	d.SetId(createdRadiusServer.ID)
-	return resourceRadiusServerRead(ctx, d, m)
+	return resourceRadiusServerRead(ctx, d, meta)
 }
 
 // resourceRadiusServerRead lê os detalhes de um servidor RADIUS do JumpCloud
-func resourceRadiusServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceRadiusServerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -226,9 +226,9 @@ func resourceRadiusServerRead(ctx context.Context, d *schema.ResourceData, m int
 }
 
 // resourceRadiusServerUpdate atualiza um servidor RADIUS existente no JumpCloud
-func resourceRadiusServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceRadiusServerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -286,15 +286,15 @@ func resourceRadiusServerUpdate(ctx context.Context, d *schema.ResourceData, m i
 		return diag.FromErr(fmt.Errorf("erro ao atualizar servidor RADIUS: %v", err))
 	}
 
-	return resourceRadiusServerRead(ctx, d, m)
+	return resourceRadiusServerRead(ctx, d, meta)
 }
 
 // resourceRadiusServerDelete exclui um servidor RADIUS do JumpCloud
-func resourceRadiusServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceRadiusServerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

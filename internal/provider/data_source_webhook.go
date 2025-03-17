@@ -68,8 +68,8 @@ func dataSourceWebhook() *schema.Resource {
 }
 
 // dataSourceWebhookRead lê as informações de um webhook existente no JumpCloud
-func dataSourceWebhookRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func dataSourceWebhookRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}

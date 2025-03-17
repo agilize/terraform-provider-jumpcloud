@@ -101,7 +101,33 @@ jobs:
         run: go install github.com/bflad/tfproviderlint/cmd/tfproviderlint@latest
       
       - name: Terraform Provider Lint
-        run: tfproviderlint -R001=false -R011=false -R012=false -AT001=false -AT005=false -AT012=false -R004=false -R014=false -R017=false -R019=false -V013=false ./...
+        run: |
+          echo "Executando verificações de linting - ignorando erros que serão corrigidos em fases futuras"
+          echo "Verificando apenas erros críticos e R014 (já corrigido)"
+          
+          # Verifica R014 (já corrigido)
+          tfproviderlint \
+            -AT001=false \
+            -AT005=false \
+            -AT012=false \
+            -R001=false \
+            -R017=false \
+            -R019=false \
+            -V013=false \
+            -R014=true \
+            ./...
+          
+          # Lista erros ignorados (para referência)
+          echo "Erros temporariamente ignorados (a serem corrigidos em fases):"
+          echo "- AT001: missing CheckDestroy"
+          echo "- AT005: acceptance test function name should begin with TestAcc"
+          echo "- AT012: file contains multiple acceptance test name prefixes"
+          echo "- R001: ResourceData.Set() key argument should be string literal"
+          echo "- R017: schema attributes should be stable across Terraform runs"
+          echo "- R019: d.HasChanges() has many arguments, consider d.HasChangesExcept()"
+          echo "- V013: custom SchemaValidateFunc should be replaced with validation.StringInSlice()"
+          
+          echo "Veja o plano completo de correção em docs/LINTING.md"
   
   tfsdk-version:
     name: Check Terraform SDK version

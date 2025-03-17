@@ -332,9 +332,9 @@ func resourceSSOApplication() *schema.Resource {
 }
 
 // resourceSSOApplicationCreate cria uma nova aplicação SSO
-func resourceSSOApplicationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSSOApplicationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -492,15 +492,15 @@ func resourceSSOApplicationCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	d.SetId(createdApplication.ID)
-	return resourceSSOApplicationRead(ctx, d, m)
+	return resourceSSOApplicationRead(ctx, d, meta)
 }
 
 // resourceSSOApplicationRead lê os detalhes de uma aplicação SSO
-func resourceSSOApplicationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSSOApplicationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -616,9 +616,9 @@ func resourceSSOApplicationRead(ctx context.Context, d *schema.ResourceData, m i
 }
 
 // resourceSSOApplicationUpdate atualiza uma aplicação SSO existente
-func resourceSSOApplicationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSSOApplicationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -777,13 +777,13 @@ func resourceSSOApplicationUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	return resourceSSOApplicationRead(ctx, d, m)
+	return resourceSSOApplicationRead(ctx, d, meta)
 }
 
 // resourceSSOApplicationDelete exclui uma aplicação SSO
-func resourceSSOApplicationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSSOApplicationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

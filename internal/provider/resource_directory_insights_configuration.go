@@ -106,9 +106,9 @@ func resourceDirectoryInsightsConfiguration() *schema.Resource {
 }
 
 // resourceDirectoryInsightsConfigurationCreate cria uma nova configuração do Directory Insights
-func resourceDirectoryInsightsConfigurationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceDirectoryInsightsConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -182,15 +182,15 @@ func resourceDirectoryInsightsConfigurationCreate(ctx context.Context, d *schema
 	}
 
 	d.SetId(createdConfig.ID)
-	return resourceDirectoryInsightsConfigurationRead(ctx, d, m)
+	return resourceDirectoryInsightsConfigurationRead(ctx, d, meta)
 }
 
 // resourceDirectoryInsightsConfigurationRead lê os detalhes da configuração do Directory Insights
-func resourceDirectoryInsightsConfigurationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceDirectoryInsightsConfigurationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -246,9 +246,9 @@ func resourceDirectoryInsightsConfigurationRead(ctx context.Context, d *schema.R
 }
 
 // resourceDirectoryInsightsConfigurationUpdate atualiza uma configuração existente do Directory Insights
-func resourceDirectoryInsightsConfigurationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceDirectoryInsightsConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -323,16 +323,16 @@ func resourceDirectoryInsightsConfigurationUpdate(ctx context.Context, d *schema
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	return resourceDirectoryInsightsConfigurationRead(ctx, d, m)
+	return resourceDirectoryInsightsConfigurationRead(ctx, d, meta)
 }
 
 // resourceDirectoryInsightsConfigurationDelete desativa a configuração do Directory Insights
-func resourceDirectoryInsightsConfigurationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceDirectoryInsightsConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Nota: Em muitos casos, configurações não são realmente excluídas, mas sim desativadas ou resetadas.
 	// Aqui estamos assumindo que podemos desativar o Directory Insights com uma configuração mínima.
 
 	// Obter cliente
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

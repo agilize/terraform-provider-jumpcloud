@@ -49,10 +49,10 @@ func resourceUserGroupMembership() *schema.Resource {
 }
 
 // resourceUserGroupMembershipCreate cria uma nova associação entre usuário e grupo de usuários
-func resourceUserGroupMembershipCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserGroupMembershipCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Criando associação de usuário a grupo de usuários no JumpCloud")
 
-	c, diags := ConvertToClientInterface(m)
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -82,16 +82,16 @@ func resourceUserGroupMembershipCreate(ctx context.Context, d *schema.ResourceDa
 	// Definir ID do recurso como uma combinação dos IDs do grupo e do usuário
 	d.SetId(fmt.Sprintf("%s:%s", userGroupID, userID))
 
-	return resourceUserGroupMembershipRead(ctx, d, m)
+	return resourceUserGroupMembershipRead(ctx, d, meta)
 }
 
 // resourceUserGroupMembershipRead lê informações de uma associação entre usuário e grupo de usuários
-func resourceUserGroupMembershipRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserGroupMembershipRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Lendo associação de usuário a grupo de usuários do JumpCloud")
 
 	var diags diag.Diagnostics
 
-	c, convDiags := ConvertToClientInterface(m)
+	c, convDiags := ConvertToClientInterface(meta)
 	if convDiags != nil {
 		return convDiags
 	}
@@ -154,12 +154,12 @@ func resourceUserGroupMembershipRead(ctx context.Context, d *schema.ResourceData
 }
 
 // resourceUserGroupMembershipDelete remove uma associação entre usuário e grupo de usuários
-func resourceUserGroupMembershipDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserGroupMembershipDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Removendo associação de usuário a grupo de usuários do JumpCloud")
 
 	var diags diag.Diagnostics
 
-	c, convDiags := ConvertToClientInterface(m)
+	c, convDiags := ConvertToClientInterface(meta)
 	if convDiags != nil {
 		return convDiags
 	}

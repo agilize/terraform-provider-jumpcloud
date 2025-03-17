@@ -119,8 +119,8 @@ func resourceAlertConfiguration() *schema.Resource {
 	}
 }
 
-func resourceAlertConfigurationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAlertConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -193,13 +193,13 @@ func resourceAlertConfigurationCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	d.SetId(createdAlertConfig.ID)
-	return resourceAlertConfigurationRead(ctx, d, m)
+	return resourceAlertConfigurationRead(ctx, d, meta)
 }
 
-func resourceAlertConfigurationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAlertConfigurationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -260,8 +260,8 @@ func resourceAlertConfigurationRead(ctx context.Context, d *schema.ResourceData,
 	return diags
 }
 
-func resourceAlertConfigurationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAlertConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -340,11 +340,11 @@ func resourceAlertConfigurationUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	return resourceAlertConfigurationRead(ctx, d, m)
+	return resourceAlertConfigurationRead(ctx, d, meta)
 }
 
-func resourceAlertConfigurationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAlertConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}

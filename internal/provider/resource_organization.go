@@ -187,7 +187,7 @@ func resourceOrganization() *schema.Resource {
 				Description: "Data da última atualização da organização",
 			},
 		},
-		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
+		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 			// Validar domínios permitidos
 			if d.HasChange("allowed_domains") {
 				domains := d.Get("allowed_domains").(*schema.Set).List()
@@ -205,8 +205,8 @@ func resourceOrganization() *schema.Resource {
 }
 
 // resourceOrganizationCreate cria uma nova organização no JumpCloud
-func resourceOrganizationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceOrganizationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -251,12 +251,12 @@ func resourceOrganizationCreate(ctx context.Context, d *schema.ResourceData, m i
 	}
 
 	d.SetId(createdOrg.ID)
-	return resourceOrganizationRead(ctx, d, m)
+	return resourceOrganizationRead(ctx, d, meta)
 }
 
 // resourceOrganizationRead lê uma organização existente no JumpCloud
-func resourceOrganizationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceOrganizationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -328,8 +328,8 @@ func resourceOrganizationRead(ctx context.Context, d *schema.ResourceData, m int
 }
 
 // resourceOrganizationUpdate atualiza uma organização existente no JumpCloud
-func resourceOrganizationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceOrganizationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -370,12 +370,12 @@ func resourceOrganizationUpdate(ctx context.Context, d *schema.ResourceData, m i
 		return diag.FromErr(fmt.Errorf("erro ao atualizar organização: %v", err))
 	}
 
-	return resourceOrganizationRead(ctx, d, m)
+	return resourceOrganizationRead(ctx, d, meta)
 }
 
 // resourceOrganizationDelete exclui uma organização existente no JumpCloud
-func resourceOrganizationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceOrganizationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}

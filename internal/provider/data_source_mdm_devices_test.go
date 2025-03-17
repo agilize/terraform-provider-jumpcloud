@@ -87,8 +87,8 @@ func mockDataSourceMDMDevicesSchema() map[string]*schema.Schema {
 }
 
 // Mock para a função de leitura do data source MDM Devices
-func mockDataSourceMDMDevicesRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(JumpCloudClient)
+func mockDataSourceMDMDevicesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(JumpCloudClient)
 	var diags diag.Diagnostics
 
 	// Construir a URL base

@@ -90,8 +90,8 @@ func resourceAppCatalogCategory() *schema.Resource {
 	}
 }
 
-func resourceAppCatalogCategoryCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAppCatalogCategoryCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -149,13 +149,13 @@ func resourceAppCatalogCategoryCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	d.SetId(createdCategory.ID)
-	return resourceAppCatalogCategoryRead(ctx, d, m)
+	return resourceAppCatalogCategoryRead(ctx, d, meta)
 }
 
-func resourceAppCatalogCategoryRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAppCatalogCategoryRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := ConvertToClientInterface(m)
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -200,8 +200,8 @@ func resourceAppCatalogCategoryRead(ctx context.Context, d *schema.ResourceData,
 	return diags
 }
 
-func resourceAppCatalogCategoryUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAppCatalogCategoryUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -260,11 +260,11 @@ func resourceAppCatalogCategoryUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	return resourceAppCatalogCategoryRead(ctx, d, m)
+	return resourceAppCatalogCategoryRead(ctx, d, meta)
 }
 
-func resourceAppCatalogCategoryDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diagErr := ConvertToClientInterface(m)
+func resourceAppCatalogCategoryDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diagErr := ConvertToClientInterface(meta)
 	if diagErr != nil {
 		return diagErr
 	}
