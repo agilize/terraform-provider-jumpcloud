@@ -6,7 +6,7 @@ This document describes the linting errors identified in the project and the pla
 
 We use the `tfproviderlint` tool to check code compliance with best practices for Terraform providers. Several issues have been identified and will be fixed in phases.
 
-We also use `golangci-lint` for general Go linting and static analysis.
+We also use `golangci-lint` for general Go linting and static analysis. This project uses Go 1.20.
 
 ## Fixed Errors
 
@@ -60,7 +60,7 @@ As each correction phase is completed, the workflow will be updated to enable ve
 
 In addition to tfproviderlint, we also use golangci-lint for more comprehensive static code analysis. For information on configuration and troubleshooting with golangci-lint, see the [GOLANGCI-LINT.md](./GOLANGCI-LINT.md) document.
 
-We've configured golangci-lint to work properly with Go 1.22 by disabling problematic linters and using a custom configuration.
+We've configured golangci-lint with a suitable configuration for Go 1.20, enabling the most useful linters.
 
 ### Local Scripts
 
@@ -140,4 +140,4 @@ ValidateFunc: func(v interface{}, k string) (warns []string, errs []error) {
 
 // Correct
 ValidateFunc: validation.StringInSlice([]string{"one", "two", "three"}, false),
-``` 
+```

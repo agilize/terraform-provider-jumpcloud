@@ -6,7 +6,7 @@ This document provides guidance on using golangci-lint in the terraform-provider
 
 golangci-lint requires specific compatibility with the Go version. In this project, we are using:
 
-- **Go version:** 1.22
+- **Go version:** 1.20
 - **golangci-lint version:** v1.57.0
 
 ### Compatibility Table
@@ -31,7 +31,7 @@ In GitHub Actions, we use golangci-lint as part of the PR verification process:
     skip-cache: true
 ```
 
-We use a custom configuration file (`.golangci.yml`) that is configured to work with Go 1.22 by disabling problematic linters.
+We use a custom configuration file (`.golangci.yml`) that specifies which linters to enable.
 
 ## Configuration File
 
@@ -43,7 +43,6 @@ run:
   timeout: 5m
 
 linters:
-  disable-all: true
   enable:
     - errcheck
     - gosimple
@@ -67,43 +66,20 @@ output:
 ```
 
 This configuration:
-- Disables all linters by default (`disable-all: true`) and then selectively enables only the linters we want to use
+- Specifies which linters to enable
 - Sets a reasonable timeout
 - Configures output and issue limits
 
-By using `disable-all: true`, we prevent compatibility issues with problematic linters such as `goanalysis_metalinter` that may cause errors with Go 1.22.
-
 ## Common Errors and Solutions
 
-### 1. "Unsupported version" Error
+### 1. Version Compatibility Issues
 
-**Symptom:**
-```
-level=error msg="Running error: 1 error occurred:\n\t* can't run linter goanalysis_metalinter: buildir: failed to load package goarch: could not load export data: internal error in importing \"internal/goarch\" (unsupported version: 2); please report an issue\n\n"
-```
+If you encounter compatibility issues between Go and golangci-lint, consider:
 
-**Cause:** Incompatibility between the Go version and the golangci-lint version, specifically with the `goanalysis_metalinter`.
+1. Using a version of golangci-lint known to be compatible with your Go version (see compatibility table)
+2. Simplifying your linter configuration to use only stable linters
 
-**Solution:** 
-1. Use a custom configuration file (`.golangci.yml`)
-2. In the configuration file, use `disable-all: true` and explicitly enable only compatible linters
-3. Make sure to use v1.57.0 or newer of golangci-lint
-
-### 2. "Can't combine options --disable-all and --disable" Error
-
-**Symptom:**
-```
-Error: can't combine options --disable-all and --disable
-```
-
-**Cause:** Trying to use both `disable-all: true` in the config file and `--disable` flag on the command line.
-
-**Solution:**
-Either:
-- Remove the `--disable` flag from the command line (preferred approach), or
-- Remove `disable-all: true` from the config file and list specific linters to disable
-
-### 3. Timeout During Execution
+### 2. Timeout During Execution
 
 **Symptom:** golangci-lint execution fails with a timeout error.
 
@@ -112,7 +88,7 @@ Either:
 args: --timeout=10m
 ```
 
-### 4. Cache Problems
+### 3. Cache Problems
 
 **Symptom:** Inconsistent errors between executions.
 
