@@ -248,7 +248,7 @@ func resourcePasswordPolicyCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	// Validar se target_resources foi fornecido quando scope é system_group
-	if policy.Scope == "system_group" && (policy.TargetResources == nil || len(policy.TargetResources) == 0) {
+	if policy.Scope == "system_group" && len(policy.TargetResources) == 0 {
 		return diag.FromErr(fmt.Errorf("target_resources é obrigatório quando scope é 'system_group'"))
 	}
 
@@ -410,7 +410,7 @@ func resourcePasswordPolicyUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	// Validar se target_resources foi fornecido quando scope é system_group
-	if policy.Scope == "system_group" && (policy.TargetResources == nil || len(policy.TargetResources) == 0) {
+	if policy.Scope == "system_group" && len(policy.TargetResources) == 0 {
 		return diag.FromErr(fmt.Errorf("target_resources é obrigatório quando scope é 'system_group'"))
 	}
 

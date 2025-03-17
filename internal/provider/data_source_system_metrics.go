@@ -318,7 +318,7 @@ func dataSourceSystemMetricsRead(ctx context.Context, d *schema.ResourceData, me
 		}
 
 		// Processar tags
-		if metric.Tags != nil && len(metric.Tags) > 0 {
+		if len(metric.Tags) > 0 {
 			metricMap["tags"] = metric.Tags
 		}
 

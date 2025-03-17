@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -176,25 +175,23 @@ func testAccCheckJumpCloudCommandAssociationExists(n string) resource.TestCheckF
 
 // testAccJumpCloudCommandAssociationConfig retorna uma configuração de teste para o recurso command_association
 func testAccJumpCloudCommandAssociationConfig() string {
-	return fmt.Sprintf(`
+	return `
 resource "jumpcloud_command" "test" {
-  name         = "tf-acc-test-command"
-  command      = "echo 'Hello from Terraform'"
-  command_type = "linux"
-  user         = "root"
-  sudo         = true
+  name           = "test-command"
+  command        = "echo Hello World"
+  user           = "root"
+  schedule       = "* * * * *"
+  trigger        = "manual"
+  timeout        = 30
 }
 
-resource "jumpcloud_system" "test" {
-  display_name       = "tf-acc-test-system"
-  allow_ssh_password_authentication = true
-  allow_ssh_root_login = false
+resource "jumpcloud_system_group" "test" {
+  name = "test-system-group"
 }
 
-resource "jumpcloud_command_association" "test" {
-  command_id  = jumpcloud_command.test.id
-  target_id   = jumpcloud_system.test.id
-  target_type = "system"
+resource "jumpcloud_command_association" "test_association" {
+  command_id = jumpcloud_command.test.id
+  system_group_id = jumpcloud_system_group.test.id
 }
-`)
+`
 }

@@ -565,7 +565,7 @@ func resourceSSOApplicationRead(ctx context.Context, d *schema.ResourceData, met
 		}
 
 		// Processar declarações de atributos, se existirem
-		if application.SAML.AttributeStatements != nil && len(application.SAML.AttributeStatements) > 0 {
+		if len(application.SAML.AttributeStatements) > 0 {
 			attrStatements := make([]map[string]interface{}, len(application.SAML.AttributeStatements))
 
 			for i, stmt := range application.SAML.AttributeStatements {

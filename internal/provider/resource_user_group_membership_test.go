@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -171,23 +170,20 @@ func testAccCheckJumpCloudUserGroupMembershipExists(n string) resource.TestCheck
 
 // testAccJumpCloudUserGroupMembershipConfig retorna uma configuração de teste para o recurso user_group_membership
 func testAccJumpCloudUserGroupMembershipConfig() string {
-	return fmt.Sprintf(`
-resource "jumpcloud_user_group" "test" {
-  name        = "tf-acc-test-user-group"
-  description = "Test User Group created by Terraform"
+	return `
+resource "jumpcloud_user_group" "test_group" {
+  name = "tf-acc-test-user-group"
 }
 
-resource "jumpcloud_user" "test" {
-  username   = "tf-acc-test-user"
-  email      = "tf-acc-test-user@example.com"
-  firstname  = "TF"
-  lastname   = "Test"
-  password   = "Terraform@123!"
+resource "jumpcloud_user" "test_user" {
+  username = "tf-acc-test-user"
+  email    = "tf-acc-test-user@example.com"
+  password = "TestPassword123!"
 }
 
-resource "jumpcloud_user_group_membership" "test" {
-  user_group_id = jumpcloud_user_group.test.id
-  user_id       = jumpcloud_user.test.id
+resource "jumpcloud_user_group_membership" "test_membership" {
+  user_id = jumpcloud_user.test_user.id
+  user_group_id = jumpcloud_user_group.test_group.id
 }
-`)
+`
 }

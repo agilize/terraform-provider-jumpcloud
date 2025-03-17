@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -171,21 +170,20 @@ func testAccCheckJumpCloudSystemGroupMembershipExists(n string) resource.TestChe
 
 // testAccJumpCloudSystemGroupMembershipConfig retorna uma configuração de teste para o recurso system_group_membership
 func testAccJumpCloudSystemGroupMembershipConfig() string {
-	return fmt.Sprintf(`
-resource "jumpcloud_system_group" "test" {
-  name        = "tf-acc-test-system-group"
-  description = "Test System Group created by Terraform"
+	return `
+resource "jumpcloud_system_group" "test_group" {
+  name = "tf-acc-test-system-group"
 }
 
-resource "jumpcloud_system" "test" {
-  display_name       = "tf-acc-test-system"
+resource "jumpcloud_system" "test_system" {
+  display_name = "tf-acc-test-system"
   allow_ssh_password_authentication = true
   allow_ssh_root_login = false
 }
 
-resource "jumpcloud_system_group_membership" "test" {
-  system_group_id = jumpcloud_system_group.test.id
-  system_id       = jumpcloud_system.test.id
+resource "jumpcloud_system_group_membership" "test_membership" {
+  system_id = jumpcloud_system.test_system.id
+  system_group_id = jumpcloud_system_group.test_group.id
 }
-`)
+`
 }

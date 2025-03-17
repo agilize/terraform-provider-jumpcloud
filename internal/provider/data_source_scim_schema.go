@@ -352,7 +352,7 @@ func flattenScimSchemaAttributes(attributes []ScimSchemaAttribute) []map[string]
 		}
 
 		// Processar sub-atributos se existirem
-		if attr.SubAttributes != nil && len(attr.SubAttributes) > 0 {
+		if len(attr.SubAttributes) > 0 {
 			subAttrs := flattenScimSchemaSubAttributes(attr.SubAttributes)
 			attrMap["sub_attributes"] = subAttrs
 		}

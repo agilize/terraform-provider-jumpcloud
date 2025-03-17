@@ -46,9 +46,7 @@ func ValidateEmail(email string) error {
 
 // ValidateDomainPattern valida se um padrão de domínio é válido
 func ValidateDomainPattern(domain string) error {
-	if strings.HasPrefix(domain, "*.") {
-		domain = domain[2:]
-	}
+	domain = strings.TrimPrefix(domain, "*.")
 
 	pattern := `^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$`
 	matched, err := regexp.MatchString(pattern, domain)

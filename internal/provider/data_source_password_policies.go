@@ -366,7 +366,7 @@ func flattenPasswordPolicies(policies []PasswordPolicyItem) []map[string]interfa
 			policyMap["org_id"] = policy.OrgID
 		}
 
-		if policy.TargetResources != nil && len(policy.TargetResources) > 0 {
+		if len(policy.TargetResources) > 0 {
 			policyMap["target_resources"] = policy.TargetResources
 		}
 

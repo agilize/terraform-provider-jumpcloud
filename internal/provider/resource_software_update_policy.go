@@ -206,7 +206,7 @@ func resourceSoftwareUpdatePolicyCreate(ctx context.Context, d *schema.ResourceD
 	policy.Targets = targets
 
 	// Verify consistency: AllPackages or PackageIDs must be defined
-	if !policy.AllPackages && (policy.PackageIDs == nil || len(policy.PackageIDs) == 0) {
+	if !policy.AllPackages && len(policy.PackageIDs) == 0 {
 		return diag.FromErr(fmt.Errorf("you must define package_ids or set all_packages=true"))
 	}
 
@@ -410,7 +410,7 @@ func resourceSoftwareUpdatePolicyUpdate(ctx context.Context, d *schema.ResourceD
 	policy.Targets = targets
 
 	// Verify consistency: AllPackages or PackageIDs must be defined
-	if !policy.AllPackages && (policy.PackageIDs == nil || len(policy.PackageIDs) == 0) {
+	if !policy.AllPackages && len(policy.PackageIDs) == 0 {
 		return diag.FromErr(fmt.Errorf("you must define package_ids or set all_packages=true"))
 	}
 
