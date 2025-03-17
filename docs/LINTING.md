@@ -1,101 +1,109 @@
-# Linting no Provider JumpCloud
+# Linting in JumpCloud Provider
 
-Este documento descreve os erros de linting identificados no projeto e o plano para corrigi-los gradualmente.
+This document describes the linting errors identified in the project and the plan to gradually fix them.
 
-## Visão Geral
+## Overview
 
-Estamos usando a ferramenta `tfproviderlint` para verificar a conformidade do código com as melhores práticas para providers Terraform. Alguns erros foram identificados e serão corrigidos em fases.
+We use the `tfproviderlint` tool to check code compliance with best practices for Terraform providers. Several issues have been identified and will be fixed in phases.
 
-## Erros Corrigidos
+## Fixed Errors
 
-- ✅ **R014**: Parâmetros do tipo `interface{}` devem ser chamados de `meta`. Este erro foi corrigido em todos os arquivos.
+- ✅ **R014**: Parameters of type `interface{}` must be named `meta`. This error has been fixed in all files.
 
-## Erros Pendentes
+## Pending Errors
 
-Os seguintes erros de linting serão corrigidos em fases futuras:
+The following linting errors will be fixed in future phases:
 
-### Erros em Testes de Aceitação
+### Errors in Acceptance Tests
 
-- **AT001**: Missing CheckDestroy - testes de aceitação devem incluir uma verificação de destruição para garantir que os recursos sejam limpos corretamente.
-- **AT005**: Nomes de funções de teste de aceitação devem começar com `TestAcc`.
-- **AT012**: Arquivo contém múltiplos prefixos de nomes para testes de aceitação, o que pode causar confusão.
+- **AT001**: Missing CheckDestroy - acceptance tests should include a destruction check to ensure resources are properly cleaned up.
+- **AT005**: Acceptance test function names should begin with `TestAcc`.
+- **AT012**: File contains multiple acceptance test name prefixes, which can cause confusion.
 
-### Erros em Recursos
+### Errors in Resources
 
-- **R001**: O argumento de chave para `ResourceData.Set()` deve ser uma string literal, não uma variável.
-- **R017**: Atributos de schema devem ser estáveis entre execuções do Terraform para evitar problemas de estado.
-- **R019**: `d.HasChanges()` tem muitos argumentos, considere usar `d.HasChangesExcept()`.
+- **R001**: The key argument for `ResourceData.Set()` must be a string literal, not a variable.
+- **R017**: Schema attributes should be stable across Terraform runs to avoid state issues.
+- **R019**: `d.HasChanges()` has many arguments, consider using `d.HasChangesExcept()`.
 
-### Erros de Validação
+### Validation Errors
 
-- **V013**: Funções de validação customizadas devem ser substituídas por `validation.StringInSlice()` ou `validation.StringNotInSlice()`.
+- **V013**: Custom SchemaValidateFunc should be replaced with `validation.StringInSlice()` or `validation.StringNotInSlice()`.
 
-## Plano de Correção
+## Correction Plan
 
-Para facilitar o processo de correção, seguiremos a seguinte ordem:
+To facilitate the correction process, we will follow this order:
 
-1. **Fase 1**: Corrigir R001 (ResourceData.Set com string literal)
-2. **Fase 2**: Corrigir R019 (HasChanges → HasChangesExcept)
-3. **Fase 3**: Corrigir V013 (SchemaValidateFunc → validation.StringInSlice)
-4. **Fase 4**: Corrigir R017 (Schema attributes should be stable)
-5. **Fase 5**: Corrigir AT* (problemas em testes de aceitação)
+1. **Phase 1**: Fix R001 (ResourceData.Set with string literal)
+2. **Phase 2**: Fix R019 (HasChanges → HasChangesExcept)
+3. **Phase 3**: Fix V013 (SchemaValidateFunc → validation.StringInSlice)
+4. **Phase 4**: Fix R017 (Schema attributes should be stable)
+5. **Phase 5**: Fix AT* (acceptance test issues)
 
-## Configuração do CI/CD
+## CI/CD Configuration
 
-Para evitar que os erros de linting bloqueiem o desenvolvimento enquanto são corrigidos gradualmente, implementamos as seguintes soluções:
+To prevent linting errors from blocking development while they are gradually fixed, we have implemented the following solutions:
 
 ### GitHub Actions
 
-O workflow de verificação de pull requests (`.github/workflows/pr-check.yml`) foi configurado para:
+The pull request verification workflow (`.github/workflows/pr-check.yml`) has been configured to:
 
-1. Executar a verificação do tfproviderlint apenas para erros críticos e R014 (já corrigido)
-2. Ignorar temporariamente os erros que serão corrigidos em fases
-3. Listar os erros pendentes para referência
+1. Run tfproviderlint verification only for critical errors and R014 (already fixed)
+2. Temporarily ignore errors that will be fixed in phases
+3. List pending errors for reference
 
-À medida que cada fase de correção for concluída, o workflow será atualizado para habilitar a verificação das regras correspondentes.
+As each correction phase is completed, the workflow will be updated to enable verification of the corresponding rules.
 
-### Scripts Locais
+### golangci-lint
 
-Fornecemos dois scripts para ajudar no processo de verificação local:
+In addition to tfproviderlint, we also use golangci-lint for more comprehensive static code analysis. For information on configuration and troubleshooting with golangci-lint, see the [GOLANGCI-LINT.md](./GOLANGCI-LINT.md) document.
 
-- `check_required_lint.sh`: Verifica apenas os erros críticos, ignorando os que serão tratados em fases.
-- `run_linter.sh`: Fornece opções para verificar erros específicos e informações sobre como executar o linter.
+### Local Scripts
 
-## Como Contribuir para Correções
+We provide two scripts in the `scripts/linting/` directory to help with local verification:
 
-Se você deseja contribuir para corrigir erros de linting, siga estas etapas:
+- `scripts/linting/check_required_lint.sh`: Checks only critical errors, ignoring those to be addressed in phases.
+- `scripts/linting/run_linter.sh`: Provides options for checking specific errors and information on how to run the linter.
 
-1. Escolha uma fase para trabalhar com base no plano de correção.
-2. Execute o lint específico para a regra que está corrigindo:
+## How to Contribute to Corrections
+
+If you want to contribute to fixing linting errors, follow these steps:
+
+1. Choose a phase to work on based on the correction plan.
+2. Run the specific lint for the rule you're fixing:
    ```
-   $HOME/go/bin/tfproviderlint -AT=false -R=false -S=false -V=false -<REGRA>=true ./...
+   $HOME/go/bin/tfproviderlint -AT=false -R=false -S=false -V=false -<RULE>=true ./...
    ```
-3. Faça as correções necessárias nos arquivos indicados.
-4. Execute os testes para garantir que suas alterações não causaram regressões.
-5. Envie um PR com uma descrição clara das correções realizadas.
+   Or use our helper script:
+   ```
+   ./scripts/linting/run_linter.sh
+   ```
+3. Make the necessary corrections to the indicated files.
+4. Run tests to ensure your changes haven't caused regressions.
+5. Submit a PR with a clear description of the corrections made.
 
-## Detalhes dos Erros de Linting
+## Linting Error Details
 
-### R001: ResourceData.Set() com string literal
+### R001: ResourceData.Set() with string literal
 
 ```go
-// Incorreto
+// Incorrect
 key := "attribute_name"
 d.Set(key, value)
 
-// Correto
+// Correct
 d.Set("attribute_name", value)
 ```
 
 ### R019: HasChanges → HasChangesExcept
 
 ```go
-// Incorreto
+// Incorrect
 if d.HasChanges("attr1", "attr2", "attr3", "attr4", "attr5") {
     // ...
 }
 
-// Correto
+// Correct
 if d.HasChangesExcept("attr6", "attr7") {
     // ...
 }
@@ -104,7 +112,7 @@ if d.HasChangesExcept("attr6", "attr7") {
 ### V013: SchemaValidateFunc → validation.StringInSlice
 
 ```go
-// Incorreto
+// Incorrect
 ValidateFunc: func(v interface{}, k string) (warns []string, errs []error) {
     value := v.(string)
     validValues := []string{"one", "two", "three"}
@@ -121,6 +129,6 @@ ValidateFunc: func(v interface{}, k string) (warns []string, errs []error) {
     return
 },
 
-// Correto
+// Correct
 ValidateFunc: validation.StringInSlice([]string{"one", "two", "three"}, false),
 ``` 

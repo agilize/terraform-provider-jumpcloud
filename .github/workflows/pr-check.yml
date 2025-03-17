@@ -25,8 +25,9 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.53
+          version: v1.57.0
           args: --timeout=5m
+          skip-cache: true
   
   test:
     name: Test
@@ -102,10 +103,10 @@ jobs:
       
       - name: Terraform Provider Lint
         run: |
-          echo "Executando verificações de linting - ignorando erros que serão corrigidos em fases futuras"
-          echo "Verificando apenas erros críticos e R014 (já corrigido)"
+          echo "Running linting checks - ignoring errors that will be fixed in future phases"
+          echo "Checking only critical errors and R014 (already fixed)"
           
-          # Verifica R014 (já corrigido)
+          # Check R014 (already fixed)
           tfproviderlint \
             -AT001=false \
             -AT005=false \
@@ -117,8 +118,8 @@ jobs:
             -R014=true \
             ./...
           
-          # Lista erros ignorados (para referência)
-          echo "Erros temporariamente ignorados (a serem corrigidos em fases):"
+          # List ignored errors (for reference)
+          echo "Temporarily ignored errors (to be fixed in phases):"
           echo "- AT001: missing CheckDestroy"
           echo "- AT005: acceptance test function name should begin with TestAcc"
           echo "- AT012: file contains multiple acceptance test name prefixes"
@@ -127,7 +128,8 @@ jobs:
           echo "- R019: d.HasChanges() has many arguments, consider d.HasChangesExcept()"
           echo "- V013: custom SchemaValidateFunc should be replaced with validation.StringInSlice()"
           
-          echo "Veja o plano completo de correção em docs/LINTING.md"
+          echo "See the complete correction plan in docs/LINTING.md"
+          echo "Local scripts for linting are available in scripts/linting/"
   
   tfsdk-version:
     name: Check Terraform SDK version
