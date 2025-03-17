@@ -6,7 +6,7 @@ This document describes the linting errors identified in the project and the pla
 
 We use the `tfproviderlint` tool to check code compliance with best practices for Terraform providers. Several issues have been identified and will be fixed in phases.
 
-We also use `golangci-lint` for general Go linting and static analysis. This project uses Go 1.20.
+We also use `golangci-lint` for general Go linting and static analysis. This project uses Go 1.24.1.
 
 ## Fixed Errors
 

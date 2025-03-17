@@ -1,55 +1,73 @@
 #!/bin/bash
 
-# Script to run tfproviderlint with custom settings
-# Allows temporarily ignoring certain types of errors while they are fixed in phases
+echo "Terraform Provider Linting Helper"
+echo "=================================="
+echo 
 
-# Colors for output
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
+# Function to display usage
+show_usage() {
+  echo "Usage: $0 [options]"
+  echo
+  echo "Options:"
+  echo "  --all        Run all lint checks"
+  echo "  --critical   Run only critical checks"
+  echo "  --r001       Check R001 (ResourceData.Set with string literal)"
+  echo "  --r014       Check R014 (interface{} parameter name)"
+  echo "  --r017       Check R017 (Schema attributes stability)"
+  echo "  --r019       Check R019 (HasChanges → HasChangesExcept)"
+  echo "  --v013       Check V013 (SchemaValidateFunc → validation.StringInSlice)"
+  echo "  --at         Check all acceptance test issues"
+  echo
+  echo "If no options are provided, this help message is displayed."
+}
 
-echo -e "${YELLOW}Running custom lint checks...${NC}"
-
-# Path to tfproviderlint binary
-LINTER_BIN="$HOME/go/bin/tfproviderlint"
-
-# Check if binary exists
-if [ ! -f "$LINTER_BIN" ]; then
-    echo -e "${RED}tfproviderlint not found. Installing...${NC}"
-    go install github.com/bflad/tfproviderlint/cmd/tfproviderlint@latest
+# Check if no arguments were provided
+if [ $# -eq 0 ]; then
+  show_usage
+  exit 0
 fi
 
-# Check R014 (errors we've already fixed)
-echo -e "${YELLOW}Checking rule R014 (interface{} must be named 'meta')...${NC}"
-$LINTER_BIN -R014=true ./...
-
-# If you want to check other specific errors, uncomment and run
-# For example, to check only R001:
-# echo -e "${YELLOW}Checking rule R001...${NC}"
-# $LINTER_BIN -R001=true -AT=false -R=false -S=false -V=false ./...
-
-# List of errors we're temporarily ignoring
-echo -e "\n${YELLOW}Temporarily ignored errors (to be fixed in phases):${NC}"
-echo -e "- ${YELLOW}AT001${NC}: missing CheckDestroy"
-echo -e "- ${YELLOW}AT005${NC}: acceptance test function name should begin with TestAcc"
-echo -e "- ${YELLOW}AT012${NC}: file contains multiple acceptance test name prefixes"
-echo -e "- ${YELLOW}R001${NC}: ResourceData.Set() key argument should be string literal"
-echo -e "- ${YELLOW}R017${NC}: schema attributes should be stable across Terraform runs"
-echo -e "- ${YELLOW}R019${NC}: d.HasChanges() has many arguments, consider d.HasChangesExcept()"
-echo -e "- ${YELLOW}V013${NC}: custom SchemaValidateFunc should be replaced with validation.StringInSlice()"
-
-echo -e "\n${GREEN}To check a specific error, run:${NC}"
-echo -e "  $LINTER_BIN -AT=false -R=false -S=false -V=false -<RULE>=true ./..."
-echo -e "  Example: $LINTER_BIN -AT=false -R=false -S=false -V=false -R001=true ./..."
-
-echo -e "\n${GREEN}To check all errors, run:${NC}"
-echo -e "  $LINTER_BIN ./..."
-
-# Example of next steps for correction
-echo -e "\n${YELLOW}Suggested plan for phased correction:${NC}"
-echo -e "1. Fix R001 (ResourceData.Set with string literal)"
-echo -e "2. Fix R019 (HasChanges → HasChangesExcept)"
-echo -e "3. Fix V013 (SchemaValidateFunc → validation.StringInSlice)"
-echo -e "4. Fix R017 (Schema attributes should be stable)"
-echo -e "5. Fix AT* (acceptance test issues)" 
+# Parse arguments
+while [ "$1" != "" ]; do
+  case $1 in
+    --all )
+      echo "Running all linting checks"
+      tfproviderlint ./...
+      exit 0
+      ;;
+    --critical )
+      echo "Running only critical checks"
+      ./scripts/linting/check_critical_lint.sh
+      exit 0
+      ;;
+    --r001 )
+      echo "Checking R001: ResourceData.Set() key argument should be string literal"
+      tfproviderlint -AT=false -R=false -S=false -V=false -R001=true ./...
+      ;;
+    --r014 )
+      echo "Checking R014: interface{} parameter should be named meta"
+      tfproviderlint -AT=false -R=false -S=false -V=false -R014=true ./...
+      ;;
+    --r017 )
+      echo "Checking R017: schema attributes should be stable across Terraform runs"
+      tfproviderlint -AT=false -R=false -S=false -V=false -R017=true ./...
+      ;;
+    --r019 )
+      echo "Checking R019: d.HasChanges() has many arguments, consider d.HasChangesExcept()"
+      tfproviderlint -AT=false -R=false -S=false -V=false -R019=true ./...
+      ;;
+    --v013 )
+      echo "Checking V013: custom SchemaValidateFunc should be replaced with validation.StringInSlice()"
+      tfproviderlint -AT=false -R=false -S=false -V=false -V013=true ./...
+      ;;
+    --at )
+      echo "Checking all acceptance test issues"
+      tfproviderlint -AT=true -R=false -S=false -V=false ./...
+      ;;
+    * )
+      show_usage
+      exit 1
+      ;;
+  esac
+  shift
+done 
