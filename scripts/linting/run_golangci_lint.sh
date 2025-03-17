@@ -12,7 +12,7 @@ fi
 
 # Run golangci-lint
 echo "Running linting checks..."
-golangci-lint run --timeout=5m --config=.golangci.yml --verbose "$@"
+golangci-lint run --timeout=5m --config=.golangci.yml --verbose --out-format=colored-line-number "$@"
 
 exit_code=$?
 

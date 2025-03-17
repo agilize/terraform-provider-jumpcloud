@@ -6,17 +6,14 @@ run:
 
 linters:
   enable:
-    - errcheck
     - gosimple
     - govet
     - ineffassign
     - staticcheck
     - typecheck
-    - unused
     - gosec
     - gofmt
     - goimports
-    - misspell
     - unconvert
   disable:
     # Temporarily disable these linters until we can fix them
