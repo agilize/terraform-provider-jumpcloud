@@ -1,43 +1,28 @@
 #!/bin/bash
 
-# Script to run golangci-lint with the correct settings
-# This helps ensure consistent execution between local development and CI
+echo "Running golangci-lint with project configuration"
+echo "==============================================="
 
-# Colors for output
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
-
-echo -e "${YELLOW}Running golangci-lint checks...${NC}"
-
-# Path to the golangci-lint binary
-LINTER_BIN="$HOME/go/bin/golangci-lint"
-
-# Check if binary exists
-if [ ! -f "$LINTER_BIN" ]; then
-    echo -e "${RED}golangci-lint not found. Installing...${NC}"
-    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.57.0
-    LINTER_BIN="$HOME/go/bin/golangci-lint"
+# Check if golangci-lint is installed
+if ! command -v golangci-lint &> /dev/null; then
+    echo "Error: golangci-lint is not installed or not in PATH"
+    echo "Please install it: https://golangci-lint.run/usage/install/"
+    exit 1
 fi
 
-# Get the version
-VERSION=$($LINTER_BIN --version | head -n 1)
-echo -e "${GREEN}Using $VERSION${NC}"
+# Run golangci-lint
+echo "Running linting checks..."
+golangci-lint run --timeout=5m --config=.golangci.yml --verbose "$@"
 
-# Run the lint check with the same settings as CI
-echo -e "${YELLOW}Running lint checks with configuration from .golangci.yml...${NC}"
-$LINTER_BIN run \
-  --timeout=5m \
-  --config=.golangci.yml
+exit_code=$?
 
-# Check exit code
-EXIT_CODE=$?
-if [ $EXIT_CODE -eq 0 ]; then
-    echo -e "\n${GREEN}Lint checks passed successfully!${NC}"
+if [ $exit_code -eq 0 ]; then
+    echo "✅ Linting passed successfully!"
 else
-    echo -e "\n${RED}Lint checks failed with exit code $EXIT_CODE.${NC}"
-    echo -e "${YELLOW}Please fix the issues above before committing.${NC}"
+    echo "❌ Linting found issues that need to be fixed."
+    echo "🔍 See the errors above for details."
+    echo
+    echo "To disable certain linters or specific checks, edit the .golangci.yml file."
 fi
 
-exit $EXIT_CODE 
+exit $exit_code 
