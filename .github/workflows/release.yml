@@ -20,7 +20,7 @@ jobs:
 
       - uses: actions/setup-go@v4
         with:
-          go-version: '1.20'
+          go-version: '1.22'
           cache: true
 
       - name: Import GPG key
@@ -55,7 +55,7 @@ jobs:
       
       - uses: actions/setup-go@v4
         with:
-          go-version: '1.20'
+          go-version: '1.22'
           cache: true
       
       - name: Download release assets
