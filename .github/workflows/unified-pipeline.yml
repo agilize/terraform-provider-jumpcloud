@@ -336,10 +336,11 @@ jobs:
             VERSION_DESC="Esta é a versão ${VERSION} do provider JumpCloud para Terraform."
           fi
           
-          cat << EOF > README-PACKAGE.md
+          # Usar 'EOF' com aspas simples para evitar interpretação do shell
+          cat << 'EOF' > README-PACKAGE.md
           # JumpCloud Terraform Provider
           
-          ${VERSION_DESC}
+          VERSAO_DESC
           
           ## Como usar este pacote
           
@@ -349,8 +350,8 @@ jobs:
           terraform {
             required_providers {
               jumpcloud = {
-                source  = "github.com/${{ github.repository_owner }}/jumpcloud"
-                version = "${VERSION}"
+                source  = "github.com/REPO_OWNER/jumpcloud"
+                version = "PROVIDER_VERSION"
               }
             }
           }
@@ -368,11 +369,11 @@ jobs:
           ```hcl
           provider_installation {
             network_mirror {
-              url = "https://github.com/${{ github.repository }}/releases/download/v${VERSION}/"
-              include = ["github.com/${{ github.repository_owner }}/jumpcloud"]
+              url = "https://github.com/REPO_PATH/releases/download/vPROVIDER_VERSION/"
+              include = ["github.com/REPO_OWNER/jumpcloud"]
             }
             direct {
-              exclude = ["github.com/${{ github.repository_owner }}/jumpcloud"]
+              exclude = ["github.com/REPO_OWNER/jumpcloud"]
             }
           }
           ```
@@ -381,20 +382,20 @@ jobs:
           
           Os seguintes arquivos estão disponíveis:
           
-          - terraform-provider-jumpcloud_${VERSION}_darwin_amd64.zip
-          - terraform-provider-jumpcloud_${VERSION}_darwin_arm64.zip
-          - terraform-provider-jumpcloud_${VERSION}_linux_amd64.zip
-          - terraform-provider-jumpcloud_${VERSION}_linux_arm64.zip
-          - terraform-provider-jumpcloud_${VERSION}_windows_amd64.zip
+          - terraform-provider-jumpcloud_PROVIDER_VERSION_darwin_amd64.zip
+          - terraform-provider-jumpcloud_PROVIDER_VERSION_darwin_arm64.zip
+          - terraform-provider-jumpcloud_PROVIDER_VERSION_linux_amd64.zip
+          - terraform-provider-jumpcloud_PROVIDER_VERSION_linux_arm64.zip
+          - terraform-provider-jumpcloud_PROVIDER_VERSION_windows_amd64.zip
           - SHA256SUMS (checksums para verificação)
           
           ## Download direto
           
           Você pode baixar os binários diretamente usando:
           
-          \`\`\`
-          curl -LO https://github.com/${{ github.repository }}/packages/generic/terraform-provider-jumpcloud/${VERSION}/terraform-provider-jumpcloud_${VERSION}_[sua_plataforma].zip
-          \`\`\`
+          ```
+          curl -LO https://github.com/REPO_PATH/packages/generic/terraform-provider-jumpcloud/PROVIDER_VERSION/terraform-provider-jumpcloud_PROVIDER_VERSION_[sua_plataforma].zip
+          ```
           
           Substitua [sua_plataforma] pela plataforma desejada (ex: darwin_amd64, linux_amd64, etc).
           
@@ -402,16 +403,21 @@ jobs:
           
           Para instalação manual, extraia o arquivo ZIP correspondente à sua plataforma na pasta de plugins do Terraform:
           
-          - Linux/Mac: `~/.terraform.d/plugins/github.com/${{ github.repository_owner }}/jumpcloud/${VERSION}/[os]_[arch]/`
-          - Windows: `%APPDATA%\terraform.d\plugins\github.com\${{ github.repository_owner }}\jumpcloud\${VERSION}\[os]_[arch]\`
+          - Linux/Mac: `~/.terraform.d/plugins/github.com/REPO_OWNER/jumpcloud/PROVIDER_VERSION/[os]_[arch]/`
+          - Windows: `%APPDATA%\terraform.d\plugins\github.com\REPO_OWNER\jumpcloud\PROVIDER_VERSION\[os]_[arch]\`
           
           Por exemplo, para Linux AMD64:
           ```bash
-          mkdir -p ~/.terraform.d/plugins/github.com/${{ github.repository_owner }}/jumpcloud/${VERSION}/linux_amd64/
-          unzip terraform-provider-jumpcloud_${VERSION}_linux_amd64.zip -d ~/.terraform.d/plugins/github.com/${{ github.repository_owner }}/jumpcloud/${VERSION}/linux_amd64/
+          mkdir -p ~/.terraform.d/plugins/github.com/REPO_OWNER/jumpcloud/PROVIDER_VERSION/linux_amd64/
+          unzip terraform-provider-jumpcloud_PROVIDER_VERSION_linux_amd64.zip -d ~/.terraform.d/plugins/github.com/REPO_OWNER/jumpcloud/PROVIDER_VERSION/linux_amd64/
           ```
-          
           EOF
+          
+          # Substituir as variáveis após a criação do arquivo
+          sed -i "s/VERSAO_DESC/${VERSION_DESC}/g" README-PACKAGE.md
+          sed -i "s/REPO_OWNER/${{ github.repository_owner }}/g" README-PACKAGE.md
+          sed -i "s|REPO_PATH|${{ github.repository }}|g" README-PACKAGE.md
+          sed -i "s/PROVIDER_VERSION/${VERSION}/g" README-PACKAGE.md
           
           # Confirmar que o arquivo foi criado
           echo "Arquivo README-PACKAGE.md criado:"
