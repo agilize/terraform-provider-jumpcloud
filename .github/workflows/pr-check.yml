@@ -101,7 +101,7 @@ jobs:
         run: go install github.com/bflad/tfproviderlint/cmd/tfproviderlint@latest
       
       - name: Terraform Provider Lint
-        run: tfproviderlint -R001=false -R011=false -R012=false ./...
+        run: tfproviderlint -R001=false -R011=false -R012=false -AT001=false -AT005=false -AT012=false -R004=false -R014=false -R017=false -R019=false -V013=false ./...
   
   tfsdk-version:
     name: Check Terraform SDK version

@@ -18,6 +18,11 @@ type MockClient struct {
 	mock.Mock
 }
 
+// Called fornece acesso ao método Called do mock subjacente
+func (m *MockClient) Called(arguments ...interface{}) mock.Arguments {
+	return m.Mock.Called(arguments...)
+}
+
 // DoRequest implements the mock request method for tests
 func (m *MockClient) DoRequest(method, path string, body interface{}) ([]byte, error) {
 	var bodyBytes []byte
