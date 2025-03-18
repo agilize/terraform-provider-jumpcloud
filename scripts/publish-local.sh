@@ -47,13 +47,46 @@ cd dist
 sha256sum *.zip > SHA256SUMS
 cd ..
 
+# Create Dockerfile with platform args
+echo "Creating Dockerfile..."
+cat > Dockerfile << EOF
+FROM --platform=\${BUILDPLATFORM} alpine:3.17
+
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
+LABEL org.opencontainers.image.source=https://github.com/ferreirafa/terraform-provider-jumpcloud
+LABEL org.opencontainers.image.description="JumpCloud Terraform Provider v${VERSION} - Platform-specific build for \${TARGETPLATFORM}"
+LABEL org.opencontainers.image.licenses=MIT
+LABEL io.jumpcloud.terraform.platforms="linux_amd64,linux_arm64,darwin_amd64,darwin_arm64,windows_amd64"
+LABEL io.jumpcloud.terraform.version="${VERSION}"
+LABEL io.jumpcloud.terraform.targetplatform="\${TARGETPLATFORM}"
+
+WORKDIR /terraform-provider
+
+# Copy platform-specific binaries and checksums
+COPY dist/*.zip /terraform-provider/
+COPY dist/SHA256SUMS /terraform-provider/
+
+# Add usage information
+COPY README.md /terraform-provider/
+COPY LICENSE /terraform-provider/
+
+# Create platform identifier file
+RUN echo "\${TARGETPLATFORM}" > /terraform-provider/PLATFORM
+
+# Default command
+CMD ["sh", "-c", "echo 'Terraform Provider for JumpCloud - Platform: '\$(cat /terraform-provider/PLATFORM)"]
+EOF
+
 # Ensure Docker BuildX is available
 echo "Setting up Docker BuildX..."
 docker buildx inspect --bootstrap
 
 # Build and publish Docker image
-echo "Building and publishing Docker image..."
-docker buildx build --platform linux/amd64,linux/arm64 \
+echo "Building and publishing Docker image for all platforms..."
+echo "This may take several minutes..."
+docker buildx build --platform linux/amd64,linux/arm64,darwin/amd64,darwin/arm64,windows/amd64 \
   -t ghcr.io/${GITHUB_USER:-ferreirafa}/terraform-provider-jumpcloud:v${VERSION} \
   -t ghcr.io/${GITHUB_USER:-ferreirafa}/terraform-provider-jumpcloud:latest \
   --build-arg VERSION=${VERSION} \
@@ -84,7 +117,9 @@ provider_installation {
 "
 
 echo ""
-echo "This container includes provider binaries for ALL supported platforms:"
+echo "This provider includes binaries for ALL supported platforms:"
 echo "- Linux AMD64 & ARM64"
 echo "- MacOS AMD64 & ARM64"
-echo "- Windows AMD64" 
+echo "- Windows AMD64"
+echo ""
+echo "The GitHub Container Registry should now show support for all 5 platforms." 

@@ -4,13 +4,13 @@ This document explains how to configure and use the JumpCloud Terraform Provider
 
 ## Supported Platforms
 
-The provider container image includes binaries for all the following platforms:
+The provider is available for all the following platforms:
 
 - **Linux**: AMD64, ARM64
 - **macOS**: AMD64, ARM64
 - **Windows**: AMD64
 
-Terraform will automatically extract and use the correct binary for your system. The container image itself is available for Linux/AMD64 and Linux/ARM64 platforms, but the **contents** of the container support all platforms listed above.
+Each platform has a dedicated container image variant, and the GitHub Container Registry automatically serves the correct variant based on your system. You'll see all 5 platform combinations listed under the "OS / Arch" section in the GitHub Container Registry interface.
 
 ## Terraform Configuration
 
@@ -100,11 +100,22 @@ The JumpCloud provider requires an API key for authentication. You can provide i
 
 ## Container Structure
 
-The provider container includes:
+Each platform-specific container includes:
 
-1. Provider binaries for all supported platforms (Linux, macOS, Windows)
+1. Provider binaries for all supported platforms
 2. Checksum file (SHA256SUMS)
 3. Documentation and licenses
+4. Platform identifier file
+
+## Viewing Architecture Checksums
+
+To view the SHA256 checksums for all supported architectures, you can run:
+
+```bash
+./scripts/list-architectures.sh [VERSION]
+```
+
+This script will display a table of all supported architectures and their corresponding SHA256 checksums.
 
 ## Troubleshooting
 
@@ -114,6 +125,7 @@ If you encounter issues using the provider via GHCR:
 2. Run `terraform init -upgrade` to force downloading the latest version
 3. Check Terraform logs with `TF_LOG=debug terraform init`
 4. Make sure you have permission to access the container (public packages should not require authentication)
+5. If using macOS or Windows, ensure your Docker installation supports multi-platform images
 
 ## Local Development
 
@@ -123,4 +135,4 @@ For developers contributing to the provider, you can publish a local version usi
 ./scripts/publish-local.sh
 ```
 
-This script compiles the provider, creates a Docker image, and publishes it to GHCR under your username. 
+This script compiles the provider, creates Docker images for all supported platforms, and publishes them to GHCR under your username. 
