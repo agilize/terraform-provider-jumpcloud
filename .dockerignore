@@ -1,0 +1,33 @@
+# Git
+.git
+.gitignore
+.github/
+
+# Build artifacts
+dist/*
+!dist/*.zip
+!dist/SHA256SUMS
+
+# Go build
+bin/
+vendor/
+
+# Test
+coverage/
+*.test
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+
+# IDE files
+.idea/
+.vscode/
+
+# Misc
+*.log
+*.bak
+*.tmp
+.DS_Store 
