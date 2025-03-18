@@ -47,10 +47,18 @@ cd dist
 sha256sum *.zip > SHA256SUMS
 cd ..
 
+# Ensure Docker BuildX is available
+echo "Setting up Docker BuildX..."
+docker buildx inspect --bootstrap
+
 # Build and publish Docker image
 echo "Building and publishing Docker image..."
-docker build -t ghcr.io/${GITHUB_USER:-ferreirafa}/terraform-provider-jumpcloud:v${VERSION} \
-  --build-arg VERSION=${VERSION} .
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -t ghcr.io/${GITHUB_USER:-ferreirafa}/terraform-provider-jumpcloud:v${VERSION} \
+  -t ghcr.io/${GITHUB_USER:-ferreirafa}/terraform-provider-jumpcloud:latest \
+  --build-arg VERSION=${VERSION} \
+  --push \
+  .
 
 echo "Logging in to GitHub Container Registry..."
 echo "Please provide your GitHub personal access token with packages:write permission"
@@ -60,14 +68,6 @@ read -s GITHUB_TOKEN
 if [ -n "$GITHUB_TOKEN" ]; then
   echo $GITHUB_TOKEN | docker login ghcr.io -u ${GITHUB_USER:-ferreirafa} --password-stdin
 fi
-
-echo "Pushing image to GitHub Container Registry..."
-docker push ghcr.io/${GITHUB_USER:-ferreirafa}/terraform-provider-jumpcloud:v${VERSION}
-
-echo "Also pushing as 'latest'..."
-docker tag ghcr.io/${GITHUB_USER:-ferreirafa}/terraform-provider-jumpcloud:v${VERSION} \
-  ghcr.io/${GITHUB_USER:-ferreirafa}/terraform-provider-jumpcloud:latest
-docker push ghcr.io/${GITHUB_USER:-ferreirafa}/terraform-provider-jumpcloud:latest
 
 echo "Provider published successfully!"
 echo "To use it, add to your ~/.terraformrc:"
@@ -81,4 +81,10 @@ provider_installation {
     exclude = [\"ghcr.io/${GITHUB_USER:-ferreirafa}/jumpcloud\"]
   }
 }
-" 
+"
+
+echo ""
+echo "This container includes provider binaries for ALL supported platforms:"
+echo "- Linux AMD64 & ARM64"
+echo "- MacOS AMD64 & ARM64"
+echo "- Windows AMD64" 

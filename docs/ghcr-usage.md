@@ -2,6 +2,16 @@
 
 This document explains how to configure and use the JumpCloud Terraform Provider hosted on GitHub Container Registry.
 
+## Supported Platforms
+
+The provider container image includes binaries for all the following platforms:
+
+- **Linux**: AMD64, ARM64
+- **macOS**: AMD64, ARM64
+- **Windows**: AMD64
+
+Terraform will automatically extract and use the correct binary for your system. The container image itself is available for Linux/AMD64 and Linux/ARM64 platforms, but the **contents** of the container support all platforms listed above.
+
 ## Terraform Configuration
 
 ### 1. Configure the ~/.terraformrc file
