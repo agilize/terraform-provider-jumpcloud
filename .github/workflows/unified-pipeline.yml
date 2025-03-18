@@ -10,7 +10,7 @@ on:
       - 'CHANGELOG.md'
       - 'docs/**'
       - '.gitignore'
-  # Acionamento manual com parâmetros
+  # Manual trigger with parameters
   workflow_dispatch:
     inputs:
       version:
@@ -22,17 +22,17 @@ on:
         required: false
         default: false
         type: boolean
-  # Release criada no GitHub
+  # GitHub Release created
   release:
     types: [created]
 
-# Permissões aplicadas a todo o workflow
+# Permissions applied to the entire workflow
 permissions:
   contents: write
   packages: write
 
 jobs:
-  # Determinar a versão para o build
+  # Determine the version for the build
   version:
     name: Determine Version
     runs-on: ubuntu-latest
@@ -47,38 +47,38 @@ jobs:
       - name: Set Version
         id: set-version
         run: |
-          # Determinar versão baseado no tipo de evento
+          # Determine version based on event type
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ github.event.inputs.version }}" ]]; then
-            # Versão fornecida manualmente
+            # Manually provided version
             VERSION="${{ github.event.inputs.version }}"
             IS_BETA="${{ github.event.inputs.is_beta }}"
           elif [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == refs/tags/* ]]; then
-            # Versão de uma tag
+            # Version from a tag
             VERSION=${GITHUB_REF#refs/tags/v}
-            # Verificar se é beta baseado no nome da tag
+            # Check if it's beta based on tag name
             if [[ "$VERSION" == *-beta* || "$VERSION" == *-alpha* || "$VERSION" == *-rc* ]]; then
               IS_BETA="true"
             else
               IS_BETA="false"
             fi
           else
-            # Determinação automática como fallback
+            # Automatic determination as fallback
             LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
             echo "Latest tag: $LATEST_TAG"
             
-            # Remover 'v' do início
+            # Remove 'v' from beginning
             LATEST_VERSION=${LATEST_TAG#v}
             
-            # Dividir versão em partes: MAJOR.MINOR.PATCH
+            # Split version into parts: MAJOR.MINOR.PATCH
             IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_VERSION"
             
-            # Remover qualquer sufixo do PATCH (como -beta)
+            # Remove any suffix from PATCH (like -beta)
             PATCH=$(echo $PATCH | sed -E 's/([0-9]+).*/\1/')
             
-            # Incrementar PATCH
+            # Increment PATCH
             NEW_PATCH=$((PATCH + 1))
             
-            # Determinar se é beta baseado na branch
+            # Determine if it's beta based on branch
             IS_BETA="false"
             if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
               IS_BETA="true"
@@ -86,7 +86,7 @@ jobs:
             elif [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]]; then
               VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
             else
-              # Para outros casos
+              # For other cases
               VERSION="${MAJOR}.${MINOR}.${PATCH}"
             fi
           fi
@@ -95,7 +95,7 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "is_beta=${IS_BETA}" >> $GITHUB_OUTPUT
 
-  # Executar testes antes do build
+  # Run tests before build
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -112,7 +112,7 @@ jobs:
       - name: Unit Tests
         run: make test-unit
   
-  # Build para várias plataformas
+  # Build for multiple platforms
   build:
     name: Build
     needs: [test, version]
@@ -142,18 +142,18 @@ jobs:
         run: |
           echo "Building for $GOOS/$GOARCH - version v${VERSION}"
           
-          # Estrutura de diretórios compatível com Terraform
+          # Directory structure compatible with Terraform
           # terraform-provider-jumpcloud_v${VERSION}_${OS}_${ARCH}/terraform-provider-jumpcloud_v${VERSION}
           PLUGIN_DIR=terraform-provider-jumpcloud_v${VERSION}_${{ matrix.platform.goos }}_${{ matrix.platform.goarch }}
           mkdir -p ${PLUGIN_DIR}
           
-          # Compilar para a plataforma com nome correto
+          # Compile for the platform with correct name
           go build -o ${PLUGIN_DIR}/terraform-provider-jumpcloud_v${VERSION}${{ matrix.platform.suffix }}
           
-          # Criar ZIP para o binário com a estrutura esperada pelo Terraform
+          # Create ZIP for the binary with the structure expected by Terraform
           zip -j terraform-provider-jumpcloud_${VERSION}_${{ matrix.platform.goos }}_${{ matrix.platform.goarch }}.zip ${PLUGIN_DIR}/terraform-provider-jumpcloud_v${VERSION}${{ matrix.platform.suffix }}
           
-          # Adicionar informações importantes dentro do ZIP
+          # Add important information inside the ZIP
           echo "github.com/${{ github.repository_owner }}/jumpcloud/${VERSION}" > ${PLUGIN_DIR}/registry-url.txt
           zip -r terraform-provider-jumpcloud_${VERSION}_${{ matrix.platform.goos }}_${{ matrix.platform.goarch }}.zip ${PLUGIN_DIR}
       
@@ -165,7 +165,7 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  # Preparar para publicação
+  # Prepare for publishing
   prepare-release:
     name: Prepare Release
     needs: [build, version]
@@ -178,11 +178,11 @@ jobs:
       
       - name: Generate Checksums
         run: |
-          # Mover todos os ZIPs para um único diretório
+          # Move all ZIPs to a single directory
           mkdir -p release
           find . -name "terraform-provider-jumpcloud_*.zip" -exec cp {} release/ \;
           
-          # Gerar checksums
+          # Generate checksums
           cd release
           sha256sum *.zip > SHA256SUMS
           cd ..
@@ -197,11 +197,11 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  # Criar Tag se não existir
+  # Create Tag if it doesn't exist
   create-tag:
     name: Create Tag
     needs: [prepare-release, version]
-    # Executa apenas se for push para branches main, master ou develop
+    # Runs only if it's a push to main, master or develop branches
     if: ${{ github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/') && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') }}
     runs-on: ubuntu-latest
     steps:
@@ -214,7 +214,7 @@ jobs:
           VERSION: ${{ needs.version.outputs.version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Verificar se a tag já existe
+          # Check if the tag already exists
           if ! git rev-parse "v${VERSION}" >/dev/null 2>&1; then
             echo "Creating tag v${VERSION}"
             git config --local user.email "action@github.com"
@@ -226,11 +226,11 @@ jobs:
             echo "Tag v${VERSION} already exists"
           fi
 
-  # Publicar no GitHub Container Registry (GHCR)
+  # Publish to GitHub Container Registry (GHCR)
   publish-packages:
     name: Publish to GitHub Container Registry
     needs: [prepare-release, version, create-tag]
-    # Executa apenas se for push para branches main, master, develop, ou se for criada uma tag, ou manual dispatch
+    # Runs only if it's a push to main, master, develop, or if a tag is created, or manual dispatch
     if: |
       success() && (
         github.event_name == 'workflow_dispatch' || 
@@ -265,17 +265,17 @@ jobs:
           VERSION: ${{ needs.version.outputs.version }}
         run: |
           cd release
-          echo "Preparando provider para publicação no GHCR..."
+          echo "Preparing provider for publication in GHCR..."
           
-          # Verificar conteúdo do diretório
+          # Check directory contents
           ls -la
           
-          # Criar diretório de trabalho
+          # Create working directory
           mkdir -p terraform-provider
           cp *.zip terraform-provider/
           cp SHA256SUMS terraform-provider/
           
-          # Criar Dockerfile
+          # Create Dockerfile
           cat << EOF > terraform-provider/Dockerfile
           FROM alpine:3.17
           
@@ -290,15 +290,15 @@ jobs:
           CMD ["sh", "-c", "echo 'This is a Terraform Provider container. Use with Terraform CLI.'"]
           EOF
           
-          # Criar README
+          # Create README
           cat << EOF > terraform-provider/README.md
           # JumpCloud Terraform Provider
           
-          Esta imagem contém o provider JumpCloud para Terraform v${VERSION}.
+          This image contains the JumpCloud provider for Terraform v${VERSION}.
           
-          ## Como usar com Terraform
+          ## How to use with Terraform
           
-          Adicione a seguinte configuração ao seu arquivo Terraform:
+          Add the following configuration to your Terraform file:
           
           \`\`\`hcl
           terraform {
@@ -311,13 +311,13 @@ jobs:
           }
           
           provider "jumpcloud" {
-            api_key = "sua_api_key"
+            api_key = "your_api_key"
           }
           \`\`\`
           
-          ## Configuração do Terraform para usar GHCR
+          ## Terraform configuration to use GHCR
           
-          Adicione a seguinte configuração ao seu arquivo \`~/.terraformrc\` (Linux/Mac) ou \`%APPDATA%\\terraform.rc\` (Windows):
+          Add the following configuration to your \`~/.terraformrc\` file (Linux/Mac) or \`%APPDATA%\\terraform.rc\` (Windows):
           
           \`\`\`hcl
           provider_installation {
@@ -331,9 +331,9 @@ jobs:
           }
           \`\`\`
           
-          ## Arquivos disponíveis
+          ## Available files
           
-          Os seguintes arquivos estão incluídos neste container:
+          The following files are included in this container:
           
           - terraform-provider-jumpcloud_${VERSION}_darwin_amd64.zip
           - terraform-provider-jumpcloud_${VERSION}_darwin_arm64.zip
@@ -357,22 +357,22 @@ jobs:
           VERSION: ${{ needs.version.outputs.version }}
           IS_BETA: ${{ needs.version.outputs.is_beta }}
         run: |
-          echo "Publicação no GHCR concluída com sucesso!"
-          echo "Provider Terraform disponível em: ghcr.io/${{ github.repository_owner }}/terraform-provider-jumpcloud:v${VERSION}"
+          echo "Publication to GHCR completed successfully!"
+          echo "Terraform Provider available at: ghcr.io/${{ github.repository_owner }}/terraform-provider-jumpcloud:v${VERSION}"
           
-          # Para versões beta, adicionar tag específica
+          # For beta versions, add specific tag
           if [[ "$IS_BETA" == "true" ]]; then
-            echo "Esta é uma versão beta."
+            echo "This is a beta version."
             docker tag ghcr.io/${{ github.repository_owner }}/terraform-provider-jumpcloud:v${VERSION} ghcr.io/${{ github.repository_owner }}/terraform-provider-jumpcloud:beta
             docker push ghcr.io/${{ github.repository_owner }}/terraform-provider-jumpcloud:beta
-            echo "Tag 'beta' também publicada."
+            echo "Tag 'beta' also published."
           fi
 
-  # Criar Release no GitHub (para qualquer versão, marcando beta quando apropriado)
+  # Create GitHub Release (for any version, marking as beta when appropriate)
   create-github-release:
     name: Create GitHub Release
     needs: [prepare-release, version, publish-packages]
-    # Executa para tags, releases oficiais, merges para main/master/develop e workflow manual
+    # Runs for tags, official releases, merges to main/master/develop and manual workflow
     if: |
       success() && (
         startsWith(github.ref, 'refs/tags/') || 
@@ -418,17 +418,17 @@ jobs:
             echo "" >> CHANGELOG.md
           fi
           
-          # Gerar conteúdo para o changelog
+          # Generate content for the changelog
           TEMP_CHANGELOG=$(mktemp)
           echo "# Changelog" > $TEMP_CHANGELOG
           echo "" >> $TEMP_CHANGELOG
           echo "## v${VERSION} ($(date +%Y-%m-%d))" >> $TEMP_CHANGELOG
           echo "" >> $TEMP_CHANGELOG
           
-          # Obter logs desde o último release não-beta
+          # Get logs since the last non-beta release
           LAST_STABLE_TAG=$(git tag -l --sort=-v:refname | grep -v -E '-(beta|alpha|rc|pr)' | head -n1)
           if [ -n "$LAST_STABLE_TAG" ]; then
-            # Agrupar commits por tipo (feat, fix, etc)
+            # Group commits by type (feat, fix, etc)
             echo "### Features" >> $TEMP_CHANGELOG
             git log ${LAST_STABLE_TAG}..HEAD --pretty=format:"* %s" | grep -E '^feat(\([^)]+\))?:' | sed 's/^feat\([^)]*\): /* /' >> $TEMP_CHANGELOG || true
             echo "" >> $TEMP_CHANGELOG
@@ -449,29 +449,29 @@ jobs:
             echo "" >> $TEMP_CHANGELOG
           fi
           
-          # Adicionar o changelog anterior
+          # Add the previous changelog
           if [ -f CHANGELOG.md ]; then
             tail -n +3 CHANGELOG.md >> $TEMP_CHANGELOG
           fi
           
-          # Substituir o changelog
+          # Replace the changelog
           mv $TEMP_CHANGELOG CHANGELOG.md
           
-          # Commit e push das mudanças se houver algo para committar
+          # Commit and push changes if there's something to commit
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add CHANGELOG.md
           if git diff --staged --quiet; then
             echo "No changes to commit in CHANGELOG.md"
           else
-            git commit -m "docs: atualizar CHANGELOG para v${VERSION}"
+            git commit -m "docs: update CHANGELOG for v${VERSION}"
             git push
           fi
 
-  # Build especial para a Terraform Registry (para todas as versões)
+  # Special build for the Terraform Registry (for all versions)
   registry-build:
     name: Registry Build
-    # Executa para tags, releases oficiais, e merges para main/master/develop
+    # Runs for tags, official releases, and merges to main/master/develop
     if: |
       success() && (
         startsWith(github.ref, 'refs/tags/') || 
@@ -495,7 +495,7 @@ jobs:
         run: |
           echo "Building provider version ${VERSION} for Terraform Registry"
           
-          # Criar diretório para os binários compilados
+          # Create directory for compiled binaries
           mkdir -p dist
           
           # Compilar para os sistemas suportados
