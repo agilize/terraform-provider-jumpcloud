@@ -49,7 +49,7 @@ cd ..
 
 # Build and publish Docker image
 echo "Building and publishing Docker image..."
-docker build -t ghcr.io/${GITHUB_USER:-ferreirafav}/terraform-provider-jumpcloud:v${VERSION} \
+docker build -t ghcr.io/${GITHUB_USER:-ferreirafa}/terraform-provider-jumpcloud:v${VERSION} \
   --build-arg VERSION=${VERSION} .
 
 echo "Logging in to GitHub Container Registry..."
@@ -58,27 +58,27 @@ echo "Or press Enter to skip this step if you're already authenticated."
 read -s GITHUB_TOKEN
 
 if [ -n "$GITHUB_TOKEN" ]; then
-  echo $GITHUB_TOKEN | docker login ghcr.io -u ${GITHUB_USER:-ferreirafav} --password-stdin
+  echo $GITHUB_TOKEN | docker login ghcr.io -u ${GITHUB_USER:-ferreirafa} --password-stdin
 fi
 
 echo "Pushing image to GitHub Container Registry..."
-docker push ghcr.io/${GITHUB_USER:-ferreirafav}/terraform-provider-jumpcloud:v${VERSION}
+docker push ghcr.io/${GITHUB_USER:-ferreirafa}/terraform-provider-jumpcloud:v${VERSION}
 
 echo "Also pushing as 'latest'..."
-docker tag ghcr.io/${GITHUB_USER:-ferreirafav}/terraform-provider-jumpcloud:v${VERSION} \
-  ghcr.io/${GITHUB_USER:-ferreirafav}/terraform-provider-jumpcloud:latest
-docker push ghcr.io/${GITHUB_USER:-ferreirafav}/terraform-provider-jumpcloud:latest
+docker tag ghcr.io/${GITHUB_USER:-ferreirafa}/terraform-provider-jumpcloud:v${VERSION} \
+  ghcr.io/${GITHUB_USER:-ferreirafa}/terraform-provider-jumpcloud:latest
+docker push ghcr.io/${GITHUB_USER:-ferreirafa}/terraform-provider-jumpcloud:latest
 
 echo "Provider published successfully!"
 echo "To use it, add to your ~/.terraformrc:"
 echo "
 provider_installation {
   network_mirror {
-    url = \"https://ghcr.io/${GITHUB_USER:-ferreirafav}/terraform-provider-jumpcloud\"
-    include = [\"ghcr.io/${GITHUB_USER:-ferreirafav}/jumpcloud\"]
+    url = \"https://ghcr.io/${GITHUB_USER:-ferreirafa}/terraform-provider-jumpcloud\"
+    include = [\"ghcr.io/${GITHUB_USER:-ferreirafa}/jumpcloud\"]
   }
   direct {
-    exclude = [\"ghcr.io/${GITHUB_USER:-ferreirafav}/jumpcloud\"]
+    exclude = [\"ghcr.io/${GITHUB_USER:-ferreirafa}/jumpcloud\"]
   }
 }
 " 
