@@ -1,6 +1,6 @@
 FROM alpine:3.17
 
-LABEL org.opencontainers.image.source=https://github.com/ferreirafav/terraform-provider-jumpcloud
+LABEL org.opencontainers.image.source=https://github.com/ferreirafa/terraform-provider-jumpcloud
 LABEL org.opencontainers.image.description="JumpCloud Terraform Provider"
 LABEL org.opencontainers.image.licenses=MIT
 

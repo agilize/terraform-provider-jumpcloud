@@ -351,6 +351,7 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository_owner }}/terraform-provider-jumpcloud:v${{ needs.version.outputs.version }}
             ghcr.io/${{ github.repository_owner }}/terraform-provider-jumpcloud:latest
+            ${{ needs.version.outputs.is_beta == 'true' && format('ghcr.io/{0}/terraform-provider-jumpcloud:beta', github.repository_owner) || '' }}
       
       - name: Create Documentation for GHCR Package
         env:
@@ -360,12 +361,22 @@ jobs:
           echo "Publication to GHCR completed successfully!"
           echo "Terraform Provider available at: ghcr.io/${{ github.repository_owner }}/terraform-provider-jumpcloud:v${VERSION}"
           
-          # For beta versions, add specific tag
+          # Debug: List available Docker images
+          echo "Available Docker images:"
+          docker images
+          
+          # Output information about the published images
+          echo "The following container images have been published:"
+          echo "- ghcr.io/${{ github.repository_owner }}/terraform-provider-jumpcloud:v${VERSION} (specific version)"
+          echo "- ghcr.io/${{ github.repository_owner }}/terraform-provider-jumpcloud:latest (latest stable)"
+          
           if [[ "$IS_BETA" == "true" ]]; then
-            echo "This is a beta version."
-            docker tag ghcr.io/${{ github.repository_owner }}/terraform-provider-jumpcloud:v${VERSION} ghcr.io/${{ github.repository_owner }}/terraform-provider-jumpcloud:beta
-            docker push ghcr.io/${{ github.repository_owner }}/terraform-provider-jumpcloud:beta
-            echo "Tag 'beta' also published."
+            echo "- ghcr.io/${{ github.repository_owner }}/terraform-provider-jumpcloud:beta (latest beta version)"
+            echo ""
+            echo "This container image includes provider binaries for ALL supported platforms:"
+            echo "- Linux AMD64 & ARM64"
+            echo "- MacOS AMD64 & ARM64"
+            echo "- Windows AMD64"
           fi
 
   # Create GitHub Release (for any version, marking as beta when appropriate)
@@ -498,7 +509,7 @@ jobs:
           # Create directory for compiled binaries
           mkdir -p dist
           
-          # Compilar para os sistemas suportados
+          # Compile for supported platforms
           GOOS=linux GOARCH=amd64 go build -o dist/terraform-provider-jumpcloud_v${VERSION}
           GOOS=darwin GOARCH=amd64 go build -o dist/terraform-provider-jumpcloud_v${VERSION}_darwin_amd64
           GOOS=darwin GOARCH=arm64 go build -o dist/terraform-provider-jumpcloud_v${VERSION}_darwin_arm64
@@ -508,18 +519,18 @@ jobs:
         env:
           VERSION: ${{ needs.version.outputs.version }}
         run: |
-          # Criar diretório para o pacote
+          # Create directory for the package
           mkdir -p terraform-provider-jumpcloud_${VERSION}
           
-          # Copiar os binários compilados
+          # Copy the compiled binaries
           cp dist/* terraform-provider-jumpcloud_${VERSION}/
           
-          # Adicionar arquivos necessários
+          # Add necessary files
           cp LICENSE terraform-provider-jumpcloud_${VERSION}/
           cp README.md terraform-provider-jumpcloud_${VERSION}/
           cp CHANGELOG.md terraform-provider-jumpcloud_${VERSION}/
           
-          # Empacotar
+          # Package
           tar -czvf terraform-provider-jumpcloud_${VERSION}.tar.gz terraform-provider-jumpcloud_${VERSION}
       
       - name: Upload Provider Package
@@ -532,6 +543,6 @@ jobs:
       
       - name: Registry Publishing Mockup
         run: |
-          echo "Esta é uma etapa de mockup para publicação no Terraform Registry."
-          echo "Em um ambiente real, você integraria com a API do Terraform Registry ou seguiria"
-          echo "o processo adequado para publicação de providers externos." 
+          echo "This is a mockup step for publication to the Terraform Registry."
+          echo "In a real environment, you would integrate with the Terraform Registry API or follow"
+          echo "the appropriate process for publishing external providers." 
