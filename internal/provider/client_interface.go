@@ -1,8 +1,8 @@
 package provider
 
 import (
-	"github.com/ferreirafav/terraform-provider-jumpcloud/internal/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"registry.terraform.io/agilize/jumpcloud/internal/client"
 )
 
 // ClientInterface define uma interface para o cliente da API
@@ -10,18 +10,18 @@ type ClientInterface interface {
 	DoRequest(method, path string, body interface{}) ([]byte, error)
 }
 
-// ConvertToClientInterface converte a interface m para ClientInterface
+// ConvertToClientInterface converte a interface meta para ClientInterface
 // Suporta *MockClient e *client.Client
-func ConvertToClientInterface(m interface{}) (ClientInterface, diag.Diagnostics) {
+func ConvertToClientInterface(meta interface{}) (ClientInterface, diag.Diagnostics) {
 	var c ClientInterface
 
 	// Tenta converter para o tipo apropriado
-	if mockClient, isMock := m.(*MockClient); isMock {
+	if mockClient, isMock := meta.(*MockClient); isMock {
 		c = mockClient
-	} else if apiClient, isApi := m.(*client.Client); isApi {
+	} else if apiClient, isApi := meta.(*client.Client); isApi {
 		c = apiClient
 	} else {
-		return nil, diag.Errorf("falha ao converter cliente: %v não é um tipo de cliente válido", m)
+		return nil, diag.Errorf("falha ao converter cliente: %v não é um tipo de cliente válido", meta)
 	}
 
 	return c, nil

@@ -1,0 +1,132 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  packages: write
+  issues: write
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.22'
+          cache: true
+
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@v5
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v4
+        with:
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+
+      - name: Upload assets
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform-provider-jumpcloud
+          path: dist/*
+          retention-days: 30
+
+  # Job para preparar a documentação para o Terraform Registry
+  terraform-registry:
+    needs: goreleaser
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.22'
+          cache: true
+      
+      - name: Download release assets
+        uses: actions/download-artifact@v3
+        with:
+          name: terraform-provider-jumpcloud
+          path: dist
+      
+      - name: Prepare Registry Files
+        run: |
+          # Instalar tfplugindocs para geração de documentação
+          go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
+          
+          # Gerar documentação
+          tfplugindocs generate
+          
+          # Preparar arquivo terraform-registry-manifest.json para registry.terraform.io
+          VERSION=${GITHUB_REF#refs/tags/v}
+          cat << EOF > terraform-registry-manifest.json
+          {
+            "version": 1,
+            "metadata": {
+              "protocol_versions": ["5.0", "6.0"]
+            }
+          }
+          EOF
+          
+          # Validar que os arquivos necessários para o Terraform Registry estão presentes
+          echo "Verificando arquivos necessários para o Terraform Registry..."
+          
+          # Verificar checksum
+          if [ ! -f "dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS" ]; then
+            echo "Erro: Arquivo de checksums não encontrado"
+            exit 1
+          fi
+          
+          # Verificar assinatura
+          if [ ! -f "dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS.sig" ]; then
+            echo "Erro: Assinatura do arquivo de checksums não encontrada"
+            exit 1
+          fi
+          
+          echo "Todos os arquivos necessários para publicação no Terraform Registry estão presentes."
+          
+          # Instruções para publicação no Terraform Registry
+          echo "==== INSTRUÇÕES PARA PUBLICAÇÃO NO TERRAFORM REGISTRY ===="
+          echo "1. O namespace deve ser 'registry.terraform.io/agilize/jumpcloud'"
+          echo "2. Certifique-se de que a chave GPG usada para assinar está registrada no Terraform Registry"
+          echo "3. Siga os passos em https://developer.hashicorp.com/terraform/registry/providers/publishing"
+          echo "====================================================="
+      
+      - name: Upload Registry Assets
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform-registry-assets
+          path: |
+            terraform-registry-manifest.json
+            docs/
+          retention-days: 30
+      
+      - name: Prepare for Terraform Registry
+        run: |
+          echo "===== PREPARAÇÃO PARA O TERRAFORM REGISTRY ====="
+          echo "Este provider está configurado para ser publicado no Terraform Registry."
+          echo "Para publicar no Terraform Registry, siga os passos abaixo:"
+          echo ""
+          echo "1. Visite https://registry.terraform.io e faça login com sua conta GitHub"
+          echo "2. Navegue até 'Publish > Provider'"
+          echo "3. Selecione a organização 'agilize' e o repositório 'terraform-provider-jumpcloud'"
+          echo "4. Certifique-se de que você já adicionou sua chave GPG pública no Terraform Registry"
+          echo "5. Conclua o processo de publicação conforme as instruções na interface"
+          echo ""
+          echo "Certifique-se de que o namespace 'registry.terraform.io/agilize/jumpcloud' está sendo usado consistentemente na documentação e configurações."
+          echo "===============================================" 

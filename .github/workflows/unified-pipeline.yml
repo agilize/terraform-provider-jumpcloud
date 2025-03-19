@@ -1,0 +1,678 @@
+name: Unified Build and Release Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    tags:
+      - 'v*'
+    paths-ignore:
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - 'docs/**'
+      - '.gitignore'
+  # Manual trigger with parameters
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (without v prefix)'
+        required: false
+        default: ''
+      is_prerelease:
+        description: 'Is this a pre-release version (alpha, beta, rc)'
+        required: false
+        default: false
+        type: boolean
+      prerelease_suffix:
+        description: 'Pre-release suffix (alpha, beta, rc)'
+        required: false
+        default: 'beta'
+        type: choice
+        options:
+          - 'alpha'
+          - 'beta'
+          - 'rc'
+  # GitHub Release created
+  release:
+    types: [created]
+
+# Permissions applied to the entire workflow
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  # Determine the version for the build
+  version:
+    name: Determine Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set-version.outputs.version }}
+      is_prerelease: ${{ steps.set-version.outputs.is_prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set Version
+        id: set-version
+        run: |
+          # Determine version based on event type
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ github.event.inputs.version }}" ]]; then
+            # Manually provided version
+            VERSION="${{ github.event.inputs.version }}"
+            IS_PRERELEASE="${{ github.event.inputs.is_prerelease }}"
+            
+            # If pre-release is true, add the suffix
+            if [[ "$IS_PRERELEASE" == "true" ]]; then
+              SUFFIX="${{ github.event.inputs.prerelease_suffix }}"
+              # Check if version already has a pre-release suffix
+              if [[ ! "$VERSION" == *-* ]]; then
+                VERSION="${VERSION}-${SUFFIX}"
+              fi
+            fi
+          elif [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == refs/tags/* ]]; then
+            # Version from a tag
+            VERSION=${GITHUB_REF#refs/tags/v}
+            # Check if it's a pre-release based on tag name
+            if [[ "$VERSION" == *-* ]]; then
+              IS_PRERELEASE="true"
+            else
+              IS_PRERELEASE="false"
+            fi
+          else
+            # Automatic determination as fallback
+            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+            echo "Latest tag: $LATEST_TAG"
+            
+            # Remove 'v' from beginning
+            LATEST_VERSION=${LATEST_TAG#v}
+            
+            # Parse version components
+            if [[ "$LATEST_VERSION" == *-* ]]; then
+              # Handle pre-release versions
+              VERSION_PART=${LATEST_VERSION%-*}
+              SUFFIX_PART=${LATEST_VERSION#*-}
+            else
+              VERSION_PART=$LATEST_VERSION
+              SUFFIX_PART=""
+            fi
+            
+            # Split version into parts: MAJOR.MINOR.PATCH
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_PART"
+            
+            # Remove any remaining suffix from PATCH
+            PATCH=$(echo $PATCH | sed -E 's/([0-9]+).*/\1/')
+            
+            # Determine branch-specific versioning
+            if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+              # For develop branch, increment PATCH and add -beta
+              NEW_PATCH=$((PATCH + 1))
+              VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}-beta"
+              IS_PRERELEASE="true"
+            elif [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]]; then
+              # For main/master branch - if latest was a pre-release with same MAJOR.MINOR, remove suffix
+              # Otherwise, increment PATCH
+              if [[ -n "$SUFFIX_PART" && "${MAJOR}.${MINOR}" == "${MAJOR}.${MINOR}" ]]; then
+                VERSION="${MAJOR}.${MINOR}.${PATCH}"
+              else
+                NEW_PATCH=$((PATCH + 1))
+                VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
+              fi
+              IS_PRERELEASE="false"
+            else
+              # For other branches, just use current version
+              VERSION="${MAJOR}.${MINOR}.${PATCH}"
+              IS_PRERELEASE="false"
+            fi
+          fi
+          
+          # Validate version format (strict SemVer)
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
+            echo "Error: Version does not follow Semantic Versioning format: $VERSION"
+            echo "See: https://semver.org/"
+            exit 1
+          fi
+          
+          echo "Determined version: v${VERSION} (Pre-release: $IS_PRERELEASE)"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "is_prerelease=${IS_PRERELEASE}" >> $GITHUB_OUTPUT
+
+  # Run tests before build
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: version
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.24'
+          cache: true
+      
+      - name: Unit Tests
+        run: make test-unit
+  
+  # Build for multiple platforms
+  build:
+    name: Build
+    needs: [test, version]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform:
+          - {goos: linux, goarch: amd64, suffix: ''}
+          - {goos: linux, goarch: arm64, suffix: ''}
+          - {goos: darwin, goarch: amd64, suffix: ''}
+          - {goos: darwin, goarch: arm64, suffix: ''}
+          - {goos: windows, goarch: amd64, suffix: '.exe'}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.24'
+          cache: true
+      
+      - name: Build Provider
+        env:
+          GOOS: ${{ matrix.platform.goos }}
+          GOARCH: ${{ matrix.platform.goarch }}
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          echo "Building for $GOOS/$GOARCH - version v${VERSION}"
+          
+          # Directory structure compatible with Terraform Registry
+          # terraform-provider-jumpcloud_v${VERSION}_${OS}_${ARCH}/terraform-provider-jumpcloud_v${VERSION}
+          PLUGIN_DIR=terraform-provider-jumpcloud_v${VERSION}_${{ matrix.platform.goos }}_${{ matrix.platform.goarch }}
+          mkdir -p ${PLUGIN_DIR}
+          
+          # Compile for the platform with correct name
+          go build -o ${PLUGIN_DIR}/terraform-provider-jumpcloud_v${VERSION}${{ matrix.platform.suffix }}
+          
+          # Create ZIP for the binary with the structure expected by Terraform
+          zip -j terraform-provider-jumpcloud_${VERSION}_${{ matrix.platform.goos }}_${{ matrix.platform.goarch }}.zip ${PLUGIN_DIR}/terraform-provider-jumpcloud_v${VERSION}${{ matrix.platform.suffix }}
+      
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-provider-jumpcloud_${{ matrix.platform.goos }}_${{ matrix.platform.goarch }}
+          path: terraform-provider-jumpcloud_${{ needs.version.outputs.version }}_${{ matrix.platform.goos }}_${{ matrix.platform.goarch }}.zip
+          if-no-files-found: error
+          retention-days: 7
+
+  # Prepare for publishing with GPG signing for Terraform Registry
+  prepare-release:
+    name: Prepare Release
+    needs: [build, version]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+      
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@v5
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+      
+      - name: Generate Checksums and Manifest
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+        run: |
+          # Move all ZIPs to a single directory
+          mkdir -p release
+          find . -name "terraform-provider-jumpcloud_*.zip" -exec cp {} release/ \;
+          
+          # Generate checksums
+          cd release
+          sha256sum *.zip > terraform-provider-jumpcloud_${VERSION}_SHA256SUMS
+          
+          # Sign the checksum file - mandatory for Terraform Registry
+          gpg --batch --local-user "${GPG_FINGERPRINT}" --detach-sign terraform-provider-jumpcloud_${VERSION}_SHA256SUMS
+          
+          # Create the Terraform Registry manifest
+          cat > terraform-provider-jumpcloud_${VERSION}_manifest.json << EOF
+          {
+            "version": 1,
+            "metadata": {
+              "protocol_versions": ["5.0", "6.0"]
+            }
+          }
+          EOF
+          
+          cd ..
+      
+      - name: Upload Release Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: |
+            release/*.zip
+            release/terraform-provider-jumpcloud_${{ needs.version.outputs.version }}_SHA256SUMS
+            release/terraform-provider-jumpcloud_${{ needs.version.outputs.version }}_SHA256SUMS.sig
+            release/terraform-provider-jumpcloud_${{ needs.version.outputs.version }}_manifest.json
+          if-no-files-found: error
+          retention-days: 7
+
+  # Create Tag if it doesn't exist
+  create-tag:
+    name: Create Tag
+    needs: [prepare-release, version]
+    # Runs only if it's a push to main, master or develop branches
+    if: ${{ github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/') && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Create Tag if Not Exists
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Check if the tag already exists
+          if ! git rev-parse "v${VERSION}" >/dev/null 2>&1; then
+            echo "Creating tag v${VERSION}"
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            git tag -a "v${VERSION}" -m "Release v${VERSION}"
+            git push origin "v${VERSION}"
+            echo "Tag v${VERSION} created and pushed"
+          else
+            echo "Tag v${VERSION} already exists"
+          fi
+
+  # Publish to GitHub Container Registry (GHCR)
+  publish-packages:
+    name: Publish to GitHub Container Registry
+    needs: [prepare-release, version, create-tag]
+    # Runs only if it's a push to main, master, develop, or if a tag is created, or manual dispatch
+    if: |
+      success() && (
+        github.event_name == 'workflow_dispatch' || 
+        startsWith(github.ref, 'refs/tags/') || 
+        (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download Release Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-artifacts
+          path: release
+      
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64,darwin/amd64,darwin/arm64,windows/amd64
+      
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Prepare Provider for GHCR
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          cd release
+          echo "Preparing provider for publication in GHCR..."
+          
+          # Create working directory
+          mkdir -p terraform-provider
+          cp *.zip terraform-provider/
+          cp terraform-provider-jumpcloud_${VERSION}_SHA256SUMS terraform-provider/
+          cp terraform-provider-jumpcloud_${VERSION}_SHA256SUMS.sig terraform-provider/
+          cp terraform-provider-jumpcloud_${VERSION}_manifest.json terraform-provider/
+          
+          # Create Dockerfile
+          cat << EOF > terraform-provider/Dockerfile
+          FROM --platform=\${BUILDPLATFORM} alpine:3.17
+          
+          ARG TARGETPLATFORM
+          ARG BUILDPLATFORM
+          
+          LABEL org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          LABEL org.opencontainers.image.description="JumpCloud Terraform Provider v${VERSION} - Platform-specific build for \${TARGETPLATFORM}"
+          LABEL org.opencontainers.image.licenses=MIT
+          LABEL io.jumpcloud.terraform.platforms="linux_amd64,linux_arm64,darwin_amd64,darwin_arm64,windows_amd64"
+          LABEL io.jumpcloud.terraform.version="${VERSION}"
+          LABEL io.jumpcloud.terraform.targetplatform="\${TARGETPLATFORM}"
+          LABEL io.jumpcloud.terraform.registry="registry.terraform.io/agilize/jumpcloud"
+          
+          WORKDIR /terraform-provider
+          
+          # Copy platform-specific binaries, checksums and signatures
+          COPY *.zip /terraform-provider/
+          COPY terraform-provider-jumpcloud_${VERSION}_SHA256SUMS /terraform-provider/
+          COPY terraform-provider-jumpcloud_${VERSION}_SHA256SUMS.sig /terraform-provider/
+          COPY terraform-provider-jumpcloud_${VERSION}_manifest.json /terraform-provider/
+          
+          # Create platform identifier file
+          RUN echo "\${TARGETPLATFORM}" > /terraform-provider/PLATFORM
+          
+          CMD ["sh", "-c", "echo 'This is a Terraform Provider container for platform: '\$(cat /terraform-provider/PLATFORM)"]
+          EOF
+          
+          # Create README
+          cat << EOF > terraform-provider/README.md
+          # JumpCloud Terraform Provider
+          
+          This image contains the JumpCloud provider for Terraform v${VERSION}.
+          
+          ## Terraform Registry
+          
+          This provider is intended to be published to the Terraform Registry at:
+          
+          registry.terraform.io/agilize/jumpcloud
+          
+          ## Supported Platforms
+          
+          This provider supports the following platforms:
+          
+          - Linux (AMD64, ARM64)
+          - macOS (AMD64, ARM64)
+          - Windows (AMD64)
+          
+          Each platform has a dedicated container image tag, and Terraform will automatically select the appropriate binary for your system.
+          
+          ## How to use with Terraform Registry (Recommended)
+          
+          Add the following configuration to your Terraform file:
+          
+          \`\`\`hcl
+          terraform {
+            required_providers {
+              jumpcloud = {
+                source  = "registry.terraform.io/agilize/jumpcloud"
+                version = "${VERSION}"
+              }
+            }
+          }
+          
+          provider "jumpcloud" {
+            api_key = "your_api_key"
+          }
+          \`\`\`
+          
+          ## Terraform configuration to use GHCR (Alternative)
+          
+          Add the following configuration to your \`~/.terraformrc\` file (Linux/Mac) or \`%APPDATA%\\terraform.rc\` (Windows):
+          
+          \`\`\`hcl
+          provider_installation {
+            network_mirror {
+              url = "https://ghcr.io/${{ github.repository_owner }}/terraform-provider-jumpcloud"
+              include = ["ghcr.io/${{ github.repository_owner }}/jumpcloud"]
+            }
+            direct {
+              exclude = ["ghcr.io/${{ github.repository_owner }}/jumpcloud"]
+            }
+          }
+          \`\`\`
+          
+          Then, in your Terraform configuration file:
+          
+          \`\`\`hcl
+          terraform {
+            required_providers {
+              jumpcloud = {
+                source  = "ghcr.io/${{ github.repository_owner }}/jumpcloud"
+                version = "${VERSION}"
+              }
+            }
+          }
+          
+          provider "jumpcloud" {
+            api_key = "your_api_key"
+          }
+          \`\`\`
+          
+          ## Available files
+          
+          Each container includes:
+          
+          - Provider binaries for all platforms
+          - SHA256SUMS checksum file
+          - GPG signature for the checksum file
+          - Terraform Registry manifest file
+          - Platform identifier
+          EOF
+      
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./release/terraform-provider
+          push: true
+          platforms: linux/amd64,linux/arm64,darwin/amd64,darwin/arm64,windows/amd64
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/terraform-provider-jumpcloud:v${{ needs.version.outputs.version }}
+            ghcr.io/${{ github.repository_owner }}/terraform-provider-jumpcloud:latest
+            ${{ needs.version.outputs.is_prerelease == 'true' && format('ghcr.io/{0}/terraform-provider-jumpcloud:beta', github.repository_owner) || '' }}
+
+  # Create GitHub Release for Terraform Registry
+  create-github-release:
+    name: Create GitHub Release
+    needs: [prepare-release, version, publish-packages]
+    # Runs for tags, official releases, merges to main/master/develop and manual workflow
+    if: |
+      success() && (
+        startsWith(github.ref, 'refs/tags/') || 
+        github.event_name == 'release' || 
+        (github.event_name == 'workflow_dispatch') ||
+        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'))
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Download Release Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-artifacts
+          path: release
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          IS_PRERELEASE: ${{ needs.version.outputs.is_prerelease }}
+        with:
+          tag_name: v${{ needs.version.outputs.version }}
+          name: Release v${{ needs.version.outputs.version }}
+          files: |
+            release/*.zip
+            release/terraform-provider-jumpcloud_${{ needs.version.outputs.version }}_SHA256SUMS
+            release/terraform-provider-jumpcloud_${{ needs.version.outputs.version }}_SHA256SUMS.sig
+            release/terraform-provider-jumpcloud_${{ needs.version.outputs.version }}_manifest.json
+          draft: false
+          prerelease: ${{ needs.version.outputs.is_prerelease == 'true' }}
+          generate_release_notes: true
+      
+      - name: Update CHANGELOG
+        if: ${{ needs.version.outputs.is_prerelease != 'true' }}
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ ! -f CHANGELOG.md ]; then
+            echo "# Changelog" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+          fi
+          
+          # Generate content for the changelog
+          TEMP_CHANGELOG=$(mktemp)
+          echo "# Changelog" > $TEMP_CHANGELOG
+          echo "" >> $TEMP_CHANGELOG
+          echo "## v${VERSION} ($(date +%Y-%m-%d))" >> $TEMP_CHANGELOG
+          echo "" >> $TEMP_CHANGELOG
+          
+          # Get logs since the last non-beta release
+          LAST_STABLE_TAG=$(git tag -l --sort=-v:refname | grep -v -E '-(beta|alpha|rc|pr)' | head -n1)
+          if [ -n "$LAST_STABLE_TAG" ]; then
+            # Group commits by type (feat, fix, etc)
+            echo "### Features" >> $TEMP_CHANGELOG
+            git log ${LAST_STABLE_TAG}..HEAD --pretty=format:"* %s" | grep -E '^feat(\([^)]+\))?:' | sed 's/^feat\([^)]*\): /* /' >> $TEMP_CHANGELOG || true
+            echo "" >> $TEMP_CHANGELOG
+            
+            echo "### Bug Fixes" >> $TEMP_CHANGELOG
+            git log ${LAST_STABLE_TAG}..HEAD --pretty=format:"* %s" | grep -E '^fix(\([^)]+\))?:' | sed 's/^fix\([^)]*\): /* /' >> $TEMP_CHANGELOG || true
+            echo "" >> $TEMP_CHANGELOG
+            
+            echo "### Documentation" >> $TEMP_CHANGELOG
+            git log ${LAST_STABLE_TAG}..HEAD --pretty=format:"* %s" | grep -E '^docs(\([^)]+\))?:' | sed 's/^docs\([^)]*\): /* /' >> $TEMP_CHANGELOG || true
+            echo "" >> $TEMP_CHANGELOG
+            
+            echo "### Other Changes" >> $TEMP_CHANGELOG
+            git log ${LAST_STABLE_TAG}..HEAD --pretty=format:"* %s" | grep -v -E '^(feat|fix|docs)(\([^)]+\))?:' >> $TEMP_CHANGELOG || true
+            echo "" >> $TEMP_CHANGELOG
+          else
+            echo "* Initial release" >> $TEMP_CHANGELOG
+            echo "" >> $TEMP_CHANGELOG
+          fi
+          
+          # Add the previous changelog
+          if [ -f CHANGELOG.md ]; then
+            tail -n +3 CHANGELOG.md >> $TEMP_CHANGELOG
+          fi
+          
+          # Replace the changelog
+          mv $TEMP_CHANGELOG CHANGELOG.md
+          
+          # Commit and push changes if there's something to commit
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add CHANGELOG.md
+          if git diff --staged --quiet; then
+            echo "No changes to commit in CHANGELOG.md"
+          else
+            git commit -m "docs: update CHANGELOG for v${VERSION}"
+            git push
+          fi
+
+  # Check and verify compatibility with Terraform Registry
+  terraform-registry-verification:
+    name: Terraform Registry Verification
+    needs: [create-github-release, version]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download Release Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-artifacts
+          path: release
+      
+      - name: Verify Required Files for Terraform Registry
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          echo "Verifying files required for Terraform Registry publication"
+          
+          MISSING=0
+          
+          # Check for documentation
+          if [ ! -f "docs/index.md" ]; then
+            echo "❌ Missing provider overview documentation at docs/index.md"
+            MISSING=$((MISSING+1))
+          else
+            echo "✅ Provider overview documentation found"
+          fi
+          
+          # Check for resource and data source documentation
+          if [ ! -d "docs/resources" ] || [ ! -d "docs/data-sources" ]; then
+            echo "❌ Missing resource or data source documentation directories"
+            MISSING=$((MISSING+1))
+          else
+            echo "✅ Resource and data source documentation directories found"
+          fi
+          
+          # Check release artifacts
+          cd release
+          if [ ! -f "terraform-provider-jumpcloud_${VERSION}_manifest.json" ]; then
+            echo "❌ Missing Terraform Registry manifest file"
+            MISSING=$((MISSING+1))
+          else
+            echo "✅ Terraform Registry manifest file found"
+          fi
+          
+          if [ ! -f "terraform-provider-jumpcloud_${VERSION}_SHA256SUMS" ]; then
+            echo "❌ Missing SHA256SUMS file"
+            MISSING=$((MISSING+1))
+          else
+            echo "✅ SHA256SUMS file found"
+          fi
+          
+          if [ ! -f "terraform-provider-jumpcloud_${VERSION}_SHA256SUMS.sig" ]; then
+            echo "❌ Missing signature for SHA256SUMS"
+            MISSING=$((MISSING+1))
+          else
+            echo "✅ Signature for SHA256SUMS found"
+          fi
+          
+          # Check for platform binary zips
+          PLATFORMS=("darwin_amd64" "darwin_arm64" "linux_amd64" "linux_arm64" "windows_amd64")
+          for platform in "${PLATFORMS[@]}"; do
+            if [ ! -f "terraform-provider-jumpcloud_${VERSION}_${platform}.zip" ]; then
+              echo "❌ Missing binary for ${platform}"
+              MISSING=$((MISSING+1))
+            else
+              echo "✅ Binary for ${platform} found"
+            fi
+          done
+          
+          # Summary
+          if [ $MISSING -eq 0 ]; then
+            echo "✅ All required files for Terraform Registry are present"
+            echo "Ready for publication to registry.terraform.io/agilize/jumpcloud"
+          else
+            echo "❌ Missing $MISSING required files for Terraform Registry"
+            echo "Please check the output above and fix the issues before publishing to the registry"
+          fi
+      
+      - name: Terraform Registry Publication Instructions
+        run: |
+          echo "==============================================================="
+          echo "🚀 TERRAFORM REGISTRY PUBLICATION INSTRUCTIONS 🚀"
+          echo "==============================================================="
+          echo ""
+          echo "To publish this provider to the Terraform Registry:"
+          echo ""
+          echo "1. Ensure you have a user account on registry.terraform.io"
+          echo "2. Add your GPG public key to your Terraform Registry account"
+          echo "3. Navigate to Publish -> Provider in the Terraform Registry"
+          echo "4. Select the GitHub repository: agilize/terraform-provider-jumpcloud"
+          echo "5. Follow the steps to complete the publication process"
+          echo ""
+          echo "This release contains all the required files for the Terraform Registry:"
+          echo "- Provider binaries for supported platforms"
+          echo "- SHA256SUMS file"
+          echo "- SHA256SUMS.sig signature"
+          echo "- terraform-registry-manifest.json manifest file"
+          echo "- Documentation in the required format"
+          echo ""
+          echo "The provider will be available at: registry.terraform.io/agilize/jumpcloud"
+          echo ""
+          echo "===============================================================" 
+          echo "the appropriate process for publishing external providers." 

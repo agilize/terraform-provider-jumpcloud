@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ferreirafav/terraform-provider-jumpcloud/internal/client"
 	"github.com/stretchr/testify/assert"
+	"registry.terraform.io/agilize/jumpcloud/internal/client"
 )
 
 // Test that the provider properly masks sensitive data

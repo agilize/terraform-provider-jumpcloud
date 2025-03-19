@@ -1,0 +1,82 @@
+# GoReleaser configuration for Terraform Provider JumpCloud
+# Para mais informações sobre GoReleaser: https://goreleaser.com/
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    mod_timestamp: '{{ .CommitTimestamp }}'
+    flags:
+      - -trimpath
+    ldflags:
+      - '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}}'
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    binary: '{{ .ProjectName }}_v{{ .Version }}'
+
+archives:
+  - format: zip
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+
+checksum:
+  name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
+  algorithm: sha256
+
+signs:
+  - artifacts: checksum
+    args:
+      # Este comando assinará o arquivo checksums para cumprir requisitos do Terraform Registry
+      - "--batch"
+      - "--local-user"
+      - "{{ .Env.GPG_FINGERPRINT }}"
+      - "--output"
+      - "${signature}"
+      - "--detach-sign"
+      - "${artifact}"
+
+release:
+  # Configuração para GitHub Releases
+  github:
+    owner: agilize
+    name: terraform-provider-jumpcloud
+  # Ajustes para a publicação da release
+  draft: false
+  prerelease: auto
+  name_template: "v{{.Version}}"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - '^build:'
+      - '^chore:'
+      - Merge pull request
+      - Merge branch
+
+# Configuração para publicação no Terraform Registry
+# A estrutura dos arquivos precisa seguir as diretrizes oficiais do Terraform Registry
+# https://developer.hashicorp.com/terraform/registry/providers/publishing
+publishers:
+  - name: terraform-registry-manifest
+    cmd: |
+      set -e
+      echo "Preparando o manifesto para o Terraform Registry..."
+      cat > {{ dir .ArtifactPath }}/{{ .ProjectName }}_{{ .Version }}_manifest.json << EOF
+      {
+        "version": 1,
+        "metadata": {
+          "protocol_versions": ["5.0", "6.0"]
+        }
+      }
+      EOF
+      echo "Manifesto criado com sucesso."

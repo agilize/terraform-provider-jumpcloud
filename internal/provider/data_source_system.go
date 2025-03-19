@@ -99,8 +99,8 @@ func dataSourceSystem() *schema.Resource {
 	}
 }
 
-func dataSourceSystemRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func dataSourceSystemRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}

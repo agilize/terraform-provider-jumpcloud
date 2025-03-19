@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the Terraform JumpCloud Provider will be documented in this file.
+All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -8,34 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Security tests for sensitive data handling and API interactions
-- Performance tests for resource operations and JSON parsing
-- Comprehensive Makefile for development tasks
-- Development guide with project structure and standards
-- Mock client implementation for testing
-- Enhanced error handling with detailed error codes
-- Integration tests for provider operations
+- GitHub Actions configuration for PR verification, testing, building, and releases
+- GoReleaser configuration to automate the release process
+- Automated acceptance tests
+- Enhanced documentation for resources and data sources
+- Code examples for all main resources
 
 ### Changed
-- Improved error handling in the client layer
-- Enhanced resource documentation with security considerations
-- Updated README with feature coverage
+- Replaced project namespace from agilize/agilize to agilize across all source code, documentation, and configurations
 
 ### Fixed
-- Corrected error type assertions in client error handling
-- Fixed resource schema validation for required fields
+- Issues with nil types and []byte(nil) in the DoRequest method
+- Type conversion issues in the notification channel resource
+- Handling of list and set field types
 
-## [0.1.0] - YYYY-MM-DD
+## [0.1.0] - Release date to be determined
 
 ### Added
-- Initial release of the JumpCloud Terraform Provider
-- Support for managing JumpCloud users
-  - Create, read, update, and delete operations
-  - Support for user attributes and MFA settings
-- Support for managing JumpCloud systems
-  - Create, read, update, and delete operations
-  - System configuration and metadata management
-- Documentation for all resources and data sources
-- Example configurations for common use cases
-- Unit tests for provider functionality
-- Acceptance tests for resource CRUD operations 
+- Initial implementation of the Terraform provider for JumpCloud
+- Basic resources: users, systems, groups
+- Data sources for searching JumpCloud entities
+- Support for authentication via API key 

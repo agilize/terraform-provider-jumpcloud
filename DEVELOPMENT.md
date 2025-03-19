@@ -17,7 +17,7 @@ Before you begin development, ensure you have the following installed:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/ferreirafav/terraform-provider-jumpcloud.git
+   git clone https://github.com/agilize/terraform-provider-jumpcloud.git
    cd terraform-provider-jumpcloud
    ```
 

@@ -127,8 +127,8 @@ func resourceSystem() *schema.Resource {
 	}
 }
 
-func resourceSystemCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceSystemCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -174,11 +174,11 @@ func resourceSystemCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	// Set the ID from the response
 	d.SetId(createdSystem.ID)
 
-	return resourceSystemRead(ctx, d, m)
+	return resourceSystemRead(ctx, d, meta)
 }
 
-func resourceSystemRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceSystemRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -236,8 +236,8 @@ func resourceSystemRead(ctx context.Context, d *schema.ResourceData, m interface
 	return nil
 }
 
-func resourceSystemUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceSystemUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
@@ -269,11 +269,11 @@ func resourceSystemUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(fmt.Errorf("error updating system: %v", err))
 	}
 
-	return resourceSystemRead(ctx, d, m)
+	return resourceSystemRead(ctx, d, meta)
 }
 
-func resourceSystemDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c, diags := ConvertToClientInterface(m)
+func resourceSystemDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c, diags := ConvertToClientInterface(meta)
 	if diags != nil {
 		return diags
 	}
