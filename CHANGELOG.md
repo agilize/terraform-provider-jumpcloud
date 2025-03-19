@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced documentation for resources and data sources
 - Code examples for all main resources
 
+### Changed
+- Replaced project namespace from agilize/agilize to agilize across all source code, documentation, and configurations
+
 ### Fixed
 - Issues with nil types and []byte(nil) in the DoRequest method
 - Type conversion issues in the notification channel resource
