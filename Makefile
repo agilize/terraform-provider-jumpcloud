@@ -18,7 +18,7 @@ BUILD_DIR=dist
 OS_ARCH=darwin_amd64
 
 # Terraform directories
-LOCAL_PLUGIN_DIR=~/.terraform.d/plugins/github.com/ferreirafav/jumpcloud/$(VERSION)/$(OS_ARCH)
+LOCAL_PLUGIN_DIR=~/.terraform.d/plugins/registry.terraform.io/agilize/jumpcloud/$(VERSION)/$(OS_ARCH)
 
 .PHONY: all build clean test fmt lint vet mod-tidy install release
 

@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    jumpcloud = {
+      source  = "registry.terraform.io/agilize/jumpcloud"
+      version = "~> 0.1.0"
+    }
+  }
+}
+
 provider "jumpcloud" {
   api_key = var.jumpcloud_api_key
   org_id  = var.jumpcloud_org_id

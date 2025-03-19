@@ -1,8 +1,8 @@
-# Terraform Provider JumpCloud
+# Terraform Provider for JumpCloud
 
-[![Build Status](https://github.com/ferreirafa/terraform-provider-jumpcloud/workflows/Unified%20Build%20and%20Release%20Pipeline/badge.svg)](https://github.com/ferreirafa/terraform-provider-jumpcloud/actions)
-[![Latest Release](https://img.shields.io/github/v/release/ferreirafa/terraform-provider-jumpcloud?include_prereleases&sort=semver)](https://github.com/ferreirafa/terraform-provider-jumpcloud/releases)
-[![GitHub Packages](https://img.shields.io/badge/GitHub%20Packages-Provider-blue)](https://github.com/ferreirafa/terraform-provider-jumpcloud/pkgs/container/terraform-provider-jumpcloud)
+[![Build Status](https://github.com/agilize/terraform-provider-jumpcloud/workflows/Unified%20Build%20and%20Release%20Pipeline/badge.svg)](https://github.com/agilize/terraform-provider-jumpcloud/actions)
+[![Latest Release](https://img.shields.io/github/v/release/agilize/terraform-provider-jumpcloud?include_prereleases&sort=semver)](https://github.com/agilize/terraform-provider-jumpcloud/releases)
+[![GitHub Packages](https://img.shields.io/badge/GitHub%20Packages-Provider-blue)](https://github.com/agilize/terraform-provider-jumpcloud/pkgs/container/terraform-provider-jumpcloud)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 The JumpCloud Terraform Provider allows you to manage resources on the [JumpCloud](https://jumpcloud.com) platform through Terraform.
@@ -17,18 +17,37 @@ The JumpCloud Terraform Provider allows you to manage resources on the [JumpClou
 
 ### Provider Installation
 
-#### Option 1: Using GitHub Container Registry (Recommended)
+#### Option 1: Using Terraform Registry (Recommended)
+
+The provider is published to the Terraform Registry. To use it, simply configure your Terraform configuration file:
+
+```hcl
+terraform {
+  required_providers {
+    jumpcloud = {
+      source  = "registry.terraform.io/agilize/jumpcloud"
+      version = "~> 0.1.0"
+    }
+  }
+}
+
+provider "jumpcloud" {
+  api_key = "your-api-key"  # Can also be set via JUMPCLOUD_API_KEY environment variable
+}
+```
+
+#### Option 2: Using GitHub Container Registry
 
 Configure the GitHub Container Registry as a source for the provider. Add the following to your `~/.terraformrc` file:
 
 ```hcl
 provider_installation {
   network_mirror {
-    url = "https://ghcr.io/ferreirafav/terraform-provider-jumpcloud"
-    include = ["ghcr.io/ferreirafav/jumpcloud"]
+    url = "https://ghcr.io/agilize/terraform-provider-jumpcloud"
+    include = ["ghcr.io/agilize/jumpcloud"]
   }
   direct {
-    exclude = ["ghcr.io/ferreirafav/jumpcloud"]
+    exclude = ["ghcr.io/agilize/jumpcloud"]
   }
 }
 ```
@@ -39,7 +58,7 @@ Then, in your Terraform configuration:
 terraform {
   required_providers {
     jumpcloud = {
-      source  = "ghcr.io/ferreirafav/jumpcloud"
+      source  = "ghcr.io/agilize/jumpcloud"
       version = "~> 0.1.0"
     }
   }
@@ -52,7 +71,7 @@ provider "jumpcloud" {
 
 For detailed instructions, see [Using the Provider via GHCR](docs/ghcr-usage.md).
 
-#### Option 2: Using GitHub Releases
+#### Option 3: Using GitHub Releases
 
 To use the provider from GitHub Releases, add the following block to your Terraform configuration file:
 
@@ -60,7 +79,7 @@ To use the provider from GitHub Releases, add the following block to your Terraf
 terraform {
   required_providers {
     jumpcloud = {
-      source  = "ferreirafa/jumpcloud"
+      source  = "agilize/jumpcloud"
       version = "~> 0.1.0"
     }
   }

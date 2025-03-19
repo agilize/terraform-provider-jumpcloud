@@ -26,11 +26,11 @@ Add the following content:
 ```hcl
 provider_installation {
   network_mirror {
-    url = "https://ghcr.io/ferreirafa/terraform-provider-jumpcloud"
-    include = ["ghcr.io/ferreirafa/jumpcloud"]
+    url = "https://ghcr.io/agilize/terraform-provider-jumpcloud"
+    include = ["ghcr.io/agilize/jumpcloud"]
   }
   direct {
-    exclude = ["ghcr.io/ferreirafa/jumpcloud"]
+    exclude = ["ghcr.io/agilize/jumpcloud"]
   }
 }
 ```
@@ -43,7 +43,7 @@ In your Terraform configuration file (usually `main.tf`), declare the provider a
 terraform {
   required_providers {
     jumpcloud = {
-      source  = "ghcr.io/ferreirafa/jumpcloud"
+      source  = "ghcr.io/agilize/jumpcloud"
       version = "0.1.0" # Replace with the desired version
     }
   }
@@ -57,7 +57,7 @@ provider "jumpcloud" {
 ## Checking Available Versions
 
 You can check the available versions of the provider by visiting:
-https://github.com/ferreirafa/terraform-provider-jumpcloud/pkgs/container/terraform-provider-jumpcloud
+https://github.com/agilize/terraform-provider-jumpcloud/pkgs/container/terraform-provider-jumpcloud
 
 ## Available Tags
 
@@ -75,7 +75,7 @@ To use a beta version of the provider, update the configuration:
 terraform {
   required_providers {
     jumpcloud = {
-      source  = "ghcr.io/ferreirafa/jumpcloud"
+      source  = "ghcr.io/agilize/jumpcloud"
       version = "0.1.0-beta" # Specific beta version
     }
   }

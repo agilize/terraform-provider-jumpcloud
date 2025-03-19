@@ -1,8 +1,8 @@
 package provider
 
 import (
-	"github.com/ferreirafav/terraform-provider-jumpcloud/internal/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"registry.terraform.io/agilize/jumpcloud/internal/client"
 )
 
 // ClientInterface define uma interface para o cliente da API

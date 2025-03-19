@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ferreirafav/terraform-provider-jumpcloud/internal/client"
 	"github.com/stretchr/testify/mock"
+	"registry.terraform.io/agilize/jumpcloud/internal/client"
 )
 
 // MockClient provides a mock implementation of the client interface for testing

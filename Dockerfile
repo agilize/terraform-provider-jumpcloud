@@ -1,6 +1,6 @@
 FROM alpine:3.17
 
-LABEL org.opencontainers.image.source=https://github.com/ferreirafa/terraform-provider-jumpcloud
+LABEL org.opencontainers.image.source=https://github.com/agilize/terraform-provider-jumpcloud
 LABEL org.opencontainers.image.description="JumpCloud Terraform Provider - Contains binaries for Linux, macOS, and Windows (AMD64/ARM64)"
 LABEL org.opencontainers.image.licenses=MIT
 LABEL io.jumpcloud.terraform.platforms="linux_amd64,linux_arm64,darwin_amd64,darwin_arm64,windows_amd64"

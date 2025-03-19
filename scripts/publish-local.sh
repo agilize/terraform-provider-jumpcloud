@@ -55,12 +55,13 @@ FROM --platform=\${BUILDPLATFORM} alpine:3.17
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
-LABEL org.opencontainers.image.source=https://github.com/ferreirafa/terraform-provider-jumpcloud
+LABEL org.opencontainers.image.source=https://github.com/agilize/terraform-provider-jumpcloud
 LABEL org.opencontainers.image.description="JumpCloud Terraform Provider v${VERSION} - Platform-specific build for \${TARGETPLATFORM}"
 LABEL org.opencontainers.image.licenses=MIT
 LABEL io.jumpcloud.terraform.platforms="linux_amd64,linux_arm64,darwin_amd64,darwin_arm64,windows_amd64"
 LABEL io.jumpcloud.terraform.version="${VERSION}"
 LABEL io.jumpcloud.terraform.targetplatform="\${TARGETPLATFORM}"
+LABEL io.jumpcloud.terraform.registry="registry.terraform.io/agilize/jumpcloud"
 
 WORKDIR /terraform-provider
 
@@ -87,8 +88,8 @@ docker buildx inspect --bootstrap
 echo "Building and publishing Docker image for all platforms..."
 echo "This may take several minutes..."
 docker buildx build --platform linux/amd64,linux/arm64,darwin/amd64,darwin/arm64,windows/amd64 \
-  -t ghcr.io/${GITHUB_USER:-ferreirafa}/terraform-provider-jumpcloud:v${VERSION} \
-  -t ghcr.io/${GITHUB_USER:-ferreirafa}/terraform-provider-jumpcloud:latest \
+  -t ghcr.io/${GITHUB_USER:-agilize}/terraform-provider-jumpcloud:v${VERSION} \
+  -t ghcr.io/${GITHUB_USER:-agilize}/terraform-provider-jumpcloud:latest \
   --build-arg VERSION=${VERSION} \
   --push \
   .
@@ -99,22 +100,56 @@ echo "Or press Enter to skip this step if you're already authenticated."
 read -s GITHUB_TOKEN
 
 if [ -n "$GITHUB_TOKEN" ]; then
-  echo $GITHUB_TOKEN | docker login ghcr.io -u ${GITHUB_USER:-ferreirafa} --password-stdin
+  echo $GITHUB_TOKEN | docker login ghcr.io -u ${GITHUB_USER:-agilize} --password-stdin
 fi
 
 echo "Provider published successfully!"
+echo ""
+echo "=== Uso com GitHub Container Registry (Método Alternativo) ==="
 echo "To use it, add to your ~/.terraformrc:"
 echo "
 provider_installation {
   network_mirror {
-    url = \"https://ghcr.io/${GITHUB_USER:-ferreirafa}/terraform-provider-jumpcloud\"
-    include = [\"ghcr.io/${GITHUB_USER:-ferreirafa}/jumpcloud\"]
+    url = \"https://ghcr.io/${GITHUB_USER:-agilize}/terraform-provider-jumpcloud\"
+    include = [\"ghcr.io/${GITHUB_USER:-agilize}/jumpcloud\"]
   }
   direct {
-    exclude = [\"ghcr.io/${GITHUB_USER:-ferreirafa}/jumpcloud\"]
+    exclude = [\"ghcr.io/${GITHUB_USER:-agilize}/jumpcloud\"]
   }
 }
 "
+
+echo ""
+echo "Then in your Terraform file:"
+echo "
+terraform {
+  required_providers {
+    jumpcloud = {
+      source  = \"ghcr.io/${GITHUB_USER:-agilize}/jumpcloud\"
+      version = \"~> ${VERSION}\"
+    }
+  }
+}
+"
+
+echo ""
+echo "=== Uso com Terraform Registry (Método Recomendado) ==="
+echo "Assim que o provider estiver publicado no Terraform Registry, você poderá usá-lo com:"
+echo "
+terraform {
+  required_providers {
+    jumpcloud = {
+      source  = \"registry.terraform.io/agilize/jumpcloud\"
+      version = \"~> ${VERSION}\"
+    }
+  }
+}
+"
+
+echo ""
+echo "Para publicar no Terraform Registry, visite: https://registry.terraform.io/publish/provider"
+echo ""
+echo "Lembre-se de adicionar sua chave GPG pública ao Terraform Registry antes de publicar."
 
 echo ""
 echo "This provider includes binaries for ALL supported platforms:"

@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ferreirafav/terraform-provider-jumpcloud/internal/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"registry.terraform.io/agilize/jumpcloud/internal/client"
 )
 
 // Integration test flag
