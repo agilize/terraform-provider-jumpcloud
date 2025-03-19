@@ -1,6 +1,6 @@
 # Estratégia de Versionamento
 
-Este repositório adota o [Versionamento Semântico](https://semver.org/lang/pt-BR/) com algumas adaptações para melhor gerenciamento de branches e releases.
+Este repositório adota o [Versionamento Semântico (SemVer)](https://semver.org/lang/pt-BR/) seguindo estritamente as práticas recomendadas pela HashiCorp para publicação no Terraform Registry.
 
 ## Formato da Versão
 
@@ -14,7 +14,14 @@ Onde:
 - **MAJOR**: Incrementado quando há mudanças incompatíveis com versões anteriores
 - **MINOR**: Incrementado quando há adição de funcionalidades de forma compatível
 - **PATCH**: Incrementado quando há correções de bugs compatíveis
-- **sufixo** (opcional): Identifica versões especiais (beta, rc, etc.)
+- **sufixo** (opcional): Identifica versões pré-lançamento (alpha, beta, rc)
+
+Exemplos:
+- `v1.0.0` - Versão estável
+- `v1.0.1` - Versão com correções de bugs
+- `v1.1.0` - Versão com novas funcionalidades compatíveis
+- `v2.0.0` - Versão com mudanças incompatíveis
+- `v1.0.0-beta` - Versão beta (pré-lançamento)
 
 ## Branches e Ciclo de Vida
 
@@ -39,42 +46,57 @@ O repositório segue o seguinte fluxo de trabalho:
 - Pull Requests para a branch `develop` recebem um número de versão temporário com o sufixo `-prX` (onde X é o número do PR)
 - Exemplo: `v0.1.0-pr42`
 
-## Incremento Automático de Versão
+## Tags e GitHub Releases
 
-O sistema incrementa automaticamente o número da versão PATCH cada vez que um novo código é enviado para as branches principais:
+Para publicação no Terraform Registry, é essencial que:
 
-1. A versão base é determinada pelo último tag no repositório
-2. O número PATCH é incrementado em 1
-3. Sufixos são adicionados conforme a branch alvo
+1. Cada versão tenha uma tag Git no formato `vX.Y.Z` (ou `vX.Y.Z-sufixo` para pré-lançamentos)
+2. A tag deve estar associada a uma GitHub Release
+3. A GitHub Release deve conter:
+   - Binários do provider para todas as plataformas suportadas
+   - Arquivo de checksums assinado com GPG
+   - Arquivo de manifesto para o Terraform Registry
 
-## Publicação de Pacotes
+## Compatibilidade com Terraform Registry
 
-Todos os pacotes são publicados no GitHub Packages:
+Para garantir a compatibilidade com o Terraform Registry, este provider segue as seguintes diretrizes:
 
-- **Pacotes Beta**: Para testes e validação, compilados da branch `develop`
-- **Pacotes Estáveis**: Para uso em produção, compilados da branch `main`
+1. **Namespace do Provider**: O namespace oficial é `registry.terraform.io/agilize/jumpcloud`
+2. **Versionamento**: Uso estrito do SemVer, onde versões com sufixo são tratadas como pré-lançamentos
+3. **Protocolos**: Suporte aos protocolos 5.0 e 6.0 do Terraform
+4. **Assinatura**: Todos os releases são assinados com GPG para verificação de autenticidade
+5. **Documentação**: Documentação completa em formato markdown conforme as diretrizes da HashiCorp
 
-Para usar uma versão específica, configure seu Terraform:
+## Processo de Release
+
+1. Desenvolvimento realizado na branch `develop` ou em feature branches
+2. Merge para `develop` cria automaticamente um release beta (`vX.Y.Z-beta`)
+3. Merge para `main` cria automaticamente um release estável (`vX.Y.Z`)
+4. Cada release gera:
+   - Binários para todas as plataformas suportadas (Linux, macOS, Windows em diferentes arquiteturas)
+   - Checksums assinados com GPG
+   - Manifesto do provider
+   - GitHub Release contendo todos os artefatos
+   - Publicação no GitHub Container Registry
+
+## Uso no Terraform
+
+Para usar uma versão específica via Terraform Registry, configure seu Terraform:
 
 ```hcl
 terraform {
   required_providers {
     jumpcloud = {
-      source  = "github.com/agilize/jumpcloud"
-      version = "0.1.0" # ou "0.1.0-beta" para versões beta
+      source  = "registry.terraform.io/agilize/jumpcloud"
+      version = "~> 1.0.0" # Restringe a versões compatíveis com 1.0.0
     }
   }
 }
+
+provider "jumpcloud" {
+  api_key = var.jumpcloud_api_key
+}
 ```
-
-## Changelog
-
-O CHANGELOG.md é atualizado automaticamente para versões estáveis (não-beta). As entradas são organizadas por:
-
-- Features
-- Bug Fixes
-- Documentation
-- Other Changes
 
 ## Convenções de Commit
 
@@ -89,6 +111,22 @@ Para facilitar a geração automática do changelog, seguimos as convenções de
 - `style:` Alterações que não afetam o comportamento do código (formatação, espaços em branco, etc.)
 - `perf:` Melhorias de performance
 - `ci:` Alterações nos scripts de CI/CD
+
+## Notas sobre Terraform Registry
+
+- O Terraform Registry usa o GitHub como fonte de verdade para o código-fonte
+- As versões são detectadas automaticamente a partir das tags Git
+- A assinatura GPG é essencial para a verificação de autenticidade
+- O manifesto do provider (`terraform-registry-manifest.json`) informa ao Terraform Registry quais protocolos o provider suporta
+
+## Changelog
+
+O CHANGELOG.md é atualizado automaticamente para versões estáveis (não-beta). As entradas são organizadas por:
+
+- Features
+- Bug Fixes
+- Documentation
+- Other Changes
 
 ## Notas Adicionais
 

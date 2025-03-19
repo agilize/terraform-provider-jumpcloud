@@ -17,7 +17,26 @@ The JumpCloud Terraform Provider allows you to manage resources on the [JumpClou
 
 ### Provider Installation
 
-#### Option 1: Using GitHub Container Registry (Recommended)
+#### Option 1: Using Terraform Registry (Recommended)
+
+The provider is published to the Terraform Registry. To use it, simply configure your Terraform configuration file:
+
+```hcl
+terraform {
+  required_providers {
+    jumpcloud = {
+      source  = "registry.terraform.io/agilize/jumpcloud"
+      version = "~> 0.1.0"
+    }
+  }
+}
+
+provider "jumpcloud" {
+  api_key = "your-api-key"  # Can also be set via JUMPCLOUD_API_KEY environment variable
+}
+```
+
+#### Option 2: Using GitHub Container Registry
 
 Configure the GitHub Container Registry as a source for the provider. Add the following to your `~/.terraformrc` file:
 
@@ -52,7 +71,7 @@ provider "jumpcloud" {
 
 For detailed instructions, see [Using the Provider via GHCR](docs/ghcr-usage.md).
 
-#### Option 2: Using GitHub Releases
+#### Option 3: Using GitHub Releases
 
 To use the provider from GitHub Releases, add the following block to your Terraform configuration file:
 

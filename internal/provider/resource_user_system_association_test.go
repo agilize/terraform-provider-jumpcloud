@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/agilize/terraform-provider-jumpcloud/internal/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
+	"registry.terraform.io/agilize/jumpcloud/internal/client"
 )
 
 // TestResourceUserSystemAssociationCreate testa a criação de associação entre usuário e sistema

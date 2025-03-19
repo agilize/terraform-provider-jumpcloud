@@ -72,48 +72,40 @@ jobs:
           # Gerar documentação
           tfplugindocs generate
           
-          # Preparar arquivo terraform-registry-manifest.json
+          # Preparar arquivo terraform-registry-manifest.json para registry.terraform.io
           VERSION=${GITHUB_REF#refs/tags/v}
           cat << EOF > terraform-registry-manifest.json
           {
             "version": 1,
             "metadata": {
-              "protocol_versions": ["5.0"]
-            },
-            "binaries": [
-              {
-                "os": "darwin",
-                "arch": "amd64",
-                "url": "https://github.com/agilize/terraform-provider-jumpcloud/releases/download/v${VERSION}/terraform-provider-jumpcloud_${VERSION}_darwin_amd64.zip",
-                "checksum": "sha256:$(cat dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS | grep darwin_amd64.zip | cut -d ' ' -f 1)"
-              },
-              {
-                "os": "darwin",
-                "arch": "arm64",
-                "url": "https://github.com/agilize/terraform-provider-jumpcloud/releases/download/v${VERSION}/terraform-provider-jumpcloud_${VERSION}_darwin_arm64.zip",
-                "checksum": "sha256:$(cat dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS | grep darwin_arm64.zip | cut -d ' ' -f 1)"
-              },
-              {
-                "os": "linux",
-                "arch": "amd64",
-                "url": "https://github.com/agilize/terraform-provider-jumpcloud/releases/download/v${VERSION}/terraform-provider-jumpcloud_${VERSION}_linux_amd64.zip",
-                "checksum": "sha256:$(cat dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS | grep linux_amd64.zip | cut -d ' ' -f 1)"
-              },
-              {
-                "os": "linux",
-                "arch": "arm64",
-                "url": "https://github.com/agilize/terraform-provider-jumpcloud/releases/download/v${VERSION}/terraform-provider-jumpcloud_${VERSION}_linux_arm64.zip",
-                "checksum": "sha256:$(cat dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS | grep linux_arm64.zip | cut -d ' ' -f 1)"
-              },
-              {
-                "os": "windows",
-                "arch": "amd64",
-                "url": "https://github.com/agilize/terraform-provider-jumpcloud/releases/download/v${VERSION}/terraform-provider-jumpcloud_${VERSION}_windows_amd64.zip",
-                "checksum": "sha256:$(cat dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS | grep windows_amd64.zip | cut -d ' ' -f 1)"
-              }
-            ]
+              "protocol_versions": ["5.0", "6.0"]
+            }
           }
           EOF
+          
+          # Validar que os arquivos necessários para o Terraform Registry estão presentes
+          echo "Verificando arquivos necessários para o Terraform Registry..."
+          
+          # Verificar checksum
+          if [ ! -f "dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS" ]; then
+            echo "Erro: Arquivo de checksums não encontrado"
+            exit 1
+          fi
+          
+          # Verificar assinatura
+          if [ ! -f "dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS.sig" ]; then
+            echo "Erro: Assinatura do arquivo de checksums não encontrada"
+            exit 1
+          fi
+          
+          echo "Todos os arquivos necessários para publicação no Terraform Registry estão presentes."
+          
+          # Instruções para publicação no Terraform Registry
+          echo "==== INSTRUÇÕES PARA PUBLICAÇÃO NO TERRAFORM REGISTRY ===="
+          echo "1. O namespace deve ser 'registry.terraform.io/agilize/jumpcloud'"
+          echo "2. Certifique-se de que a chave GPG usada para assinar está registrada no Terraform Registry"
+          echo "3. Siga os passos em https://developer.hashicorp.com/terraform/registry/providers/publishing"
+          echo "====================================================="
       
       - name: Upload Registry Assets
         uses: actions/upload-artifact@v3
@@ -124,8 +116,17 @@ jobs:
             docs/
           retention-days: 30
       
-      - name: Simulate Registry Publishing
+      - name: Prepare for Terraform Registry
         run: |
-          echo "Este é um passo simulado para publicação no Terraform Registry."
-          echo "Em um ambiente real, você utilizaria o Terraform Registry Provider API"
-          echo "ou seguiria o processo de publicação manual no Registry." 
+          echo "===== PREPARAÇÃO PARA O TERRAFORM REGISTRY ====="
+          echo "Este provider está configurado para ser publicado no Terraform Registry."
+          echo "Para publicar no Terraform Registry, siga os passos abaixo:"
+          echo ""
+          echo "1. Visite https://registry.terraform.io e faça login com sua conta GitHub"
+          echo "2. Navegue até 'Publish > Provider'"
+          echo "3. Selecione a organização 'agilize' e o repositório 'terraform-provider-jumpcloud'"
+          echo "4. Certifique-se de que você já adicionou sua chave GPG pública no Terraform Registry"
+          echo "5. Conclua o processo de publicação conforme as instruções na interface"
+          echo ""
+          echo "Certifique-se de que o namespace 'registry.terraform.io/agilize/jumpcloud' está sendo usado consistentemente na documentação e configurações."
+          echo "===============================================" 

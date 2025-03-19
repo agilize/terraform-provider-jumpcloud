@@ -1,21 +1,66 @@
+terraform {
+  required_providers {
+    jumpcloud = {
+      source  = "registry.terraform.io/agilize/jumpcloud"
+      version = "~> 0.1.0"
+    }
+  }
+}
+
 provider "jumpcloud" {
   api_key = var.jumpcloud_api_key
-  org_id  = var.jumpcloud_org_id
 }
 
 resource "jumpcloud_user" "example" {
-  username    = "example.user"
-  email       = "example.user@example.com"
-  firstname   = "Example"
-  lastname    = "User"
-  password    = "securePassword123!"
-  description = "Created by Terraform"
+  username  = "example.user"
+  email     = "example.user@example.com"
+  firstname = "Example"
+  lastname  = "User"
   
+  password = "SecurePassword123!"
+  
+  # Atributos adicionais
+  employeeType    = "contractor"
+  jobTitle        = "DevOps Engineer"
+  department      = "IT"
+  costCenter      = "CC-123"
+  company         = "Example Inc."
+  description     = "Conta de usuário para exemplo"
+  location        = "Remote"
+  
+  # Atributos personalizados/custom attributes
   attributes = {
-    department = "IT"
-    location   = "Remote"
+    customAttribute1 = "valor1"
+    customAttribute2 = "valor2"
   }
   
-  mfa_enabled          = true
-  password_never_expires = false
+  # Tags para organização
+  tags = ["dev", "terraform-managed"]
+  
+  # Configuração de MFA
+  mfa = {
+    configured = false
+    exclusion  = true
+    exclusion_until = "2023-12-31"
+  }
+}
+
+# Exemplo de ativação/desativação de usuário
+resource "jumpcloud_user" "temporary" {
+  username  = "temp.user"
+  email     = "temp.user@example.com"
+  firstname = "Temporary"
+  lastname  = "User"
+  
+  password = "SecurePassword456!"
+  
+  # Usuário será criado como inativo
+  state = "DISABLED"
+  
+  lifecycle {
+    ignore_changes = [
+      # Ignorar mudanças feitas ao password após a criação
+      password,
+    ]
+  }
 } 

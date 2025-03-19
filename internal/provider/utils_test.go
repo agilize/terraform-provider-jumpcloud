@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/agilize/terraform-provider-jumpcloud/internal/client"
 	"github.com/stretchr/testify/assert"
+	"registry.terraform.io/agilize/jumpcloud/internal/client"
 )
 
 func TestIsNotFound(t *testing.T) {

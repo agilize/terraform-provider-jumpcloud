@@ -61,6 +61,7 @@ LABEL org.opencontainers.image.licenses=MIT
 LABEL io.jumpcloud.terraform.platforms="linux_amd64,linux_arm64,darwin_amd64,darwin_arm64,windows_amd64"
 LABEL io.jumpcloud.terraform.version="${VERSION}"
 LABEL io.jumpcloud.terraform.targetplatform="\${TARGETPLATFORM}"
+LABEL io.jumpcloud.terraform.registry="registry.terraform.io/agilize/jumpcloud"
 
 WORKDIR /terraform-provider
 
@@ -103,6 +104,8 @@ if [ -n "$GITHUB_TOKEN" ]; then
 fi
 
 echo "Provider published successfully!"
+echo ""
+echo "=== Uso com GitHub Container Registry (Método Alternativo) ==="
 echo "To use it, add to your ~/.terraformrc:"
 echo "
 provider_installation {
@@ -115,6 +118,38 @@ provider_installation {
   }
 }
 "
+
+echo ""
+echo "Then in your Terraform file:"
+echo "
+terraform {
+  required_providers {
+    jumpcloud = {
+      source  = \"ghcr.io/${GITHUB_USER:-agilize}/jumpcloud\"
+      version = \"~> ${VERSION}\"
+    }
+  }
+}
+"
+
+echo ""
+echo "=== Uso com Terraform Registry (Método Recomendado) ==="
+echo "Assim que o provider estiver publicado no Terraform Registry, você poderá usá-lo com:"
+echo "
+terraform {
+  required_providers {
+    jumpcloud = {
+      source  = \"registry.terraform.io/agilize/jumpcloud\"
+      version = \"~> ${VERSION}\"
+    }
+  }
+}
+"
+
+echo ""
+echo "Para publicar no Terraform Registry, visite: https://registry.terraform.io/publish/provider"
+echo ""
+echo "Lembre-se de adicionar sua chave GPG pública ao Terraform Registry antes de publicar."
 
 echo ""
 echo "This provider includes binaries for ALL supported platforms:"
