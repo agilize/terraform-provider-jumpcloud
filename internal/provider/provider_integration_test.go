@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ferreirafav/terraform-provider-jumpcloud/internal/client"
+	"github.com/agilize/terraform-provider-jumpcloud/internal/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 

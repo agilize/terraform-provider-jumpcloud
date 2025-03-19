@@ -44,7 +44,7 @@ signs:
 release:
   # Se você estiver usando o GitHub
   github:
-    owner: ferreirafav
+    owner: agilize
     name: terraform-provider-jumpcloud
   # Ajustes para a publicação da release
   draft: false
@@ -78,4 +78,4 @@ publishers:
       # 1. Organize os arquivos de acordo com o protocolo do Terraform Registry
       # 2. Gere a documentação necessária
       # 3. Prepare o manifesto de provedor
-      echo "Files prepared for Terraform Registry." 
+      echo "Files prepared for Terraform Registry."

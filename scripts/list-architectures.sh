@@ -36,7 +36,8 @@ else
   trap 'rm -rf "$TEMP_DIR"' EXIT
   
   echo "Downloading SHA256SUMS from GitHub release v${VERSION}"
-  OWNER=${GITHUB_REPOSITORY_OWNER:-ferreirafa}
+  # Default owner used in the image's origin URL if not explicitly passed
+  OWNER=${GITHUB_REPOSITORY_OWNER:-agilize}
   
   if ! curl -sSL -o "$TEMP_DIR/SHA256SUMS" "https://github.com/${OWNER}/terraform-provider-jumpcloud/releases/download/v${VERSION}/SHA256SUMS"; then
     echo "Error: Unable to download SHA256SUMS for version v${VERSION}"

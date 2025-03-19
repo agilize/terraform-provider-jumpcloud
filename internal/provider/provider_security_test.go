@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ferreirafav/terraform-provider-jumpcloud/internal/client"
+	"github.com/agilize/terraform-provider-jumpcloud/internal/client"
 	"github.com/stretchr/testify/assert"
 )
 

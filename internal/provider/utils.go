@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ferreirafav/terraform-provider-jumpcloud/internal/client"
+	"github.com/agilize/terraform-provider-jumpcloud/internal/client"
 )
 
 // IsNotFound verifica se o erro indica que o recurso não foi encontrado (HTTP 404)

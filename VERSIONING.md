@@ -60,7 +60,7 @@ Para usar uma versão específica, configure seu Terraform:
 terraform {
   required_providers {
     jumpcloud = {
-      source  = "github.com/ferreirafav/jumpcloud"
+      source  = "github.com/agilize/jumpcloud"
       version = "0.1.0" # ou "0.1.0-beta" para versões beta
     }
   }

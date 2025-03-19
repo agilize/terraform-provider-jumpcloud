@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/ferreirafav/terraform-provider-jumpcloud/internal/provider"
+	"github.com/agilize/terraform-provider-jumpcloud/internal/provider"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 )
 

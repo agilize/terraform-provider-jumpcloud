@@ -84,31 +84,31 @@ jobs:
               {
                 "os": "darwin",
                 "arch": "amd64",
-                "url": "https://github.com/ferreirafav/terraform-provider-jumpcloud/releases/download/v${VERSION}/terraform-provider-jumpcloud_${VERSION}_darwin_amd64.zip",
+                "url": "https://github.com/agilize/terraform-provider-jumpcloud/releases/download/v${VERSION}/terraform-provider-jumpcloud_${VERSION}_darwin_amd64.zip",
                 "checksum": "sha256:$(cat dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS | grep darwin_amd64.zip | cut -d ' ' -f 1)"
               },
               {
                 "os": "darwin",
                 "arch": "arm64",
-                "url": "https://github.com/ferreirafav/terraform-provider-jumpcloud/releases/download/v${VERSION}/terraform-provider-jumpcloud_${VERSION}_darwin_arm64.zip",
+                "url": "https://github.com/agilize/terraform-provider-jumpcloud/releases/download/v${VERSION}/terraform-provider-jumpcloud_${VERSION}_darwin_arm64.zip",
                 "checksum": "sha256:$(cat dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS | grep darwin_arm64.zip | cut -d ' ' -f 1)"
               },
               {
                 "os": "linux",
                 "arch": "amd64",
-                "url": "https://github.com/ferreirafav/terraform-provider-jumpcloud/releases/download/v${VERSION}/terraform-provider-jumpcloud_${VERSION}_linux_amd64.zip",
+                "url": "https://github.com/agilize/terraform-provider-jumpcloud/releases/download/v${VERSION}/terraform-provider-jumpcloud_${VERSION}_linux_amd64.zip",
                 "checksum": "sha256:$(cat dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS | grep linux_amd64.zip | cut -d ' ' -f 1)"
               },
               {
                 "os": "linux",
                 "arch": "arm64",
-                "url": "https://github.com/ferreirafav/terraform-provider-jumpcloud/releases/download/v${VERSION}/terraform-provider-jumpcloud_${VERSION}_linux_arm64.zip",
+                "url": "https://github.com/agilize/terraform-provider-jumpcloud/releases/download/v${VERSION}/terraform-provider-jumpcloud_${VERSION}_linux_arm64.zip",
                 "checksum": "sha256:$(cat dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS | grep linux_arm64.zip | cut -d ' ' -f 1)"
               },
               {
                 "os": "windows",
                 "arch": "amd64",
-                "url": "https://github.com/ferreirafav/terraform-provider-jumpcloud/releases/download/v${VERSION}/terraform-provider-jumpcloud_${VERSION}_windows_amd64.zip",
+                "url": "https://github.com/agilize/terraform-provider-jumpcloud/releases/download/v${VERSION}/terraform-provider-jumpcloud_${VERSION}_windows_amd64.zip",
                 "checksum": "sha256:$(cat dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS | grep windows_amd64.zip | cut -d ' ' -f 1)"
               }
             ]

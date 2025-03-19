@@ -1,4 +1,4 @@
-module github.com/ferreirafav/terraform-provider-jumpcloud
+module github.com/agilize/terraform-provider-jumpcloud
 
 go 1.24
 
