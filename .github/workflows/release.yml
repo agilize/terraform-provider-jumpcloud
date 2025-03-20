@@ -30,6 +30,14 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
 
+      # Testa se o projeto compila
+      - name: Test Build
+        run: go build -v .
+
+      # Executa testes antes do release
+      - name: Run Tests
+        run: go test -v ./...
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v4
         with:
@@ -38,6 +46,58 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+
+      # Verifica se o arquivo de manifesto foi criado e está no lugar certo
+      - name: Verify Manifest File
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Verificando arquivo de manifesto para a versão $VERSION"
+          
+          # Lista todos os arquivos na pasta dist para debug
+          echo "Conteúdo da pasta dist:"
+          ls -la dist/
+          
+          # Verifica se o arquivo de manifesto existe
+          if [ -f "terraform-provider-jumpcloud_${VERSION}_manifest.json" ]; then
+            echo "✓ Arquivo de manifesto encontrado"
+            
+            # Verifica se ele está incluído no checksum
+            if grep -q "terraform-provider-jumpcloud_${VERSION}_manifest.json" dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS; then
+              echo "✓ Manifesto está incluído no arquivo de checksums"
+            else
+              echo "× Manifesto NÃO está incluído no arquivo de checksums"
+              echo "Adicionando manualmente..."
+              shasum -a 256 terraform-provider-jumpcloud_${VERSION}_manifest.json >> dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS
+              # Assina novamente o arquivo de checksums
+              gpg --batch --local-user "${{ steps.import_gpg.outputs.fingerprint }}" --output dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS.sig --detach-sign dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS
+            fi
+            
+            # Move o arquivo para a pasta dist
+            mv terraform-provider-jumpcloud_${VERSION}_manifest.json dist/
+          else
+            echo "× Arquivo de manifesto NÃO foi encontrado, tentando criar manualmente..."
+            cat > dist/terraform-provider-jumpcloud_${VERSION}_manifest.json << EOF
+            {
+              "version": 1,
+              "metadata": {
+                "protocol_versions": ["5.0", "6.0"]
+              }
+            }
+            EOF
+            echo "✓ Manifesto criado manualmente"
+            
+            # Adiciona o manifesto ao checksum
+            shasum -a 256 dist/terraform-provider-jumpcloud_${VERSION}_manifest.json >> dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS
+            
+            # Assina novamente o arquivo de checksums
+            gpg --batch --local-user "${{ steps.import_gpg.outputs.fingerprint }}" --output dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS.sig --detach-sign dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS
+          fi
+          
+          echo "Conteúdo final da pasta dist:"
+          ls -la dist/
+          
+          echo "Conteúdo do arquivo de checksums:"
+          cat dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS
 
       - name: Upload assets
         uses: actions/upload-artifact@v3
@@ -66,24 +126,17 @@ jobs:
       
       - name: Prepare Registry Files
         run: |
+          # Verificar versão
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Preparando documentação para a versão $VERSION"
+          
           # Instalar tfplugindocs para geração de documentação
           go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
           
           # Gerar documentação
           tfplugindocs generate
           
-          # Preparar arquivo terraform-registry-manifest.json para registry.terraform.io
-          VERSION=${GITHUB_REF#refs/tags/v}
-          cat << EOF > terraform-registry-manifest.json
-          {
-            "version": 1,
-            "metadata": {
-              "protocol_versions": ["5.0", "6.0"]
-            }
-          }
-          EOF
-          
-          # Validar que os arquivos necessários para o Terraform Registry estão presentes
+          # Verificar arquivos necessários para o Terraform Registry
           echo "Verificando arquivos necessários para o Terraform Registry..."
           
           # Verificar checksum
@@ -98,21 +151,30 @@ jobs:
             exit 1
           fi
           
+          # Verificar manifesto
+          if [ ! -f "dist/terraform-provider-jumpcloud_${VERSION}_manifest.json" ]; then
+            echo "Erro: Arquivo de manifesto não encontrado"
+            exit 1
+          fi
+          
+          # Verificar se o manifesto está no checksum
+          if ! grep -q "terraform-provider-jumpcloud_${VERSION}_manifest.json" dist/terraform-provider-jumpcloud_${VERSION}_SHA256SUMS; then
+            echo "Erro: Manifesto não está incluído no arquivo de checksums"
+            exit 1
+          fi
+          
           echo "Todos os arquivos necessários para publicação no Terraform Registry estão presentes."
           
-          # Instruções para publicação no Terraform Registry
-          echo "==== INSTRUÇÕES PARA PUBLICAÇÃO NO TERRAFORM REGISTRY ===="
-          echo "1. O namespace deve ser 'registry.terraform.io/agilize/jumpcloud'"
-          echo "2. Certifique-se de que a chave GPG usada para assinar está registrada no Terraform Registry"
-          echo "3. Siga os passos em https://developer.hashicorp.com/terraform/registry/providers/publishing"
-          echo "====================================================="
+          # Listar todos os arquivos que serão publicados
+          echo "Arquivos que serão publicados no Terraform Registry:"
+          ls -la dist/
       
       - name: Upload Registry Assets
         uses: actions/upload-artifact@v3
         with:
           name: terraform-registry-assets
           path: |
-            terraform-registry-manifest.json
+            dist/
             docs/
           retention-days: 30
       
@@ -128,5 +190,7 @@ jobs:
           echo "4. Certifique-se de que você já adicionou sua chave GPG pública no Terraform Registry"
           echo "5. Conclua o processo de publicação conforme as instruções na interface"
           echo ""
-          echo "Certifique-se de que o namespace 'registry.terraform.io/agilize/jumpcloud' está sendo usado consistentemente na documentação e configurações."
+          echo "IMPORTANTE: Certifique-se de que o namespace 'registry.terraform.io/agilize/jumpcloud' está correto em:"
+          echo "- go.mod (deve ter module registry.terraform.io/agilize/jumpcloud)"
+          echo "- main.go (deve importar de registry.terraform.io/agilize/jumpcloud/...)"
           echo "===============================================" 

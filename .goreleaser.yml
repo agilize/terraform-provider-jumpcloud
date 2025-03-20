@@ -1,6 +1,11 @@
 # GoReleaser configuration for Terraform Provider JumpCloud
 # Para mais informações sobre GoReleaser: https://goreleaser.com/
 
+before:
+  hooks:
+    # Garante que o Go está usando o módulo correto
+    - go mod tidy
+
 builds:
   - env:
       - CGO_ENABLED=0
@@ -24,10 +29,15 @@ builds:
 archives:
   - format: zip
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+    files:
+      - none*  # Não incluir arquivos extras no zip
 
+# A configuração de checksum é crítica para o Terraform Registry
 checksum:
   name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
   algorithm: sha256
+  extra_files:
+    - glob: '{{ .ProjectName }}_{{ .Version }}_manifest.json'
 
 signs:
   - artifacts: checksum
@@ -50,6 +60,8 @@ release:
   draft: false
   prerelease: auto
   name_template: "v{{.Version}}"
+  extra_files:
+    - glob: '{{ .ProjectName }}_{{ .Version }}_manifest.json'
 
 changelog:
   sort: asc
@@ -64,14 +76,12 @@ changelog:
       - Merge branch
 
 # Configuração para publicação no Terraform Registry
-# A estrutura dos arquivos precisa seguir as diretrizes oficiais do Terraform Registry
-# https://developer.hashicorp.com/terraform/registry/providers/publishing
 publishers:
   - name: terraform-registry-manifest
     cmd: |
       set -e
       echo "Preparando o manifesto para o Terraform Registry..."
-      cat > {{ dir .ArtifactPath }}/{{ .ProjectName }}_{{ .Version }}_manifest.json << EOF
+      cat > {{ .ProjectName }}_{{ .Version }}_manifest.json << EOF
       {
         "version": 1,
         "metadata": {
@@ -79,4 +89,5 @@ publishers:
         }
       }
       EOF
-      echo "Manifesto criado com sucesso."
+      echo "Manifesto criado com sucesso em {{ .ProjectName }}_{{ .Version }}_manifest.json"
+      shasum -a 256 {{ .ProjectName }}_{{ .Version }}_manifest.json >> {{ .ProjectName }}_{{ .Version }}_SHA256SUMS
