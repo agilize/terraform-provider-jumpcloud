@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.0.12 (2025-03-20)
+
+* Initial release
+
 ## v0.0.11 (2025-03-20)
 
 * Initial release
