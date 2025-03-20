@@ -5,6 +5,17 @@ before:
   hooks:
     # Garante que o Go está usando o módulo correto
     - go mod tidy
+    # Cria o arquivo de manifesto antes de tudo
+    - |
+      cat > terraform-provider-jumpcloud_{{.Version}}_manifest.json << EOF
+      {
+        "version": 1,
+        "metadata": {
+          "protocol_versions": ["5.0", "6.0"]
+        }
+      }
+      EOF
+      echo "Manifesto criado com sucesso em terraform-provider-jumpcloud_{{.Version}}_manifest.json"
 
 builds:
   - env:
@@ -75,19 +86,4 @@ changelog:
       - Merge pull request
       - Merge branch
 
-# Configuração para publicação no Terraform Registry
-publishers:
-  - name: terraform-registry-manifest
-    cmd: |
-      set -e
-      echo "Preparando o manifesto para o Terraform Registry..."
-      cat > {{ .ProjectName }}_{{ .Version }}_manifest.json << EOF
-      {
-        "version": 1,
-        "metadata": {
-          "protocol_versions": ["5.0", "6.0"]
-        }
-      }
-      EOF
-      echo "Manifesto criado com sucesso em {{ .ProjectName }}_{{ .Version }}_manifest.json"
-      shasum -a 256 {{ .ProjectName }}_{{ .Version }}_manifest.json >> {{ .ProjectName }}_{{ .Version }}_SHA256SUMS
+# Não precisamos mais do publisher para o manifesto, pois já o criamos no hook before
