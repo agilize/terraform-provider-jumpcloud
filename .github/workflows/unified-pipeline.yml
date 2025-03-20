@@ -230,14 +230,9 @@ jobs:
           mkdir -p release
           find . -name "terraform-provider-jumpcloud_*.zip" -exec cp {} release/ \;
           
-          # Generate checksums
+          # Create the Terraform Registry manifest FIRST
+          # É crucial que o manifesto seja criado ANTES do checksum
           cd release
-          sha256sum *.zip > terraform-provider-jumpcloud_${VERSION}_SHA256SUMS
-          
-          # Sign the checksum file - mandatory for Terraform Registry
-          gpg --batch --local-user "${GPG_FINGERPRINT}" --detach-sign terraform-provider-jumpcloud_${VERSION}_SHA256SUMS
-          
-          # Create the Terraform Registry manifest
           cat > terraform-provider-jumpcloud_${VERSION}_manifest.json << EOF
           {
             "version": 1,
@@ -246,6 +241,22 @@ jobs:
             }
           }
           EOF
+          
+          # Generate checksums INCLUDING the manifest
+          sha256sum terraform-provider-jumpcloud_${VERSION}_manifest.json *.zip > terraform-provider-jumpcloud_${VERSION}_SHA256SUMS
+          
+          # Verificar se o manifesto está no checksum
+          if ! grep -q "terraform-provider-jumpcloud_${VERSION}_manifest.json" terraform-provider-jumpcloud_${VERSION}_SHA256SUMS; then
+            echo "ERRO: Manifesto não foi incluído no checksum! Adicionando manualmente..."
+            sha256sum terraform-provider-jumpcloud_${VERSION}_manifest.json >> terraform-provider-jumpcloud_${VERSION}_SHA256SUMS
+          fi
+          
+          # Sign the checksum file - mandatory for Terraform Registry
+          gpg --batch --local-user "${GPG_FINGERPRINT}" --detach-sign terraform-provider-jumpcloud_${VERSION}_SHA256SUMS
+          
+          # Verificar novamente após assinar
+          echo "Conteúdo do checksum:"
+          cat terraform-provider-jumpcloud_${VERSION}_SHA256SUMS
           
           cd ..
       
@@ -622,6 +633,14 @@ jobs:
             MISSING=$((MISSING+1))
           else
             echo "✅ SHA256SUMS file found"
+            
+            # Verificar se o manifesto está incluído no checksum
+            if ! grep -q "terraform-provider-jumpcloud_${VERSION}_manifest.json" "terraform-provider-jumpcloud_${VERSION}_SHA256SUMS"; then
+              echo "❌ Manifest file is not included in SHA256SUMS!"
+              MISSING=$((MISSING+1))
+            else
+              echo "✅ Manifest file is properly included in SHA256SUMS"
+            fi
           fi
           
           if [ ! -f "terraform-provider-jumpcloud_${VERSION}_SHA256SUMS.sig" ]; then
