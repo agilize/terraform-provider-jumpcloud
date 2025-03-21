@@ -6,12 +6,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"registry.terraform.io/agilize/jumpcloud/internal/provider/resources/mdm"
-	"registry.terraform.io/agilize/jumpcloud/internal/provider/resources/system"
-	"registry.terraform.io/agilize/jumpcloud/internal/provider/resources/user"
-	"registry.terraform.io/agilize/jumpcloud/internal/provider/resources/usergroup"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/admin"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/alerts"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/appcatalog"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/iplist"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/metrics"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/systems"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/users"
 	"registry.terraform.io/agilize/jumpcloud/pkg/apiclient"
 )
 
@@ -46,19 +48,17 @@ func Provider() *schema.Provider {
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			// User resources
-			"jumpcloud_user": user.ResourceUser(),
+			"jumpcloud_user":       users.ResourceUser(),
+			"jumpcloud_user_group": users.ResourceUserGroup(),
 
 			// System resources
-			"jumpcloud_system": system.ResourceSystem(),
-
-			// User Group resources
-			"jumpcloud_user_group": usergroup.ResourceUserGroup(),
+			"jumpcloud_system": systems.ResourceSystem(),
 
 			// MDM - Resources
-			"jumpcloud_mdm_configuration":      mdm.ResourceMDMConfiguration(),
-			"jumpcloud_mdm_policy":             mdm.ResourceMDMPolicy(),
-			"jumpcloud_mdm_profile":            mdm.ResourceMDMProfile(),
-			"jumpcloud_mdm_enrollment_profile": mdm.ResourceMDMEnrollmentProfile(),
+			"jumpcloud_mdm_configuration":      resourceMDMConfiguration(),
+			"jumpcloud_mdm_policy":             resourceMDMPolicy(),
+			"jumpcloud_mdm_profile":            resourceMDMProfile(),
+			"jumpcloud_mdm_enrollment_profile": resourceMDMEnrollmentProfile(),
 
 			// App Catalog - Resources
 			"jumpcloud_app_catalog_application": appcatalog.ResourceAppCatalogApplication(),
@@ -71,16 +71,16 @@ func Provider() *schema.Provider {
 			"jumpcloud_admin_role_binding": admin.ResourceRoleBinding(),
 
 			// Authentication Policies - Resources
-			"jumpcloud_auth_policy":             resourceAuthPolicy(),
-			"jumpcloud_auth_policy_binding":     resourceAuthPolicyBinding(),
-			"jumpcloud_conditional_access_rule": resourceConditionalAccessRule(),
+			"jumpcloud_auth_policy":             authentication.ResourcePolicy(),
+			"jumpcloud_auth_policy_binding":     authentication.ResourcePolicyBinding(),
+			"jumpcloud_conditional_access_rule": authentication.ResourceConditionalAccessRule(),
 
 			// IP Lists - Resources
-			"jumpcloud_ip_list":            resourceIPList(),
-			"jumpcloud_ip_list_assignment": resourceIPListAssignment(),
+			"jumpcloud_ip_list":            iplist.ResourceList(),
+			"jumpcloud_ip_list_assignment": iplist.ResourceListAssignment(),
 
-			// New resources
-			"jumpcloud_alert_configuration":    resourceAlertConfiguration(),
+			// Alerts & Notifications - Resources
+			"jumpcloud_alert_configuration":    alerts.ResourceAlertConfiguration(),
 			"jumpcloud_notification_channel":   resourceNotificationChannel(),
 			"jumpcloud_monitoring_threshold":   resourceMonitoringThreshold(),
 			"jumpcloud_password_policy":        resourcePasswordPolicy(),
@@ -104,17 +104,21 @@ func Provider() *schema.Provider {
 			"jumpcloud_admin_audit_logs": admin.DataSourceAuditLogs(),
 
 			// Authentication Policies - Data Sources
-			"jumpcloud_auth_policies":         dataSourceAuthPolicies(),
-			"jumpcloud_auth_policy_templates": dataSourceAuthPolicyTemplates(),
+			"jumpcloud_auth_policies":         authentication.DataSourcePolicies(),
+			"jumpcloud_auth_policy_templates": authentication.DataSourcePolicyTemplates(),
 
 			// IP Lists - Data Sources
-			"jumpcloud_ip_lists":     dataSourceIPLists(),
-			"jumpcloud_ip_locations": dataSourceIPLocations(),
+			"jumpcloud_ip_lists":     iplist.DataSourceLists(),
+			"jumpcloud_ip_locations": iplist.DataSourceLocations(),
 
-			// New data sources
-			"jumpcloud_alerts":                   dataSourceAlerts(),
-			"jumpcloud_alert_templates":          dataSourceAlertTemplates(),
-			"jumpcloud_system_metrics":           dataSourceSystemMetrics(),
+			// Alerts & Notifications - Data Sources
+			"jumpcloud_alerts":          alerts.DataSourceAlerts(),
+			"jumpcloud_alert_templates": alerts.DataSourceAlertTemplates(),
+
+			// Metrics - Data Sources
+			"jumpcloud_system_metrics": metrics.DataSourceSystemMetrics(),
+
+			// Other Data Sources
 			"jumpcloud_scim_servers":             dataSourceScimServers(),
 			"jumpcloud_software_packages":        dataSourceSoftwarePackages(),
 			"jumpcloud_software_update_policies": dataSourceSoftwareUpdatePolicies(),
