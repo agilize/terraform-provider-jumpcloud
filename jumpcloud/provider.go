@@ -9,6 +9,7 @@ import (
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/admin"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/appcatalog"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/iplist"
 	"registry.terraform.io/agilize/jumpcloud/pkg/apiclient"
 )
 
@@ -57,6 +58,10 @@ func Provider() *schema.Provider {
 			"jumpcloud_auth_policy_binding":     authentication.ResourcePolicyBinding(),
 			"jumpcloud_conditional_access_rule": authentication.ResourceConditionalAccessRule(),
 
+			// IP Lists - Resources
+			"jumpcloud_ip_list":            iplist.ResourceList(),
+			"jumpcloud_ip_list_assignment": iplist.ResourceListAssignment(),
+
 			// Platform Administrators - Resources
 			"jumpcloud_admin_user":         admin.ResourceUser(),
 			"jumpcloud_admin_role":         admin.ResourceRole(),
@@ -76,6 +81,10 @@ func Provider() *schema.Provider {
 			// Authentication - Data Sources
 			"jumpcloud_auth_policies":         authentication.DataSourcePolicies(),
 			"jumpcloud_auth_policy_templates": authentication.DataSourcePolicyTemplates(),
+
+			// IP Lists - Data Sources
+			"jumpcloud_ip_lists":     iplist.DataSourceLists(),
+			"jumpcloud_ip_locations": iplist.DataSourceLocations(),
 
 			// Platform Administrators - Data Sources
 			"jumpcloud_admin_users":      admin.DataSourceUsers(),
