@@ -6,7 +6,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/admin"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/appcatalog"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication"
 	"registry.terraform.io/agilize/jumpcloud/pkg/apiclient"
 )
 
@@ -50,6 +52,16 @@ func Provider() *schema.Provider {
 			"jumpcloud_app_catalog_assignment":  appcatalog.ResourceAssignment(),
 			"jumpcloud_app_catalog_category":    appcatalog.ResourceCategory(),
 
+			// Authentication - Resources
+			"jumpcloud_auth_policy":             authentication.ResourcePolicy(),
+			"jumpcloud_auth_policy_binding":     authentication.ResourcePolicyBinding(),
+			"jumpcloud_conditional_access_rule": authentication.ResourceConditionalAccessRule(),
+
+			// Platform Administrators - Resources
+			"jumpcloud_admin_user":         admin.ResourceUser(),
+			"jumpcloud_admin_role":         admin.ResourceRole(),
+			"jumpcloud_admin_role_binding": admin.ResourceRoleBinding(),
+
 			// TODO: Move the remaining resources to their appropriate domain packages
 			// and update the imports here
 		},
@@ -60,6 +72,15 @@ func Provider() *schema.Provider {
 
 			// Legacy data source names - will be deprecated in future versions
 			"jumpcloud_app_catalog_applications": appcatalog.DataSourceAppCatalogApplications(),
+
+			// Authentication - Data Sources
+			"jumpcloud_auth_policies":         authentication.DataSourcePolicies(),
+			"jumpcloud_auth_policy_templates": authentication.DataSourcePolicyTemplates(),
+
+			// Platform Administrators - Data Sources
+			"jumpcloud_admin_users":      admin.DataSourceUsers(),
+			"jumpcloud_admin_roles":      admin.DataSourceRoles(),
+			"jumpcloud_admin_audit_logs": admin.DataSourceAuditLogs(),
 
 			// TODO: Move the remaining data sources to their appropriate domain packages
 			// and update the imports here
