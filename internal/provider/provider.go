@@ -10,6 +10,7 @@ import (
 	"registry.terraform.io/agilize/jumpcloud/internal/provider/resources/system"
 	"registry.terraform.io/agilize/jumpcloud/internal/provider/resources/user"
 	"registry.terraform.io/agilize/jumpcloud/internal/provider/resources/usergroup"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/admin"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/appcatalog"
 	"registry.terraform.io/agilize/jumpcloud/pkg/apiclient"
 )
@@ -65,9 +66,9 @@ func Provider() *schema.Provider {
 			"jumpcloud_app_catalog_assignment":  appcatalog.ResourceAssignment(),
 
 			// Platform Administrators - Resources
-			"jumpcloud_admin_user":         resourceAdminUser(),
-			"jumpcloud_admin_role":         resourceAdminRole(),
-			"jumpcloud_admin_role_binding": resourceAdminRoleBinding(),
+			"jumpcloud_admin_user":         admin.ResourceUser(),
+			"jumpcloud_admin_role":         admin.ResourceRole(),
+			"jumpcloud_admin_role_binding": admin.ResourceRoleBinding(),
 
 			// Authentication Policies - Resources
 			"jumpcloud_auth_policy":             resourceAuthPolicy(),
@@ -98,9 +99,9 @@ func Provider() *schema.Provider {
 			"jumpcloud_app_catalog_application":  appcatalog.DataSourceApplication(),
 
 			// Platform Administrators - Data Sources
-			"jumpcloud_admin_users":      dataSourceAdminUsers(),
-			"jumpcloud_admin_roles":      dataSourceAdminRoles(),
-			"jumpcloud_admin_audit_logs": dataSourceAdminAuditLogs(),
+			"jumpcloud_admin_users":      admin.DataSourceUsers(),
+			"jumpcloud_admin_roles":      admin.DataSourceRoles(),
+			"jumpcloud_admin_audit_logs": admin.DataSourceAuditLogs(),
 
 			// Authentication Policies - Data Sources
 			"jumpcloud_auth_policies":         dataSourceAuthPolicies(),
