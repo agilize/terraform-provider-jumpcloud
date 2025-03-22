@@ -94,8 +94,6 @@ func ResourceUser() *schema.Resource {
 }
 
 func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
@@ -189,8 +187,6 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta interfac
 }
 
 func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
@@ -234,8 +230,6 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 }
 
 func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
@@ -252,7 +246,7 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta interf
 	// Set ID to empty to signify resource has been removed
 	d.SetId("")
 
-	return diags
+	return nil
 }
 
 func expandAttributes(attributes map[string]interface{}) map[string]interface{} {

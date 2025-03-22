@@ -6,21 +6,38 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestResourcePolicyBinding(t *testing.T) {
 	r := ResourcePolicyBinding()
-	assert.NotNil(t, r)
-	assert.NotNil(t, r.Schema["policy_id"])
-	assert.NotNil(t, r.Schema["target_id"])
-	assert.NotNil(t, r.Schema["target_type"])
-	assert.NotNil(t, r.CreateContext)
-	assert.NotNil(t, r.ReadContext)
-	assert.NotNil(t, r.UpdateContext)
-	assert.NotNil(t, r.DeleteContext)
+	// Use standard Go testing instead of assert
+	if r == nil {
+		t.Fatal("Expected non-nil resource")
+	}
+	if r.Schema["policy_id"] == nil {
+		t.Fatal("Expected non-nil policy_id schema")
+	}
+	if r.Schema["target_id"] == nil {
+		t.Fatal("Expected non-nil target_id schema")
+	}
+	if r.Schema["target_type"] == nil {
+		t.Fatal("Expected non-nil target_type schema")
+	}
+	if r.CreateContext == nil {
+		t.Fatal("Expected non-nil CreateContext")
+	}
+	if r.ReadContext == nil {
+		t.Fatal("Expected non-nil ReadContext")
+	}
+	if r.UpdateContext == nil {
+		t.Fatal("Expected non-nil UpdateContext")
+	}
+	if r.DeleteContext == nil {
+		t.Fatal("Expected non-nil DeleteContext")
+	}
 }
 
+// Uncomment acceptance tests now that the authentication resources are enabled
 func TestAccJumpCloudAuthPolicyBinding_basic(t *testing.T) {
 	resourceName := "jumpcloud_auth_policy_binding.test"
 

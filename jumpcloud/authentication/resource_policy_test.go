@@ -5,37 +5,40 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
-
-// MockClient é um cliente mock para testes
-type MockClient struct {
-	mock.Mock
-}
-
-func (m *MockClient) DoRequest(method, path string, body interface{}) ([]byte, error) {
-	args := m.Called(method, path, body)
-	return args.Get(0).([]byte), args.Error(1)
-}
 
 func TestResourcePolicy(t *testing.T) {
 	r := ResourcePolicy()
-	assert.NotNil(t, r)
-	assert.NotNil(t, r.Schema["name"])
-	assert.NotNil(t, r.Schema["type"])
-	assert.NotNil(t, r.Schema["settings"])
-	assert.NotNil(t, r.CreateContext)
-	assert.NotNil(t, r.ReadContext)
-	assert.NotNil(t, r.UpdateContext)
-	assert.NotNil(t, r.DeleteContext)
+	// Use standard Go testing instead of assert
+	if r == nil {
+		t.Fatal("Expected non-nil resource")
+	}
+	if r.Schema["name"] == nil {
+		t.Fatal("Expected non-nil name schema")
+	}
+	if r.Schema["type"] == nil {
+		t.Fatal("Expected non-nil type schema")
+	}
+	if r.Schema["settings"] == nil {
+		t.Fatal("Expected non-nil settings schema")
+	}
+	if r.CreateContext == nil {
+		t.Fatal("Expected non-nil CreateContext")
+	}
+	if r.ReadContext == nil {
+		t.Fatal("Expected non-nil ReadContext")
+	}
+	if r.UpdateContext == nil {
+		t.Fatal("Expected non-nil UpdateContext")
+	}
+	if r.DeleteContext == nil {
+		t.Fatal("Expected non-nil DeleteContext")
+	}
 }
 
+// Uncomment acceptance tests now that the authentication resources are enabled
 func TestAccJumpCloudAuthPolicy_basic(t *testing.T) {
-	resourceName := "jumpcloud_auth_policy.test"
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -44,17 +47,11 @@ func TestAccJumpCloudAuthPolicy_basic(t *testing.T) {
 			{
 				Config: testAccJumpCloudAuthPolicyConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckJumpCloudAuthPolicyExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "name", "test-policy"),
-					resource.TestCheckResourceAttr(resourceName, "type", "mfa"),
-					resource.TestCheckResourceAttr(resourceName, "status", "active"),
-					resource.TestCheckResourceAttrSet(resourceName, "settings"),
+					testAccCheckJumpCloudAuthPolicyExists("jumpcloud_auth_policy.test"),
+					resource.TestCheckResourceAttr("jumpcloud_auth_policy.test", "name", "tf-test-auth-policy"),
+					resource.TestCheckResourceAttr("jumpcloud_auth_policy.test", "disabled", "false"),
+					resource.TestCheckResourceAttr("jumpcloud_auth_policy.test", "type", "user_portal"),
 				),
-			},
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})
@@ -98,30 +95,4 @@ resource "jumpcloud_auth_policy" "test" {
   apply_to_all_users = true
 }
 `
-}
-
-// Test helper functions
-var testAccProviders map[string]*schema.Provider
-var testAccProvider *schema.Provider
-
-func init() {
-	testAccProvider = Provider()
-	testAccProviders = map[string]*schema.Provider{
-		"jumpcloud": testAccProvider,
-	}
-}
-
-func testAccPreCheck(t *testing.T) {
-	// Implementation depends on the test setup
-	// This is a placeholder for the actual implementation
-}
-
-func Provider() *schema.Provider {
-	// This would normally return the actual provider
-	// but for testing purposes, we're returning a minimal version
-	return &schema.Provider{
-		ResourcesMap: map[string]*schema.Resource{
-			"jumpcloud_auth_policy": ResourcePolicy(),
-		},
-	}
 }

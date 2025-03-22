@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/common"
 )
 
 // AuthPolicy representa uma política de autenticação no JumpCloud
@@ -136,7 +137,7 @@ func ResourcePolicy() *schema.Resource {
 }
 
 func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c, diagErr := GetClientFromMeta(meta)
+	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -228,7 +229,7 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := GetClientFromMeta(meta)
+	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -285,7 +286,7 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 }
 
 func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c, diagErr := GetClientFromMeta(meta)
+	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -370,7 +371,9 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 }
 
 func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c, diagErr := GetClientFromMeta(meta)
+	var diags diag.Diagnostics
+
+	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -388,7 +391,7 @@ func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	d.SetId("")
-	return diag.Diagnostics{}
+	return diags
 }
 
 // isNotFoundError verifica se o erro é do tipo "não encontrado"

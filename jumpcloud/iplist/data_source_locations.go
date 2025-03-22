@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/common"
 )
 
 // IPLocationInfo representa informações de geolocalização de um IP
@@ -163,7 +164,7 @@ func DataSourceLocations() *schema.Resource {
 func dataSourceLocationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := GetClientFromMeta(meta)
+	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
 	}

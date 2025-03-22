@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/common"
 )
 
 // AuthPoliciesResponse representa a resposta da API para listagem de políticas de autenticação
@@ -136,7 +137,7 @@ func DataSourcePolicies() *schema.Resource {
 func dataSourcePoliciesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := GetClientFromMeta(meta)
+	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
 	}

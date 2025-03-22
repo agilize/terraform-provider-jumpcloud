@@ -1,229 +1,130 @@
-# Terraform Provider for JumpCloud
+# JumpCloud Terraform Provider
 
-[![Build Status](https://github.com/agilize/terraform-provider-jumpcloud/workflows/Unified%20Build%20and%20Release%20Pipeline/badge.svg)](https://github.com/agilize/terraform-provider-jumpcloud/actions)
-[![Latest Release](https://img.shields.io/github/v/release/agilize/terraform-provider-jumpcloud?include_prereleases&sort=semver)](https://github.com/agilize/terraform-provider-jumpcloud/releases)
-[![GitHub Packages](https://img.shields.io/badge/GitHub%20Packages-Provider-blue)](https://github.com/agilize/terraform-provider-jumpcloud/pkgs/container/terraform-provider-jumpcloud)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+This Terraform provider allows you to manage JumpCloud resources through Terraform. It provides a convenient way to create, read, update, and delete JumpCloud resources such as users, systems, user groups, and more.
 
-The JumpCloud Terraform Provider allows you to manage resources on the [JumpCloud](https://jumpcloud.com) platform through Terraform.
+## Folder Structure
 
-## Requirements
+The provider follows a clean architecture approach with the following folder structure:
 
-- [Terraform](https://www.terraform.io/downloads.html) >= 1.0
-- [Go](https://golang.org/doc/install) >= 1.20 (for development)
-- [JumpCloud API Key](https://jumpcloud.com/support/api-key)
+```
+terraform-provider-jumpcloud/
+├── cmd/                 # Main CLI entry point 
+├── pkg/                 # Shared packages
+│   ├── apiclient/       # JumpCloud API client
+│   ├── errors/          # Standardized error handling
+│   └── utils/           # Shared utilities
+├── internal/            # Implementation details
+│   ├── provider/        # Provider implementation
+│   │   ├── resources/   # Resource implementations (domain-specific)
+│   │   │   ├── user/    # User resource domain
+│   │   │   ├── system/  # System resource domain
+│   │   │   └── ...
+│   │   └── provider.go  # Provider definition
+└── test/                # Test suite
+    ├── acceptance/      # Acceptance tests
+    ├── integration/     # Integration tests
+    └── unit/            # Unit tests
+```
 
-## Usage
+## Getting Started
 
-### Provider Installation
+### Requirements
 
-#### Option 1: Using Terraform Registry (Recommended)
+- [Terraform](https://www.terraform.io/downloads.html) >= 0.14.x
+- [Go](https://golang.org/doc/install) >= 1.18 (for building the provider)
 
-The provider is published to the Terraform Registry. To use it, simply configure your Terraform configuration file:
+### Building the Provider
+
+Clone the repository:
+
+```shell
+git clone https://github.com/agilize/terraform-provider-jumpcloud.git
+```
+
+Build the provider:
+
+```shell
+cd terraform-provider-jumpcloud
+go build -o terraform-provider-jumpcloud
+```
+
+### Using the Provider
+
+To use the provider, configure it with your JumpCloud API key:
 
 ```hcl
-terraform {
-  required_providers {
-    jumpcloud = {
-      source  = "registry.terraform.io/agilize/jumpcloud"
-      version = "~> 0.1.0"
-    }
-  }
-}
-
 provider "jumpcloud" {
-  api_key = "your-api-key"  # Can also be set via JUMPCLOUD_API_KEY environment variable
-}
-```
-
-#### Option 2: Using GitHub Container Registry
-
-Configure the GitHub Container Registry as a source for the provider. Add the following to your `~/.terraformrc` file:
-
-```hcl
-provider_installation {
-  network_mirror {
-    url = "https://ghcr.io/agilize/terraform-provider-jumpcloud"
-    include = ["ghcr.io/agilize/jumpcloud"]
-  }
-  direct {
-    exclude = ["ghcr.io/agilize/jumpcloud"]
-  }
-}
-```
-
-Then, in your Terraform configuration:
-
-```hcl
-terraform {
-  required_providers {
-    jumpcloud = {
-      source  = "ghcr.io/agilize/jumpcloud"
-      version = "~> 0.1.0"
-    }
-  }
+  api_key = "your_api_key"      # Or use JUMPCLOUD_API_KEY environment variable
+  org_id  = "your_org_id"       # For multi-tenant environments (optional)
+  api_url = "custom_api_url"    # Override the default API URL (optional)
 }
 
-provider "jumpcloud" {
-  api_key = "your-api-key"  # Can also be set via JUMPCLOUD_API_KEY environment variable
-}
-```
-
-For detailed instructions, see [Using the Provider via GHCR](docs/ghcr-usage.md).
-
-#### Option 3: Using GitHub Releases
-
-To use the provider from GitHub Releases, add the following block to your Terraform configuration file:
-
-```hcl
-terraform {
-  required_providers {
-    jumpcloud = {
-      source  = "agilize/jumpcloud"
-      version = "~> 0.1.0"
-    }
-  }
-}
-
-provider "jumpcloud" {
-  api_key = "your-api-key"  # Can also be set via JUMPCLOUD_API_KEY environment variable
-}
-```
-
-### Resource Management
-
-#### Users
-
-```hcl
+# Create a JumpCloud user
 resource "jumpcloud_user" "example" {
-  username = "john.doe"
-  email    = "john.doe@example.com"
-  firstname = "John"
-  lastname  = "Doe"
-  
-  password = "securePassword123!"
-  
-  tags = ["dev", "engineering"]
+  username             = "example.user"
+  email                = "example.user@example.com"
+  first_name           = "Example"
+  last_name            = "User"
+  password             = "SecurePassw0rd!"
+  mfa_enabled          = true
+  password_never_expires = false
 }
 ```
 
-#### User Groups
+## Developing the Provider
 
-```hcl
-resource "jumpcloud_user_group" "engineering" {
-  name = "Engineering Team"
-  description = "Group for engineering team members"
-}
+### Testing
 
-resource "jumpcloud_user_group_membership" "john_engineering" {
-  user_id       = jumpcloud_user.example.id
-  user_group_id = jumpcloud_user_group.engineering.id
-}
+This provider uses a comprehensive testing approach:
+
+- **Unit Tests**: Tests individual components in isolation
+- **Integration Tests**: Tests API client against the real JumpCloud API
+- **Acceptance Tests**: Full end-to-end tests of resources using real infrastructure
+
+To run tests:
+
+```shell
+# Run unit tests
+go test ./... -v
+
+# Run acceptance tests (creates real resources)
+TF_ACC=1 JUMPCLOUD_API_KEY=your_api_key go test ./internal/provider -v
 ```
 
-#### Systems
+### Adding a New Resource
 
-```hcl
-data "jumpcloud_system" "laptop" {
-  display_name = "MacBook-Pro"
-}
+To add a new resource, follow these steps:
 
-resource "jumpcloud_system_group" "dev_laptops" {
-  name = "Development Laptops"
-  description = "Group for development team laptops"
-}
+1. Create a new directory under `internal/provider/resources/` for the resource domain
+2. Implement the resource in a `resource.go` file in that directory
+3. Use the `errors` package for standardized error handling
+4. Add the resource to the provider in `internal/provider/provider.go`
+5. Add tests in the appropriate test directories
 
-resource "jumpcloud_system_group_membership" "laptop_dev" {
-  system_id       = data.jumpcloud_system.laptop.id
-  system_group_id = jumpcloud_system_group.dev_laptops.id
-}
+Example:
+
+```go
+package newresource
+
+import (
+    "context"
+    "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+    "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+    "registry.terraform.io/agilize/jumpcloud/pkg/apiclient"
+    "registry.terraform.io/agilize/jumpcloud/pkg/errors"
+)
+
+// Resource structure and functions go here
 ```
-
-#### Commands
-
-```hcl
-resource "jumpcloud_command" "update_packages" {
-  name = "Update Packages"
-  command = "apt-get update && apt-get upgrade -y"
-  user = "root"
-  
-  system_ids = [
-    data.jumpcloud_system.laptop.id
-  ]
-  
-  trigger = "manual"
-}
-```
-
-## Available Resources
-
-| Resource Type | Description |
-|---------------|-------------|
-| `jumpcloud_user` | Manages JumpCloud users |
-| `jumpcloud_user_group` | Manages JumpCloud user groups |
-| `jumpcloud_user_group_membership` | Manages user membership in groups |
-| `jumpcloud_system_group` | Manages system groups |
-| `jumpcloud_system_group_membership` | Manages system membership in groups |
-| `jumpcloud_command` | Manages commands to be executed on systems |
-| `jumpcloud_policy` | Manages policies |
-| `jumpcloud_policy_association` | Manages policy associations |
-| `jumpcloud_user_system_association` | Manages associations between users and systems |
-| `jumpcloud_command_association` | Manages associations between commands and targets |
-| `jumpcloud_webhook` | Manages webhooks |
-| `jumpcloud_api_key` | Manages API keys |
-| `jumpcloud_mdm_policy` | Manages mobile device management policies |
-| `jumpcloud_mdm_configuration` | Manages MDM configurations |
-| `jumpcloud_authentication_policy` | Manages authentication policies |
-| `jumpcloud_password_policy` | Manages password policies |
-| `jumpcloud_organization_settings` | Manages organization settings |
-| `jumpcloud_notification_channel` | Manages notification channels |
-| `jumpcloud_app_catalog_application` | Manages application catalog applications |
-
-## Available Data Sources
-
-| Data Source | Description |
-|-------------|-------------|
-| `jumpcloud_user` | Retrieves information about a JumpCloud user |
-| `jumpcloud_user_group` | Retrieves information about a user group |
-| `jumpcloud_system` | Retrieves information about a system |
-| `jumpcloud_system_group` | Retrieves information about a system group |
-| `jumpcloud_command` | Retrieves information about a command |
-| `jumpcloud_policy` | Retrieves information about a policy |
-| `jumpcloud_user_system_association` | Verifies if a user is associated with a system |
-| `jumpcloud_organization` | Retrieves information about the JumpCloud organization |
-| `jumpcloud_ip_list` | Retrieves information about an IP list |
-| `jumpcloud_platform_administrator` | Retrieves information about a platform administrator |
-| `jumpcloud_mdm_devices` | Retrieves information about MDM devices |
-
-## Authentication
-
-The provider supports the following authentication methods:
-
-1. Static credentials in the provider configuration:
-   ```hcl
-   provider "jumpcloud" {
-     api_key = "your-api-key"
-   }
-   ```
-
-2. Environment variables:
-   ```bash
-   export JUMPCLOUD_API_KEY="your-api-key"
-   export JUMPCLOUD_ORG_ID="your-org-id"  # Optional
-   ```
-
-## Development
-
-See [DEVELOPMENT.md](DEVELOPMENT.md) for information on developing the provider.
-
-## Testing
-
-Testing documentation is available in the [tests README.md](tests/README.md).
 
 ## Contributing
 
-Contributions are welcome! Please read the contribution guidelines before submitting a pull request.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This provider is distributed under the MIT License. See [LICENSE](LICENSE) for more information. 
+This project is licensed under the [Mozilla Public License v2.0](LICENSE).
+
+## Support
+
+For support, please contact the project maintainers or open an issue on GitHub. 

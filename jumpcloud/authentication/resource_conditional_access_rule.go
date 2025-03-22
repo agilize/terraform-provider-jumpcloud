@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/common"
 )
 
 // ConditionalAccessRule representa uma regra de acesso condicional no JumpCloud
@@ -123,7 +124,7 @@ func ResourceConditionalAccessRule() *schema.Resource {
 }
 
 func resourceConditionalAccessRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c, diagErr := GetClientFromMeta(meta)
+	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -207,7 +208,7 @@ func resourceConditionalAccessRuleCreate(ctx context.Context, d *schema.Resource
 func resourceConditionalAccessRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := GetClientFromMeta(meta)
+	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -262,7 +263,7 @@ func resourceConditionalAccessRuleRead(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceConditionalAccessRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c, diagErr := GetClientFromMeta(meta)
+	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -341,7 +342,7 @@ func resourceConditionalAccessRuleUpdate(ctx context.Context, d *schema.Resource
 func resourceConditionalAccessRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := GetClientFromMeta(meta)
+	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
 	}

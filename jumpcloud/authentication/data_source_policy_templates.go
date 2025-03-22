@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/common"
 )
 
 // AuthPolicyTemplate representa um template de política de autenticação no JumpCloud
@@ -129,7 +130,7 @@ func DataSourcePolicyTemplates() *schema.Resource {
 func dataSourcePolicyTemplatesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := GetClientFromMeta(meta)
+	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
 	}

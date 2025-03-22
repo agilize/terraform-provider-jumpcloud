@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/common"
 )
 
 // AuthPolicyBinding representa uma associação de política de autenticação
@@ -90,7 +91,7 @@ func ResourcePolicyBinding() *schema.Resource {
 }
 
 func resourcePolicyBindingCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c, diagErr := GetClientFromMeta(meta)
+	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -148,7 +149,7 @@ func resourcePolicyBindingCreate(ctx context.Context, d *schema.ResourceData, me
 func resourcePolicyBindingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := GetClientFromMeta(meta)
+	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -193,7 +194,7 @@ func resourcePolicyBindingRead(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func resourcePolicyBindingUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c, diagErr := GetClientFromMeta(meta)
+	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -246,7 +247,7 @@ func resourcePolicyBindingUpdate(ctx context.Context, d *schema.ResourceData, me
 func resourcePolicyBindingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := GetClientFromMeta(meta)
+	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
 	}

@@ -6,22 +6,41 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestResourceConditionalAccessRule(t *testing.T) {
 	r := ResourceConditionalAccessRule()
-	assert.NotNil(t, r)
-	assert.NotNil(t, r.Schema["name"])
-	assert.NotNil(t, r.Schema["policy_id"])
-	assert.NotNil(t, r.Schema["conditions"])
-	assert.NotNil(t, r.Schema["action"])
-	assert.NotNil(t, r.CreateContext)
-	assert.NotNil(t, r.ReadContext)
-	assert.NotNil(t, r.UpdateContext)
-	assert.NotNil(t, r.DeleteContext)
+	// Use standard Go testing instead of assert
+	if r == nil {
+		t.Fatal("Expected non-nil resource")
+	}
+	if r.Schema["name"] == nil {
+		t.Fatal("Expected non-nil name schema")
+	}
+	if r.Schema["policy_id"] == nil {
+		t.Fatal("Expected non-nil policy_id schema")
+	}
+	if r.Schema["conditions"] == nil {
+		t.Fatal("Expected non-nil conditions schema")
+	}
+	if r.Schema["action"] == nil {
+		t.Fatal("Expected non-nil action schema")
+	}
+	if r.CreateContext == nil {
+		t.Fatal("Expected non-nil CreateContext")
+	}
+	if r.ReadContext == nil {
+		t.Fatal("Expected non-nil ReadContext")
+	}
+	if r.UpdateContext == nil {
+		t.Fatal("Expected non-nil UpdateContext")
+	}
+	if r.DeleteContext == nil {
+		t.Fatal("Expected non-nil DeleteContext")
+	}
 }
 
+// Uncomment acceptance tests now that the authentication resources are enabled
 func TestAccJumpCloudConditionalAccessRule_basic(t *testing.T) {
 	resourceName := "jumpcloud_conditional_access_rule.test"
 

@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/common"
 )
 
 // IPListAssignment representa uma atribuição de lista de IPs a um recurso
@@ -77,7 +78,7 @@ func ResourceListAssignment() *schema.Resource {
 }
 
 func resourceListAssignmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c, diagErr := GetClientFromMeta(meta)
+	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -124,7 +125,7 @@ func resourceListAssignmentCreate(ctx context.Context, d *schema.ResourceData, m
 func resourceListAssignmentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := GetClientFromMeta(meta)
+	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
 	}
@@ -175,7 +176,7 @@ func resourceListAssignmentUpdate(ctx context.Context, d *schema.ResourceData, m
 func resourceListAssignmentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c, diagErr := GetClientFromMeta(meta)
+	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
 	}
