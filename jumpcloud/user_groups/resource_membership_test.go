@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
@@ -13,9 +12,9 @@ func TestAccJumpCloudUserGroupMembership(t *testing.T) {
 	var resourceName = "jumpcloud_user_group_membership.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckJumpCloudUserGroupMembershipDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      testAccCheckJumpCloudUserGroupMembershipDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccJumpCloudUserGroupMembershipConfig(),
@@ -86,10 +85,3 @@ func testAccCheckJumpCloudUserGroupMembershipDestroy(s *terraform.State) error {
 
 	return nil
 }
-
-// Helper functions
-func testAccPreCheck(t *testing.T) {
-	// Add any pre-check logic needed for the tests
-}
-
-var testAccProviders map[string]*schema.Provider

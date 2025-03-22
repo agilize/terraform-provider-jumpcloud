@@ -18,6 +18,7 @@ import (
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/scim"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/system_groups"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/user_associations"
+	users "registry.terraform.io/agilize/jumpcloud/jumpcloud/user_groups"
 
 	//users "registry.terraform.io/agilize/jumpcloud/jumpcloud/user_groups"
 	"registry.terraform.io/agilize/jumpcloud/pkg/apiclient"
@@ -81,7 +82,8 @@ func Provider() *schema.Provider {
 			"jumpcloud_password_policy": password_policies.ResourcePasswordPolicy(),
 
 			// User Group Resources
-			//"jumpcloud_user_group_membership": users.ResourceMembership(),
+			"jumpcloud_user_group_membership": users.ResourceMembership(),
+			"jumpcloud_user_group":            users.ResourceUserGroup(),
 
 			// User Association Resources
 			"jumpcloud_user_system_association": user_associations.ResourceSystem(),

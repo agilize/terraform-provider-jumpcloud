@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	jctest "registry.terraform.io/agilize/jumpcloud/jumpcloud/testing"
 )
 
 // TestResourceUserGroupSchema tests the schema structure of the user group resource
@@ -93,9 +92,9 @@ func TestAccResourceUserGroup_basic(t *testing.T) {
 	resourceName := "jumpcloud_user_group.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { jctest.TestAccPreCheck(t) },
-		Providers:    jctest.TestAccProviders,
-		CheckDestroy: testAccCheckJumpCloudUserGroupDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      testAccCheckJumpCloudUserGroupDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccJumpCloudUserGroupConfig_basic(),
@@ -113,9 +112,9 @@ func TestAccResourceUserGroup_update(t *testing.T) {
 	resourceName := "jumpcloud_user_group.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { jctest.TestAccPreCheck(t) },
-		Providers:    jctest.TestAccProviders,
-		CheckDestroy: testAccCheckJumpCloudUserGroupDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      testAccCheckJumpCloudUserGroupDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccJumpCloudUserGroupConfig_basic(),
@@ -141,9 +140,9 @@ func TestAccResourceUserGroup_attributes(t *testing.T) {
 	resourceName := "jumpcloud_user_group.test_attrs"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { jctest.TestAccPreCheck(t) },
-		Providers:    jctest.TestAccProviders,
-		CheckDestroy: testAccCheckJumpCloudUserGroupDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      testAccCheckJumpCloudUserGroupDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccJumpCloudUserGroupConfig_attributes(),
