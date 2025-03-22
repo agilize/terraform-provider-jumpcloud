@@ -7,17 +7,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	jctest "registry.terraform.io/agilize/jumpcloud/jumpcloud/testing"
 )
 
 func TestAccResourcePasswordPolicy_basic(t *testing.T) {
+	t.Skip("Skipping acceptance test until CI environment is set up")
+
 	rName := acctest.RandomWithPrefix("tf-acc-test")
 	resourceName := "jumpcloud_password_policy.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { jctest.TestAccPreCheck(t) },
-		Providers:    jctest.TestAccProviders,
-		CheckDestroy: testAccCheckPasswordPolicyDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      testAccCheckPasswordPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccPasswordPolicyConfig_basic(rName),
@@ -42,14 +43,16 @@ func TestAccResourcePasswordPolicy_basic(t *testing.T) {
 }
 
 func TestAccResourcePasswordPolicy_update(t *testing.T) {
+	t.Skip("Skipping acceptance test until CI environment is set up")
+
 	rName := acctest.RandomWithPrefix("tf-acc-test")
 	rNameUpdated := rName + "-updated"
 	resourceName := "jumpcloud_password_policy.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { jctest.TestAccPreCheck(t) },
-		Providers:    jctest.TestAccProviders,
-		CheckDestroy: testAccCheckPasswordPolicyDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      testAccCheckPasswordPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccPasswordPolicyConfig_basic(rName),

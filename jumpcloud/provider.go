@@ -13,8 +13,7 @@ import (
 	//"registry.terraform.io/agilize/jumpcloud/jumpcloud/appcatalog"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/iplist"
-
-	//"registry.terraform.io/agilize/jumpcloud/jumpcloud/password_policies"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/password_policies"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/radius"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/scim"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/system_groups"
@@ -79,7 +78,7 @@ func Provider() *schema.Provider {
 			//"jumpcloud_admin_role_binding": admin.ResourceRoleBinding(),
 
 			// Password Policies - Resources
-			//"jumpcloud_password_policy": password_policies.ResourcePasswordPolicy(),
+			"jumpcloud_password_policy": password_policies.ResourcePasswordPolicy(),
 
 			// User Group Resources
 			//"jumpcloud_user_group_membership": users.ResourceMembership(),
@@ -118,6 +117,9 @@ func Provider() *schema.Provider {
 			// IP Lists - Data Sources
 			"jumpcloud_ip_lists":     iplist.DataSourceLists(),
 			"jumpcloud_ip_locations": iplist.DataSourceLocations(),
+
+			// Password Policies - Data Sources
+			"jumpcloud_password_policies": password_policies.DataSourcePolicies(),
 
 			// Platform Administrators - Data Sources
 			//"jumpcloud_admin_users": admin.DataSourceUsers(),
