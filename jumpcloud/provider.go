@@ -16,9 +16,11 @@ import (
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/password_policies"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/radius"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/scim"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/sso"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/system_groups"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/user_associations"
 	users "registry.terraform.io/agilize/jumpcloud/jumpcloud/user_groups"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/webhooks"
 
 	//users "registry.terraform.io/agilize/jumpcloud/jumpcloud/user_groups"
 	"registry.terraform.io/agilize/jumpcloud/pkg/apiclient"
@@ -100,6 +102,13 @@ func Provider() *schema.Provider {
 			"jumpcloud_scim_attribute_mapping": scim.ResourceAttributeMapping(),
 			"jumpcloud_scim_integration":       scim.ResourceIntegration(),
 
+			// SSO Resources
+			"jumpcloud_sso_application": sso.ResourceSSOApplication(),
+
+			// Webhooks - Resources
+			"jumpcloud_webhook":              webhooks.ResourceWebhook(),
+			"jumpcloud_webhook_subscription": webhooks.ResourceWebhookSubscription(),
+
 			// TODO: Move the remaining resources to their appropriate domain packages
 			// and update the imports here
 		},
@@ -129,6 +138,12 @@ func Provider() *schema.Provider {
 			// SCIM - Data Sources
 			"jumpcloud_scim_servers": scim.DataSourceServers(),
 			"jumpcloud_scim_schema":  scim.DataSourceSchema(),
+
+			// SSO - Data Sources
+			"jumpcloud_sso_application": sso.DataSourceSSOApplication(),
+
+			// Webhooks - Data Sources
+			"jumpcloud_webhook": webhooks.DataSourceWebhook(),
 
 			// TODO: Move the remaining data sources to their appropriate domain packages
 			// and update the imports here

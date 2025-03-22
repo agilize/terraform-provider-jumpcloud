@@ -5,16 +5,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"registry.terraform.io/agilize/jumpcloud/pkg/apiclient"
 )
 
-// SSOApplicationSAML represents the SAML metadata for an SSO application
+// JumpCloudClient is an interface for interaction with the JumpCloud API
+type JumpCloudClient interface {
+	DoRequest(method, path string, body interface{}) ([]byte, error)
+	GetApiKey() string
+	GetOrgID() string
+}
+
+// isNotFoundError checks if the error is a 404 Not Found
+func isNotFoundError(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "404")
+}
+
+// SSOApplicationSAML representa os metadados SAML para uma aplicação SSO
 type SSOApplicationSAML struct {
 	EntityID             string                   `json:"entityId,omitempty"`
 	AssertionConsumerURL string                   `json:"assertionConsumerUrl,omitempty"`
@@ -31,7 +42,7 @@ type SSOApplicationSAML struct {
 	AttributeStatements  []map[string]interface{} `json:"attributeStatements,omitempty"`
 }
 
-// SSOApplicationOIDC represents the OIDC metadata for an SSO application
+// SSOApplicationOIDC representa os metadados OIDC para uma aplicação SSO
 type SSOApplicationOIDC struct {
 	ClientID         string   `json:"clientId,omitempty"`
 	ClientSecret     string   `json:"clientSecret,omitempty"`
@@ -45,7 +56,7 @@ type SSOApplicationOIDC struct {
 	Scopes           []string `json:"scopes,omitempty"`
 }
 
-// SSOApplication represents an SSO application in JumpCloud
+// SSOApplication representa uma aplicação SSO no JumpCloud
 type SSOApplication struct {
 	ID                string                 `json:"_id,omitempty"`
 	Name              string                 `json:"name"`
@@ -67,19 +78,14 @@ type SSOApplication struct {
 	OrgID             string                 `json:"orgId,omitempty"`
 }
 
-// ResourceSSOApplication returns the resource schema for JumpCloud SSO applications
+// ResourceSSOApplication returns the resource schema for JumpCloud SSO application
 func ResourceSSOApplication() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceSSOApplicationCreate,
 		ReadContext:   resourceSSOApplicationRead,
 		UpdateContext: resourceSSOApplicationUpdate,
 		DeleteContext: resourceSSOApplicationDelete,
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(1 * time.Minute),
-			Read:   schema.DefaultTimeout(1 * time.Minute),
-			Update: schema.DefaultTimeout(1 * time.Minute),
-			Delete: schema.DefaultTimeout(1 * time.Minute),
-		},
+
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:     schema.TypeString,
@@ -88,71 +94,71 @@ func ResourceSSOApplication() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Unique name of the SSO application",
+				Description: "Nome único da aplicação SSO",
 			},
 			"display_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Display name of the application",
+				Description: "Nome de exibição da aplicação",
 			},
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Description of the application",
+				Description: "Descrição da aplicação",
 			},
 			"type": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringInSlice([]string{"saml", "oidc"}, false),
-				Description:  "Type of SSO application: SAML or OIDC",
-				ForceNew:     true, // Type cannot be changed after creation
+				Description:  "Tipo de aplicação SSO: SAML ou OIDC",
+				ForceNew:     true, // Não permite alterar o tipo após a criação
 			},
 			"sso_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "URL for user access to the application",
+				Description: "URL para acesso à aplicação pelo usuário",
 			},
 			"logo_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "URL of the application logo",
+				Description: "URL do logotipo da aplicação",
 			},
 			"active": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,
-				Description: "Whether the application is active",
+				Description: "Se a aplicação está ativa",
 			},
 			"beta_access": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
-				Description: "Whether the application is in beta access",
+				Description: "Se a aplicação está em acesso beta",
 			},
 			"require_mfa": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
-				Description: "Whether the application requires MFA for access",
+				Description: "Se a aplicação requer MFA para acesso",
 			},
 			"org_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Organization ID for multi-tenant environments",
+				Description: "ID da organização para ambientes multi-tenant",
 			},
 			"group_associations": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "IDs of groups associated with the application",
+				Description: "IDs dos grupos associados à aplicação",
 			},
 			"user_associations": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "IDs of users associated with the application",
+				Description: "IDs dos usuários associados à aplicação",
 			},
-			// SAML specific configuration
+			// Configuração específica SAML
 			"saml": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -162,92 +168,92 @@ func ResourceSSOApplication() *schema.Resource {
 						"entity_id": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Entity ID of the Service Provider (SP)",
+							Description: "Entity ID do Service Provider (SP)",
 						},
 						"assertion_consumer_url": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "URL where SAML assertions will be sent",
+							Description: "URL para onde as asserções SAML serão enviadas",
 						},
 						"sp_certificate": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Service Provider (SP) certificate",
+							Description: "Certificado do Service Provider (SP)",
 						},
 						"idp_certificate": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Identity Provider (IdP) certificate",
+							Description: "Certificado do Identity Provider (IdP)",
 						},
 						"idp_entity_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Entity ID of the Identity Provider (IdP)",
+							Description: "Entity ID do Identity Provider (IdP)",
 						},
 						"idp_sso_url": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "SSO URL of the Identity Provider (IdP)",
+							Description: "URL de SSO do Identity Provider (IdP)",
 						},
 						"name_id_format": {
 							Type:         schema.TypeString,
 							Optional:     true,
 							Default:      "email",
 							ValidateFunc: validation.StringInSlice([]string{"email", "persistent", "transient", "unspecified"}, false),
-							Description:  "NameID format (email, persistent, transient, unspecified)",
+							Description:  "Formato do NameID (email, persistent, transient, unspecified)",
 						},
 						"saml_signing_algorithm": {
 							Type:         schema.TypeString,
 							Optional:     true,
 							Default:      "sha256",
 							ValidateFunc: validation.StringInSlice([]string{"sha1", "sha256", "sha512"}, false),
-							Description:  "SAML signing algorithm (sha1, sha256, sha512)",
+							Description:  "Algoritmo de assinatura SAML (sha1, sha256, sha512)",
 						},
 						"sign_assertion": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Default:     true,
-							Description: "Whether the SAML assertion should be signed",
+							Description: "Se a asserção SAML deve ser assinada",
 						},
 						"sign_response": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Default:     true,
-							Description: "Whether the SAML response should be signed",
+							Description: "Se a resposta SAML deve ser assinada",
 						},
 						"encrypt_assertion": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Default:     false,
-							Description: "Whether the SAML assertion should be encrypted",
+							Description: "Se a asserção SAML deve ser criptografada",
 						},
 						"default_relay_state": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Default relay state for redirect after authentication",
+							Description: "Estado de relay padrão para redirecionamento após autenticação",
 						},
 						"attribute_statements": {
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "SAML attribute statements",
+							Description: "Declarações de atributos SAML",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"name": {
 										Type:        schema.TypeString,
 										Required:    true,
-										Description: "Name of the SAML attribute",
+										Description: "Nome do atributo SAML",
 									},
 									"name_format": {
 										Type:         schema.TypeString,
 										Optional:     true,
 										Default:      "unspecified",
 										ValidateFunc: validation.StringInSlice([]string{"unspecified", "uri", "basic"}, false),
-										Description:  "Format of the attribute name (unspecified, uri, basic)",
+										Description:  "Formato do nome do atributo (unspecified, uri, basic)",
 									},
 									"value": {
 										Type:        schema.TypeString,
 										Required:    true,
-										Description: "Value or expression for the attribute",
+										Description: "Valor ou expressão para o atributo",
 									},
 								},
 							},
@@ -255,7 +261,7 @@ func ResourceSSOApplication() *schema.Resource {
 					},
 				},
 			},
-			// OIDC specific configuration
+			// Configuração específica OIDC
 			"oidc": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -265,57 +271,57 @@ func ResourceSSOApplication() *schema.Resource {
 						"client_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "OIDC client ID",
+							Description: "ID do cliente OIDC",
 						},
 						"client_secret": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Sensitive:   true,
-							Description: "OIDC client secret",
+							Description: "Segredo do cliente OIDC",
 						},
 						"redirect_uris": {
 							Type:        schema.TypeList,
 							Required:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
-							Description: "Allowed redirect URIs",
+							Description: "URIs de redirecionamento permitidas",
 						},
 						"response_types": {
 							Type:        schema.TypeList,
 							Optional:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
-							Description: "Allowed response types (code, token, id_token)",
+							Description: "Tipos de resposta permitidos (code, token, id_token)",
 						},
 						"grant_types": {
 							Type:        schema.TypeList,
 							Optional:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
-							Description: "Allowed grant types (authorization_code, implicit, refresh_token)",
+							Description: "Tipos de concessão permitidos (authorization_code, implicit, refresh_token)",
 						},
 						"authorization_url": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Authorization URL of the provider",
+							Description: "URL de autorização do provedor",
 						},
 						"token_url": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Token URL of the provider",
+							Description: "URL do token do provedor",
 						},
 						"user_info_url": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "User info URL",
+							Description: "URL de informações do usuário",
 						},
 						"jwks_url": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "JWKS (JSON Web Key Set) URL",
+							Description: "URL do JWKS (JSON Web Key Set)",
 						},
 						"scopes": {
 							Type:        schema.TypeList,
 							Optional:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
-							Description: "Allowed scopes (openid, profile, email, etc)",
+							Description: "Escopos permitidos (openid, profile, email, etc)",
 						},
 					},
 				},
@@ -323,28 +329,26 @@ func ResourceSSOApplication() *schema.Resource {
 			"created": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Creation date of the application",
+				Description: "Data de criação da aplicação",
 			},
 			"updated": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Date of the last update to the application",
+				Description: "Data da última atualização da aplicação",
 			},
 		},
+
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 	}
 }
 
-// resourceSSOApplicationCreate creates a new SSO application
+// resourceSSOApplicationCreate cria uma nova aplicação SSO
 func resourceSSOApplicationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c, ok := meta.(apiclient.Client)
-	if !ok {
-		return diag.FromErr(fmt.Errorf("invalid client configuration"))
-	}
+	client := meta.(JumpCloudClient)
 
-	// Build SSO application
+	// Construir aplicação SSO
 	application := &SSOApplication{
 		Name:       d.Get("name").(string),
 		Type:       d.Get("type").(string),
@@ -353,7 +357,7 @@ func resourceSSOApplicationCreate(ctx context.Context, d *schema.ResourceData, m
 		RequireMFA: d.Get("require_mfa").(bool),
 	}
 
-	// Optional fields
+	// Campos opcionais
 	if v, ok := d.GetOk("display_name"); ok {
 		application.DisplayName = v.(string)
 	}
@@ -374,7 +378,7 @@ func resourceSSOApplicationCreate(ctx context.Context, d *schema.ResourceData, m
 		application.OrgID = v.(string)
 	}
 
-	// Process type-specific configurations
+	// Processar configurações específicas do tipo
 	if application.Type == "saml" && d.Get("saml") != nil && len(d.Get("saml").([]interface{})) > 0 {
 		samlConfig := d.Get("saml").([]interface{})[0].(map[string]interface{})
 
@@ -396,7 +400,7 @@ func resourceSSOApplicationCreate(ctx context.Context, d *schema.ResourceData, m
 			application.SAML.DefaultRelayState = v.(string)
 		}
 
-		// Process attribute statements
+		// Processar declarações de atributos
 		if attrStatements, ok := samlConfig["attribute_statements"].([]interface{}); ok && len(attrStatements) > 0 {
 			statements := make([]map[string]interface{}, len(attrStatements))
 
@@ -416,7 +420,7 @@ func resourceSSOApplicationCreate(ctx context.Context, d *schema.ResourceData, m
 
 		application.OIDC = &SSOApplicationOIDC{}
 
-		// Process redirect URIs
+		// Processar URIs de redirecionamento
 		if v, ok := oidcConfig["redirect_uris"].([]interface{}); ok && len(v) > 0 {
 			redirectURIs := make([]string, len(v))
 			for i, uri := range v {
@@ -425,7 +429,7 @@ func resourceSSOApplicationCreate(ctx context.Context, d *schema.ResourceData, m
 			application.OIDC.RedirectURIs = redirectURIs
 		}
 
-		// Process response types
+		// Processar tipos de resposta
 		if v, ok := oidcConfig["response_types"].([]interface{}); ok && len(v) > 0 {
 			responseTypes := make([]string, len(v))
 			for i, rt := range v {
@@ -434,7 +438,7 @@ func resourceSSOApplicationCreate(ctx context.Context, d *schema.ResourceData, m
 			application.OIDC.ResponseTypes = responseTypes
 		}
 
-		// Process grant types
+		// Processar tipos de concessão
 		if v, ok := oidcConfig["grant_types"].([]interface{}); ok && len(v) > 0 {
 			grantTypes := make([]string, len(v))
 			for i, gt := range v {
@@ -443,7 +447,7 @@ func resourceSSOApplicationCreate(ctx context.Context, d *schema.ResourceData, m
 			application.OIDC.GrantTypes = grantTypes
 		}
 
-		// Process scopes
+		// Processar escopos
 		if v, ok := oidcConfig["scopes"].([]interface{}); ok && len(v) > 0 {
 			scopes := make([]string, len(v))
 			for i, s := range v {
@@ -453,7 +457,7 @@ func resourceSSOApplicationCreate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	// Process group associations
+	// Processar associações de grupos
 	if v, ok := d.GetOk("group_associations"); ok {
 		groups := v.(*schema.Set).List()
 		groupIDs := make([]string, len(groups))
@@ -463,7 +467,7 @@ func resourceSSOApplicationCreate(ctx context.Context, d *schema.ResourceData, m
 		application.GroupAssociations = groupIDs
 	}
 
-	// Process user associations
+	// Processar associações de usuários
 	if v, ok := d.GetOk("user_associations"); ok {
 		users := v.(*schema.Set).List()
 		userIDs := make([]string, len(users))
@@ -473,66 +477,61 @@ func resourceSSOApplicationCreate(ctx context.Context, d *schema.ResourceData, m
 		application.UserAssociations = userIDs
 	}
 
-	// Serialize to JSON
+	// Serializar para JSON
 	applicationJSON, err := json.Marshal(application)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error serializing SSO application: %v", err))
+		return diag.FromErr(fmt.Errorf("erro ao serializar aplicação SSO: %v", err))
 	}
 
-	// Create application via API
-	tflog.Debug(ctx, fmt.Sprintf("Creating SSO application: %s", application.Name))
-	resp, err := c.DoRequest(http.MethodPost, "/api/v2/applications", applicationJSON)
+	// Criar aplicação via API
+	tflog.Debug(ctx, fmt.Sprintf("Criando aplicação SSO: %s", application.Name))
+	resp, err := client.DoRequest(http.MethodPost, "/api/v2/applications", applicationJSON)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error creating SSO application: %v", err))
+		return diag.FromErr(fmt.Errorf("erro ao criar aplicação SSO: %v", err))
 	}
 
-	// Deserialize response
+	// Deserializar resposta
 	var createdApplication SSOApplication
 	if err := json.Unmarshal(resp, &createdApplication); err != nil {
-		return diag.FromErr(fmt.Errorf("error deserializing response: %v", err))
+		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
 	if createdApplication.ID == "" {
-		return diag.FromErr(fmt.Errorf("SSO application created without ID"))
+		return diag.FromErr(fmt.Errorf("aplicação SSO criada sem ID"))
 	}
 
 	d.SetId(createdApplication.ID)
 	return resourceSSOApplicationRead(ctx, d, meta)
 }
 
-// resourceSSOApplicationRead reads the details of an SSO application
+// resourceSSOApplicationRead lê os detalhes de uma aplicação SSO
 func resourceSSOApplicationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
-	c, ok := meta.(apiclient.Client)
-	if !ok {
-		return diag.FromErr(fmt.Errorf("invalid client configuration"))
-	}
+	client := meta.(JumpCloudClient)
 
 	id := d.Id()
 	if id == "" {
-		return diag.FromErr(fmt.Errorf("SSO application ID not provided"))
+		return diag.FromErr(fmt.Errorf("ID da aplicação SSO não fornecido"))
 	}
 
-	// Fetch application via API
-	tflog.Debug(ctx, fmt.Sprintf("Reading SSO application with ID: %s", id))
-	resp, err := c.DoRequest(http.MethodGet, fmt.Sprintf("/api/v2/applications/%s", id), nil)
+	// Buscar aplicação via API
+	tflog.Debug(ctx, fmt.Sprintf("Lendo aplicação SSO com ID: %s", id))
+	resp, err := client.DoRequest(http.MethodGet, fmt.Sprintf("/api/v2/applications/%s", id), nil)
 	if err != nil {
 		if isNotFoundError(err) {
-			tflog.Warn(ctx, fmt.Sprintf("SSO application %s not found, removing from state", id))
+			tflog.Warn(ctx, fmt.Sprintf("Aplicação SSO %s não encontrada, removendo do state", id))
 			d.SetId("")
-			return diags
+			return diag.Diagnostics{}
 		}
-		return diag.FromErr(fmt.Errorf("error reading SSO application: %v", err))
+		return diag.FromErr(fmt.Errorf("erro ao ler aplicação SSO: %v", err))
 	}
 
-	// Deserialize response
+	// Deserializar resposta
 	var application SSOApplication
 	if err := json.Unmarshal(resp, &application); err != nil {
-		return diag.FromErr(fmt.Errorf("error deserializing response: %v", err))
+		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	// Set values in state
+	// Definir valores no state
 	d.Set("name", application.Name)
 	d.Set("display_name", application.DisplayName)
 	d.Set("description", application.Description)
@@ -549,7 +548,7 @@ func resourceSSOApplicationRead(ctx context.Context, d *schema.ResourceData, met
 		d.Set("org_id", application.OrgID)
 	}
 
-	// SAML specific configuration
+	// Configuração específica SAML
 	if application.Type == "saml" && application.SAML != nil {
 		samlConfig := []map[string]interface{}{
 			{
@@ -568,7 +567,7 @@ func resourceSSOApplicationRead(ctx context.Context, d *schema.ResourceData, met
 			},
 		}
 
-		// Process attribute statements if they exist
+		// Processar declarações de atributos, se existirem
 		if len(application.SAML.AttributeStatements) > 0 {
 			attrStatements := make([]map[string]interface{}, len(application.SAML.AttributeStatements))
 
@@ -586,7 +585,7 @@ func resourceSSOApplicationRead(ctx context.Context, d *schema.ResourceData, met
 		d.Set("saml", samlConfig)
 	}
 
-	// OIDC specific configuration
+	// Configuração específica OIDC
 	if application.Type == "oidc" && application.OIDC != nil {
 		oidcConfig := []map[string]interface{}{
 			{
@@ -606,32 +605,29 @@ func resourceSSOApplicationRead(ctx context.Context, d *schema.ResourceData, met
 		d.Set("oidc", oidcConfig)
 	}
 
-	// Get group associations
+	// Obter associações de grupos
 	if application.GroupAssociations != nil {
 		d.Set("group_associations", application.GroupAssociations)
 	}
 
-	// Get user associations
+	// Obter associações de usuários
 	if application.UserAssociations != nil {
 		d.Set("user_associations", application.UserAssociations)
 	}
 
-	return diags
+	return diag.Diagnostics{}
 }
 
-// resourceSSOApplicationUpdate updates an existing SSO application
+// resourceSSOApplicationUpdate atualiza uma aplicação SSO existente
 func resourceSSOApplicationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c, ok := meta.(apiclient.Client)
-	if !ok {
-		return diag.FromErr(fmt.Errorf("invalid client configuration"))
-	}
+	client := meta.(JumpCloudClient)
 
 	id := d.Id()
 	if id == "" {
-		return diag.FromErr(fmt.Errorf("SSO application ID not provided"))
+		return diag.FromErr(fmt.Errorf("ID da aplicação SSO não fornecido"))
 	}
 
-	// Build updated SSO application
+	// Construir aplicação SSO atualizada
 	application := &SSOApplication{
 		ID:         id,
 		Name:       d.Get("name").(string),
@@ -641,7 +637,7 @@ func resourceSSOApplicationUpdate(ctx context.Context, d *schema.ResourceData, m
 		RequireMFA: d.Get("require_mfa").(bool),
 	}
 
-	// Optional fields
+	// Campos opcionais
 	if v, ok := d.GetOk("display_name"); ok {
 		application.DisplayName = v.(string)
 	}
@@ -662,7 +658,7 @@ func resourceSSOApplicationUpdate(ctx context.Context, d *schema.ResourceData, m
 		application.OrgID = v.(string)
 	}
 
-	// Process type-specific configurations
+	// Processar configurações específicas do tipo
 	if application.Type == "saml" && d.Get("saml") != nil && len(d.Get("saml").([]interface{})) > 0 {
 		samlConfig := d.Get("saml").([]interface{})[0].(map[string]interface{})
 
@@ -684,7 +680,7 @@ func resourceSSOApplicationUpdate(ctx context.Context, d *schema.ResourceData, m
 			application.SAML.DefaultRelayState = v.(string)
 		}
 
-		// Process attribute statements
+		// Processar declarações de atributos
 		if attrStatements, ok := samlConfig["attribute_statements"].([]interface{}); ok && len(attrStatements) > 0 {
 			statements := make([]map[string]interface{}, len(attrStatements))
 
@@ -704,7 +700,7 @@ func resourceSSOApplicationUpdate(ctx context.Context, d *schema.ResourceData, m
 
 		application.OIDC = &SSOApplicationOIDC{}
 
-		// Process redirect URIs
+		// Processar URIs de redirecionamento
 		if v, ok := oidcConfig["redirect_uris"].([]interface{}); ok && len(v) > 0 {
 			redirectURIs := make([]string, len(v))
 			for i, uri := range v {
@@ -713,7 +709,7 @@ func resourceSSOApplicationUpdate(ctx context.Context, d *schema.ResourceData, m
 			application.OIDC.RedirectURIs = redirectURIs
 		}
 
-		// Process response types
+		// Processar tipos de resposta
 		if v, ok := oidcConfig["response_types"].([]interface{}); ok && len(v) > 0 {
 			responseTypes := make([]string, len(v))
 			for i, rt := range v {
@@ -722,7 +718,7 @@ func resourceSSOApplicationUpdate(ctx context.Context, d *schema.ResourceData, m
 			application.OIDC.ResponseTypes = responseTypes
 		}
 
-		// Process grant types
+		// Processar tipos de concessão
 		if v, ok := oidcConfig["grant_types"].([]interface{}); ok && len(v) > 0 {
 			grantTypes := make([]string, len(v))
 			for i, gt := range v {
@@ -731,7 +727,7 @@ func resourceSSOApplicationUpdate(ctx context.Context, d *schema.ResourceData, m
 			application.OIDC.GrantTypes = grantTypes
 		}
 
-		// Process scopes
+		// Processar escopos
 		if v, ok := oidcConfig["scopes"].([]interface{}); ok && len(v) > 0 {
 			scopes := make([]string, len(v))
 			for i, s := range v {
@@ -741,7 +737,7 @@ func resourceSSOApplicationUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	// Process group associations
+	// Processar associações de grupos
 	if v, ok := d.GetOk("group_associations"); ok {
 		groups := v.(*schema.Set).List()
 		groupIDs := make([]string, len(groups))
@@ -751,7 +747,7 @@ func resourceSSOApplicationUpdate(ctx context.Context, d *schema.ResourceData, m
 		application.GroupAssociations = groupIDs
 	}
 
-	// Process user associations
+	// Processar associações de usuários
 	if v, ok := d.GetOk("user_associations"); ok {
 		users := v.(*schema.Set).List()
 		userIDs := make([]string, len(users))
@@ -761,55 +757,51 @@ func resourceSSOApplicationUpdate(ctx context.Context, d *schema.ResourceData, m
 		application.UserAssociations = userIDs
 	}
 
-	// Serialize to JSON
+	// Serializar para JSON
 	applicationJSON, err := json.Marshal(application)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error serializing SSO application: %v", err))
+		return diag.FromErr(fmt.Errorf("erro ao serializar aplicação SSO: %v", err))
 	}
 
-	// Update application via API
-	tflog.Debug(ctx, fmt.Sprintf("Updating SSO application: %s", id))
-	_, err = c.DoRequest(http.MethodPut, fmt.Sprintf("/api/v2/applications/%s", id), applicationJSON)
+	// Atualizar aplicação via API
+	tflog.Debug(ctx, fmt.Sprintf("Atualizando aplicação SSO: %s", id))
+	resp, err := client.DoRequest(http.MethodPut, fmt.Sprintf("/api/v2/applications/%s", id), applicationJSON)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error updating SSO application: %v", err))
+		return diag.FromErr(fmt.Errorf("erro ao atualizar aplicação SSO: %v", err))
+	}
+
+	// Deserializar resposta
+	var updatedApplication SSOApplication
+	if err := json.Unmarshal(resp, &updatedApplication); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
 	return resourceSSOApplicationRead(ctx, d, meta)
 }
 
-// resourceSSOApplicationDelete deletes an SSO application
+// resourceSSOApplicationDelete exclui uma aplicação SSO
 func resourceSSOApplicationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
-	c, ok := meta.(apiclient.Client)
-	if !ok {
-		return diag.FromErr(fmt.Errorf("invalid client configuration"))
-	}
+	client := meta.(JumpCloudClient)
 
 	id := d.Id()
 	if id == "" {
-		return diag.FromErr(fmt.Errorf("SSO application ID not provided"))
+		return diag.FromErr(fmt.Errorf("ID da aplicação SSO não fornecido"))
 	}
 
-	// Delete application via API
-	tflog.Debug(ctx, fmt.Sprintf("Deleting SSO application: %s", id))
-	_, err := c.DoRequest(http.MethodDelete, fmt.Sprintf("/api/v2/applications/%s", id), nil)
+	// Excluir aplicação via API
+	tflog.Debug(ctx, fmt.Sprintf("Excluindo aplicação SSO: %s", id))
+	_, err := client.DoRequest(http.MethodDelete, fmt.Sprintf("/api/v2/applications/%s", id), nil)
 	if err != nil {
-		// If the resource is not found, consider it already deleted
+		// Se o recurso não for encontrado, consideramos que já foi excluído
 		if isNotFoundError(err) {
-			tflog.Warn(ctx, fmt.Sprintf("SSO application %s not found, considering it deleted", id))
+			tflog.Warn(ctx, fmt.Sprintf("Aplicação SSO %s não encontrada, considerando excluída", id))
 			d.SetId("")
-			return diags
+			return diag.Diagnostics{}
 		}
-		return diag.FromErr(fmt.Errorf("error deleting SSO application: %v", err))
+		return diag.FromErr(fmt.Errorf("erro ao excluir aplicação SSO: %v", err))
 	}
 
-	// Remove from state
+	// Remover do state
 	d.SetId("")
-	return diags
-}
-
-// isNotFoundError checks if the error is a "not found" error
-func isNotFoundError(err error) bool {
-	return err != nil && err.Error() == "status code 404"
+	return diag.Diagnostics{}
 }
