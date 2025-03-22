@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -178,4 +179,71 @@ func TestIsNotFoundError(t *testing.T) {
 	if isNotFoundError(nil) {
 		t.Error("Expected nil error not to be detected as 'not found', but it was")
 	}
+}
+
+// TestAccJumpCloudIPList_basic tests creating, updating and deleting an IP list
+func TestAccJumpCloudIPList_basic(t *testing.T) {
+	t.Skip("Skipping acceptance test until CI environment is set up")
+
+	t.Run("basic", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			PreCheck:          func() { testAccPreCheck(t) },
+			ProviderFactories: providerFactories,
+			Steps: []resource.TestStep{
+				{
+					Config: `
+resource "jumpcloud_ip_list" "test" {
+  name        = "test_ip_list"
+  description = "Test IP list"
+  type        = "allow"
+  ips = [
+    {
+      address     = "192.168.1.1"
+      description = "Test IP"
+    },
+    {
+      address     = "10.0.0.0/24"
+      description = "Test CIDR"
+    }
+  ]
+}
+`,
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr("jumpcloud_ip_list.test", "name", "test_ip_list"),
+						resource.TestCheckResourceAttr("jumpcloud_ip_list.test", "description", "Test IP list"),
+						resource.TestCheckResourceAttr("jumpcloud_ip_list.test", "type", "allow"),
+						resource.TestCheckResourceAttr("jumpcloud_ip_list.test", "ips.#", "2"),
+					),
+				},
+				{
+					Config: `
+resource "jumpcloud_ip_list" "test" {
+  name        = "test_ip_list_updated"
+  description = "Updated Test IP list"
+  type        = "allow"
+  ips = [
+    {
+      address     = "192.168.1.1"
+      description = "Test IP"
+    },
+    {
+      address     = "10.0.0.0/24"
+      description = "Test CIDR"
+    },
+    {
+      address     = "172.16.0.0/16"
+      description = "Additional CIDR"
+    }
+  ]
+}
+`,
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr("jumpcloud_ip_list.test", "name", "test_ip_list_updated"),
+						resource.TestCheckResourceAttr("jumpcloud_ip_list.test", "description", "Updated Test IP list"),
+						resource.TestCheckResourceAttr("jumpcloud_ip_list.test", "ips.#", "3"),
+					),
+				},
+			},
+		})
+	})
 }

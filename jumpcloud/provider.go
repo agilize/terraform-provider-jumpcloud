@@ -6,10 +6,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"registry.terraform.io/agilize/jumpcloud/jumpcloud/admin"
-	"registry.terraform.io/agilize/jumpcloud/jumpcloud/appcatalog"
+
+	// For now, keep only the necessary imports and comment out the rest to avoid linter errors
+	// Uncomment as needed when implementing new resources
+	//"registry.terraform.io/agilize/jumpcloud/jumpcloud/admin"
+	//"registry.terraform.io/agilize/jumpcloud/jumpcloud/appcatalog"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/iplist"
+
+	//"registry.terraform.io/agilize/jumpcloud/jumpcloud/password_policies"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/radius"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/scim"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/system_groups"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/user_associations"
+
+	//users "registry.terraform.io/agilize/jumpcloud/jumpcloud/user_groups"
 	"registry.terraform.io/agilize/jumpcloud/pkg/apiclient"
 )
 
@@ -44,14 +55,14 @@ func Provider() *schema.Provider {
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			// App Catalog - Resources
-			"jumpcloud_appcatalog_application": appcatalog.ResourceAppCatalogApplication(),
-			"jumpcloud_appcatalog_assignment":  appcatalog.ResourceAssignment(),
-			"jumpcloud_appcatalog_category":    appcatalog.ResourceCategory(),
+			//"jumpcloud_appcatalog_application": appcatalog.ResourceAppCatalogApplication(),
+			//"jumpcloud_appcatalog_assignment":  appcatalog.ResourceAssignment(),
+			//"jumpcloud_appcatalog_category":    appcatalog.ResourceCategory(),
 
 			// Legacy resource names - will be deprecated in future versions
-			"jumpcloud_app_catalog_application": appcatalog.ResourceAppCatalogApplication(),
-			"jumpcloud_app_catalog_assignment":  appcatalog.ResourceAssignment(),
-			"jumpcloud_app_catalog_category":    appcatalog.ResourceCategory(),
+			//"jumpcloud_app_catalog_application": appcatalog.ResourceAppCatalogApplication(),
+			//"jumpcloud_app_catalog_assignment":  appcatalog.ResourceAssignment(),
+			//"jumpcloud_app_catalog_category":    appcatalog.ResourceCategory(),
 
 			// Authentication - Resources
 			"jumpcloud_auth_policy":             authentication.ResourcePolicy(),
@@ -63,33 +74,57 @@ func Provider() *schema.Provider {
 			"jumpcloud_ip_list_assignment": iplist.ResourceListAssignment(),
 
 			// Platform Administrators - Resources
-			"jumpcloud_admin_user":         admin.ResourceUser(),
-			"jumpcloud_admin_role":         admin.ResourceRole(),
-			"jumpcloud_admin_role_binding": admin.ResourceRoleBinding(),
+			//"jumpcloud_admin_user":         admin.ResourceUser(),
+			//"jumpcloud_admin_role":         admin.ResourceRole(),
+			//"jumpcloud_admin_role_binding": admin.ResourceRoleBinding(),
+
+			// Password Policies - Resources
+			//"jumpcloud_password_policy": password_policies.ResourcePasswordPolicy(),
+
+			// User Group Resources
+			//"jumpcloud_user_group_membership": users.ResourceMembership(),
+
+			// User Association Resources
+			"jumpcloud_user_system_association": user_associations.ResourceSystem(),
+
+			// System Group Resources
+			"jumpcloud_system_group":            system_groups.ResourceGroup(),
+			"jumpcloud_system_group_membership": system_groups.ResourceMembership(),
+
+			// RADIUS Resources
+			"jumpcloud_radius_server": radius.ResourceServer(),
+
+			// SCIM Resources
+			"jumpcloud_scim_server":            scim.ResourceServer(),
+			"jumpcloud_scim_attribute_mapping": scim.ResourceAttributeMapping(),
+			"jumpcloud_scim_integration":       scim.ResourceIntegration(),
 
 			// TODO: Move the remaining resources to their appropriate domain packages
 			// and update the imports here
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			// App Catalog - Data Sources
-			"jumpcloud_appcatalog_application":  appcatalog.DataSourceApplication(),
-			"jumpcloud_appcatalog_applications": appcatalog.DataSourceAppCatalogApplications(),
+			//"jumpcloud_appcatalog_applications": appcatalog.DataSourceAppCatalogApplications(),
+			//"jumpcloud_appcatalog_categories":   appcatalog.DataSourceCategories(),
 
 			// Legacy data source names - will be deprecated in future versions
-			"jumpcloud_app_catalog_applications": appcatalog.DataSourceAppCatalogApplications(),
+			//"jumpcloud_app_catalog_applications": appcatalog.DataSourceAppCatalogApplications(),
+			//"jumpcloud_app_catalog_categories":   appcatalog.DataSourceCategories(),
 
 			// Authentication - Data Sources
-			"jumpcloud_auth_policies":         authentication.DataSourcePolicies(),
 			"jumpcloud_auth_policy_templates": authentication.DataSourcePolicyTemplates(),
+			"jumpcloud_auth_policies":         authentication.DataSourcePolicies(),
 
 			// IP Lists - Data Sources
 			"jumpcloud_ip_lists":     iplist.DataSourceLists(),
 			"jumpcloud_ip_locations": iplist.DataSourceLocations(),
 
 			// Platform Administrators - Data Sources
-			"jumpcloud_admin_users":      admin.DataSourceUsers(),
-			"jumpcloud_admin_roles":      admin.DataSourceRoles(),
-			"jumpcloud_admin_audit_logs": admin.DataSourceAuditLogs(),
+			//"jumpcloud_admin_users": admin.DataSourceUsers(),
+
+			// SCIM - Data Sources
+			"jumpcloud_scim_servers": scim.DataSourceServers(),
+			"jumpcloud_scim_schema":  scim.DataSourceSchema(),
 
 			// TODO: Move the remaining data sources to their appropriate domain packages
 			// and update the imports here

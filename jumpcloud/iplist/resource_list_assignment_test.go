@@ -3,6 +3,7 @@ package iplist
 import (
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -98,4 +99,50 @@ func TestResourceTypeValidation(t *testing.T) {
 	if len(errs) == 0 {
 		t.Error("Expected 'invalid_type' to be an invalid resource_type, but no errors were returned")
 	}
+}
+
+// TestAccJumpCloudIPListAssignment_basic tests creating and deleting an IP list assignment
+func TestAccJumpCloudIPListAssignment_basic(t *testing.T) {
+	t.Skip("Skipping acceptance test until CI environment is set up")
+
+	t.Run("basic", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			PreCheck:          func() { testAccPreCheck(t) },
+			ProviderFactories: providerFactories,
+			Steps: []resource.TestStep{
+				{
+					Config: `
+resource "jumpcloud_ip_list" "test" {
+  name        = "test_ip_list"
+  description = "Test IP list"
+  type        = "allow"
+  ips = [
+    {
+      address     = "192.168.1.1"
+      description = "Test IP"
+    },
+    {
+      address     = "10.0.0.0/24"
+      description = "Test CIDR"
+    }
+  ]
+}
+
+resource "jumpcloud_ip_list_assignment" "test" {
+  ip_list_id    = jumpcloud_ip_list.test.id
+  resource_id   = "5f1b7e6e1e6e1e6e1e6e1e6e" # This would be a real resource ID in actual tests
+  resource_type = "radius_server"
+}
+`,
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttrPair(
+							"jumpcloud_ip_list_assignment.test", "ip_list_id",
+							"jumpcloud_ip_list.test", "id",
+						),
+						resource.TestCheckResourceAttr("jumpcloud_ip_list_assignment.test", "resource_type", "radius_server"),
+					),
+				},
+			},
+		})
+	})
 }

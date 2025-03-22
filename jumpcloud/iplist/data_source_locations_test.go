@@ -3,6 +3,7 @@ package iplist
 import (
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -174,4 +175,26 @@ func TestFlattenIPLocations(t *testing.T) {
 	if len(flattenedEmpty) != 0 {
 		t.Errorf("Expected 0 entries for empty list, got %d", len(flattenedEmpty))
 	}
+}
+
+// TestAccJumpCloudIPLocations_basic tests retrieving IP locations
+func TestAccJumpCloudIPLocations_basic(t *testing.T) {
+	t.Skip("Skipping acceptance test until CI environment is set up")
+
+	t.Run("basic", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			PreCheck:          func() { testAccPreCheck(t) },
+			ProviderFactories: providerFactories,
+			Steps: []resource.TestStep{
+				{
+					Config: `
+data "jumpcloud_ip_locations" "all" {}
+`,
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttrSet("data.jumpcloud_ip_locations.all", "locations.#"),
+					),
+				},
+			},
+		})
+	})
 }

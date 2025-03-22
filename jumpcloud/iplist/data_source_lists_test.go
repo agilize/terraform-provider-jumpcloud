@@ -3,6 +3,7 @@ package iplist
 import (
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -168,4 +169,54 @@ func TestFlattenFunctions(t *testing.T) {
 	if len(flattenedEmpty) != 0 {
 		t.Errorf("Expected 0 entries for empty list, got %d", len(flattenedEmpty))
 	}
+}
+
+// TestAccJumpCloudIPLists_basic tests retrieving IP lists
+func TestAccJumpCloudIPLists_basic(t *testing.T) {
+	t.Skip("Skipping acceptance test until CI environment is set up")
+
+	t.Run("basic", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			PreCheck:          func() { testAccPreCheck(t) },
+			ProviderFactories: providerFactories,
+			Steps: []resource.TestStep{
+				{
+					Config: `
+resource "jumpcloud_ip_list" "test" {
+  name        = "test_ip_list"
+  description = "Test IP list"
+  type        = "allow"
+  ips = [
+    {
+      address     = "192.168.1.1"
+      description = "Test IP"
+    },
+    {
+      address     = "10.0.0.0/24"
+      description = "Test CIDR"
+    }
+  ]
+}
+
+data "jumpcloud_ip_lists" "all" {}
+
+data "jumpcloud_ip_lists" "filtered" {
+  filter {
+    name  = "name"
+    value = "test_ip_list"
+  }
+}
+`,
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttrSet("data.jumpcloud_ip_lists.all", "ip_lists.#"),
+						resource.TestCheckResourceAttr("data.jumpcloud_ip_lists.filtered", "ip_lists.#", "1"),
+						resource.TestCheckResourceAttrPair(
+							"data.jumpcloud_ip_lists.filtered", "ip_lists.0.id",
+							"jumpcloud_ip_list.test", "id",
+						),
+					),
+				},
+			},
+		})
+	})
 }
