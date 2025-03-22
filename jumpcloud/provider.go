@@ -9,8 +9,8 @@ import (
 
 	// For now, keep only the necessary imports and comment out the rest to avoid linter errors
 	// Uncomment as needed when implementing new resources
-	//"registry.terraform.io/agilize/jumpcloud/jumpcloud/admin"
-	//"registry.terraform.io/agilize/jumpcloud/jumpcloud/appcatalog"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/admin"
+	appcatalog "registry.terraform.io/agilize/jumpcloud/jumpcloud/app_catalog"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/iplist"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/password_policies"
@@ -54,9 +54,9 @@ func Provider() *schema.Provider {
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			// App Catalog - Resources
-			//"jumpcloud_appcatalog_application": appcatalog.ResourceAppCatalogApplication(),
-			//"jumpcloud_appcatalog_assignment":  appcatalog.ResourceAssignment(),
-			//"jumpcloud_appcatalog_category":    appcatalog.ResourceCategory(),
+			"jumpcloud_app_catalog_application": appcatalog.ResourceAppCatalogApplication(),
+			"jumpcloud_app_catalog_assignment":  appcatalog.ResourceAssignment(),
+			"jumpcloud_app_catalog_category":    appcatalog.ResourceCategory(),
 
 			// Legacy resource names - will be deprecated in future versions
 			//"jumpcloud_app_catalog_application": appcatalog.ResourceAppCatalogApplication(),
@@ -73,7 +73,7 @@ func Provider() *schema.Provider {
 			"jumpcloud_ip_list_assignment": iplist.ResourceListAssignment(),
 
 			// Platform Administrators - Resources
-			//"jumpcloud_admin_user":         admin.ResourceUser(),
+			"jumpcloud_admin_user": admin.ResourceUser(),
 			//"jumpcloud_admin_role":         admin.ResourceRole(),
 			//"jumpcloud_admin_role_binding": admin.ResourceRoleBinding(),
 
@@ -103,8 +103,8 @@ func Provider() *schema.Provider {
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			// App Catalog - Data Sources
-			//"jumpcloud_appcatalog_applications": appcatalog.DataSourceAppCatalogApplications(),
-			//"jumpcloud_appcatalog_categories":   appcatalog.DataSourceCategories(),
+			"jumpcloud_app_catalog_applications": appcatalog.DataSourceAppCatalogApplications(),
+			"jumpcloud_app_catalog_categories":   appcatalog.DataSourceCategories(),
 
 			// Legacy data source names - will be deprecated in future versions
 			//"jumpcloud_app_catalog_applications": appcatalog.DataSourceAppCatalogApplications(),
@@ -122,7 +122,7 @@ func Provider() *schema.Provider {
 			"jumpcloud_password_policies": password_policies.DataSourcePolicies(),
 
 			// Platform Administrators - Data Sources
-			//"jumpcloud_admin_users": admin.DataSourceUsers(),
+			"jumpcloud_admin_users": admin.DataSourceUsers(),
 
 			// SCIM - Data Sources
 			"jumpcloud_scim_servers": scim.DataSourceServers(),
