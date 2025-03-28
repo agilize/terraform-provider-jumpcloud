@@ -183,14 +183,16 @@ jobs:
           VERSION: ${{ needs.version.outputs.version }}
         run: |
           echo "Building for $GOOS/$GOARCH - version v${VERSION}"
+          echo "Current directory: $(pwd)"
           
           # Directory structure compatible with Terraform Registry
           # terraform-provider-jumpcloud_v${VERSION}_${OS}_${ARCH}/terraform-provider-jumpcloud_v${VERSION}
           PLUGIN_DIR=terraform-provider-jumpcloud_v${VERSION}_${{ matrix.platform.goos }}_${{ matrix.platform.goarch }}
           mkdir -p ${PLUGIN_DIR}
           
-          # Compile for the platform with correct name
-          go build -o ${PLUGIN_DIR}/terraform-provider-jumpcloud_v${VERSION}${{ matrix.platform.suffix }} ../cmd
+          # Compile for the platform with correct name - using the same approach as Makefile
+          cd cmd/terraform-provider-jumpcloud && \
+          ${GOCMD:-go} build -o ../../${PLUGIN_DIR}/terraform-provider-jumpcloud_v${VERSION}${{ matrix.platform.suffix }}
           
           # Create ZIP for the binary with the structure expected by Terraform
           zip -j terraform-provider-jumpcloud_${VERSION}_${{ matrix.platform.goos }}_${{ matrix.platform.goarch }}.zip ${PLUGIN_DIR}/terraform-provider-jumpcloud_v${VERSION}${{ matrix.platform.suffix }}
