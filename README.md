@@ -1,130 +1,163 @@
-# JumpCloud Terraform Provider
+# Terraform Provider for JumpCloud
 
-This Terraform provider allows you to manage JumpCloud resources through Terraform. It provides a convenient way to create, read, update, and delete JumpCloud resources such as users, systems, user groups, and more.
+[![Go Report Card](https://goreportcard.com/badge/github.com/jumpcloud/terraform-provider-jumpcloud)](https://goreportcard.com/report/github.com/jumpcloud/terraform-provider-jumpcloud)
+[![GoDoc](https://godoc.org/github.com/jumpcloud/terraform-provider-jumpcloud?status.svg)](https://godoc.org/github.com/jumpcloud/terraform-provider-jumpcloud)
+[![Release](https://img.shields.io/github/release/jumpcloud/terraform-provider-jumpcloud.svg)](https://github.com/jumpcloud/terraform-provider-jumpcloud/releases)
+[![License](https://img.shields.io/github/license/jumpcloud/terraform-provider-jumpcloud.svg)](https://github.com/jumpcloud/terraform-provider-jumpcloud/blob/master/LICENSE)
 
-## Folder Structure
+This provider enables Terraform to manage JumpCloud resources.
 
-The provider follows a clean architecture approach with the following folder structure:
+## Requirements
 
+- [Terraform](https://www.terraform.io/downloads.html) >= 0.12.x
+- [Go](https://golang.org/doc/install) >= 1.16 (to build the provider plugin)
+
+## Using the Provider
+
+To use the provider, add the following terraform block to your configuration to specify the required provider:
+
+```hcl
+terraform {
+  required_providers {
+    jumpcloud = {
+      source  = "registry.terraform.io/agilize/jumpcloud"
+      version = "~> 1.0"
+    }
+  }
+}
+
+provider "jumpcloud" {
+  api_key = var.jumpcloud_api_key # Or use JUMPCLOUD_API_KEY env var
+  org_id  = var.jumpcloud_org_id  # Optional: Or use JUMPCLOUD_ORG_ID env var
+}
 ```
-terraform-provider-jumpcloud/
-├── cmd/                 # Main CLI entry point 
-├── pkg/                 # Shared packages
-│   ├── apiclient/       # JumpCloud API client
-│   ├── errors/          # Standardized error handling
-│   └── utils/           # Shared utilities
-├── internal/            # Implementation details
-│   ├── provider/        # Provider implementation
-│   │   ├── resources/   # Resource implementations (domain-specific)
-│   │   │   ├── user/    # User resource domain
-│   │   │   ├── system/  # System resource domain
-│   │   │   └── ...
-│   │   └── provider.go  # Provider definition
-└── test/                # Test suite
-    ├── acceptance/      # Acceptance tests
-    ├── integration/     # Integration tests
-    └── unit/            # Unit tests
+
+### Authentication
+
+The provider supports the following authentication methods:
+
+1. Static credentials: Set the `api_key` (required) and `org_id` (optional) values in the provider block.
+2. Environment variables:
+   - `JUMPCLOUD_API_KEY`: API key for JumpCloud operations.
+   - `JUMPCLOUD_ORG_ID`: Organization ID for multi-tenant environments.
+
+## Example: Managing Users and Groups
+
+```hcl
+# Create a user
+resource "jumpcloud_user" "example" {
+  username  = "johndoe"
+  email     = "john.doe@example.com"
+  firstname = "John"
+  lastname  = "Doe"
+  password  = "securePassword123!"
+}
+
+# Create a user group
+resource "jumpcloud_user_group" "engineering" {
+  name        = "Engineering Team"
+  description = "Group for engineering staff"
+}
+
+# Add the user to the group
+resource "jumpcloud_user_group_membership" "example_membership" {
+  user_group_id = jumpcloud_user_group.engineering.id
+  user_id       = jumpcloud_user.example.id
+}
 ```
 
-## Getting Started
+## Example: Authentication Policies
 
-### Requirements
+```hcl
+# Create an authentication policy
+resource "jumpcloud_auth_policy" "secure_policy" {
+  name        = "Secure Access Policy"
+  description = "Requires MFA for all users"
+  
+  rule {
+    type = "AUTHENTICATION"
+    
+    conditions {
+      resource {
+        type = "USER_GROUP"
+        id   = jumpcloud_user_group.engineering.id
+      }
+    }
+    
+    effects {
+      allow_ssh_password_authentication    = false
+      allow_multi_factor_authentication    = true
+      force_multi_factor_authentication    = true
+      require_password_reset               = false
+      allow_password_management_self_serve = true
+    }
+  }
+}
+```
 
-- [Terraform](https://www.terraform.io/downloads.html) >= 0.14.x
-- [Go](https://golang.org/doc/install) >= 1.18 (for building the provider)
+## Documentation
+
+Comprehensive documentation for each module is available in their respective directories:
+
+- [Authentication](jumpcloud/authentication/README.md)
+- [App Catalog](jumpcloud/app_catalog/README.md)
+- [Admin](jumpcloud/admin/README.md)
+- [IP List](jumpcloud/iplist/README.md)
+- [Password Policies](jumpcloud/password_policies/README.md)
+- [RADIUS](jumpcloud/radius/README.md)
+- [SCIM](jumpcloud/scim/README.md)
+- [System Groups](jumpcloud/system_groups/README.md)
+- [User Associations](jumpcloud/user_associations/README.md)
+- [User Groups](jumpcloud/user_groups/README.md)
+
+## Development
 
 ### Building the Provider
 
 Clone the repository:
 
-```shell
-git clone https://github.com/agilize/terraform-provider-jumpcloud.git
+```bash
+git clone https://github.com/jumpcloud/terraform-provider-jumpcloud.git
 ```
 
 Build the provider:
 
-```shell
+```bash
 cd terraform-provider-jumpcloud
-go build -o terraform-provider-jumpcloud
+go build
 ```
-
-### Using the Provider
-
-To use the provider, configure it with your JumpCloud API key:
-
-```hcl
-provider "jumpcloud" {
-  api_key = "your_api_key"      # Or use JUMPCLOUD_API_KEY environment variable
-  org_id  = "your_org_id"       # For multi-tenant environments (optional)
-  api_url = "custom_api_url"    # Override the default API URL (optional)
-}
-
-# Create a JumpCloud user
-resource "jumpcloud_user" "example" {
-  username             = "example.user"
-  email                = "example.user@example.com"
-  first_name           = "Example"
-  last_name            = "User"
-  password             = "SecurePassw0rd!"
-  mfa_enabled          = true
-  password_never_expires = false
-}
-```
-
-## Developing the Provider
 
 ### Testing
 
-This provider uses a comprehensive testing approach:
+To run the tests, you will need:
 
-- **Unit Tests**: Tests individual components in isolation
-- **Integration Tests**: Tests API client against the real JumpCloud API
-- **Acceptance Tests**: Full end-to-end tests of resources using real infrastructure
+- A JumpCloud API key
+- Go installed on your machine
 
-To run tests:
+Set the environment variable:
 
-```shell
-# Run unit tests
-go test ./... -v
-
-# Run acceptance tests (creates real resources)
-TF_ACC=1 JUMPCLOUD_API_KEY=your_api_key go test ./internal/provider -v
+```bash
+export JUMPCLOUD_API_KEY="your-api-key"
+export JUMPCLOUD_ORG_ID="your-org-id"  # Optional
+export TF_ACC=1  # For acceptance tests
 ```
 
-### Adding a New Resource
+Run the tests:
 
-To add a new resource, follow these steps:
+```bash
+go test ./...
+```
 
-1. Create a new directory under `internal/provider/resources/` for the resource domain
-2. Implement the resource in a `resource.go` file in that directory
-3. Use the `errors` package for standardized error handling
-4. Add the resource to the provider in `internal/provider/provider.go`
-5. Add tests in the appropriate test directories
+For acceptance tests:
 
-Example:
-
-```go
-package newresource
-
-import (
-    "context"
-    "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-    "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-    "registry.terraform.io/agilize/jumpcloud/pkg/apiclient"
-    "registry.terraform.io/agilize/jumpcloud/pkg/errors"
-)
-
-// Resource structure and functions go here
+```bash
+go test ./... -v -run=TestAcc
 ```
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## License
 
-This project is licensed under the [Mozilla Public License v2.0](LICENSE).
-
-## Support
-
-For support, please contact the project maintainers or open an issue on GitHub. 
+This provider is distributed under the [Apache License, Version 2.0](LICENSE). 

@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	commonTesting "registry.terraform.io/agilize/jumpcloud/jumpcloud/common/testing"
 )
 
 // These would be defined in a shared testing.go file
@@ -14,16 +15,20 @@ var testAccProvider *schema.Provider
 
 func testAccPreCheck(t *testing.T) {
 	// Implementation would be in testing.go
+	commonTesting.AccPreCheck(t)
 }
 
 func TestAccDataSourceExample_byID(t *testing.T) {
+	// Skip template tests for now
+	t.Skip("Skipping template test - this is a template for actual tests")
+
 	resourceName := "jumpcloud_example.test"
 	dataSourceName := "data.jumpcloud_example.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckExampleDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: commonTesting.GetProviderFactories(),
+		CheckDestroy:      testAccCheckExampleDestroy,
 		Steps: []resource.TestStep{
 			// First create a resource
 			{
@@ -48,13 +53,16 @@ func TestAccDataSourceExample_byID(t *testing.T) {
 }
 
 func TestAccDataSourceExample_byName(t *testing.T) {
+	// Skip template tests for now
+	t.Skip("Skipping template test - this is a template for actual tests")
+
 	resourceName := "jumpcloud_example.test"
 	dataSourceName := "data.jumpcloud_example.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckExampleDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: commonTesting.GetProviderFactories(),
+		CheckDestroy:      testAccCheckExampleDestroy,
 		Steps: []resource.TestStep{
 			// First create a resource
 			{
@@ -79,10 +87,13 @@ func TestAccDataSourceExample_byName(t *testing.T) {
 }
 
 func TestAccDataSourceExamples_noFilter(t *testing.T) {
+	// Skip template tests for now
+	t.Skip("Skipping template test - this is a template for actual tests")
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckExampleDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: commonTesting.GetProviderFactories(),
+		CheckDestroy:      testAccCheckExampleDestroy,
 		Steps: []resource.TestStep{
 			// First create multiple resources
 			{
@@ -110,10 +121,13 @@ func TestAccDataSourceExamples_noFilter(t *testing.T) {
 }
 
 func TestAccDataSourceExamples_withFilters(t *testing.T) {
+	// Skip template tests for now
+	t.Skip("Skipping template test - this is a template for actual tests")
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckExampleDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: commonTesting.GetProviderFactories(),
+		CheckDestroy:      testAccCheckExampleDestroy,
 		Steps: []resource.TestStep{
 			// First create multiple resources
 			{

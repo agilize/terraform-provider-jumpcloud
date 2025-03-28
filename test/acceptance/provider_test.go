@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"registry.terraform.io/agilize/jumpcloud/internal/provider"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud"
 )
 
 // testAccPreCheck validates the necessary test API keys exist
@@ -22,7 +22,7 @@ func testAccPreCheck(t *testing.T) {
 // providerFactories is a map of provider factories used for testing
 var providerFactories = map[string]func() (*schema.Provider, error){
 	"jumpcloud": func() (*schema.Provider, error) {
-		return provider.Provider(), nil
+		return jumpcloud.Provider(), nil
 	},
 }
 

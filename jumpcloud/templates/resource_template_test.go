@@ -7,15 +7,19 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	commonTesting "registry.terraform.io/agilize/jumpcloud/jumpcloud/common/testing"
 )
 
 func TestAccResourceExample_basic(t *testing.T) {
+	// Skip template tests for now
+	t.Skip("Skipping template test - this is a template for actual tests")
+
 	var resourceName = "jumpcloud_example.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckExampleDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: commonTesting.GetProviderFactories(),
+		CheckDestroy:      testAccCheckExampleDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccResourceExampleConfig_basic("example-resource-name"),
@@ -40,12 +44,15 @@ func TestAccResourceExample_basic(t *testing.T) {
 }
 
 func TestAccResourceExample_update(t *testing.T) {
+	// Skip template tests for now
+	t.Skip("Skipping template test - this is a template for actual tests")
+
 	var resourceName = "jumpcloud_example.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckExampleDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: commonTesting.GetProviderFactories(),
+		CheckDestroy:      testAccCheckExampleDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccResourceExampleConfig_basic("example-resource-name"),
@@ -68,12 +75,15 @@ func TestAccResourceExample_update(t *testing.T) {
 }
 
 func TestAccResourceExample_tags(t *testing.T) {
+	// Skip template tests for now
+	t.Skip("Skipping template test - this is a template for actual tests")
+
 	var resourceName = "jumpcloud_example.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckExampleDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: commonTesting.GetProviderFactories(),
+		CheckDestroy:      testAccCheckExampleDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccResourceExampleConfig_tags("example-tags"),
@@ -101,10 +111,13 @@ func TestAccResourceExample_tags(t *testing.T) {
 }
 
 func TestAccResourceExample_validation(t *testing.T) {
+	// Skip template tests for now
+	t.Skip("Skipping template test - this is a template for actual tests")
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckExampleDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: commonTesting.GetProviderFactories(),
+		CheckDestroy:      testAccCheckExampleDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccResourceExampleConfig_invalidType("example-invalid"),

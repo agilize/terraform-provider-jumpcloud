@@ -6,24 +6,55 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	// For now, keep only the necessary imports and comment out the rest to avoid linter errors
-	// Uncomment as needed when implementing new resources
-	"registry.terraform.io/agilize/jumpcloud/jumpcloud/admin"
-	appcatalog "registry.terraform.io/agilize/jumpcloud/jumpcloud/app_catalog"
-	"registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication"
-	"registry.terraform.io/agilize/jumpcloud/jumpcloud/iplist"
-	"registry.terraform.io/agilize/jumpcloud/jumpcloud/password_policies"
-	"registry.terraform.io/agilize/jumpcloud/jumpcloud/radius"
-	"registry.terraform.io/agilize/jumpcloud/jumpcloud/scim"
-	"registry.terraform.io/agilize/jumpcloud/jumpcloud/sso"
-	"registry.terraform.io/agilize/jumpcloud/jumpcloud/system_groups"
-	"registry.terraform.io/agilize/jumpcloud/jumpcloud/user_associations"
-	users "registry.terraform.io/agilize/jumpcloud/jumpcloud/user_groups"
-	"registry.terraform.io/agilize/jumpcloud/jumpcloud/webhooks"
-
-	//users "registry.terraform.io/agilize/jumpcloud/jumpcloud/user_groups"
 	"registry.terraform.io/agilize/jumpcloud/pkg/apiclient"
+
+	// Admin - Resources
+	admin_roles "registry.terraform.io/agilize/jumpcloud/jumpcloud/admin/admin_roles"
+	admin_users "registry.terraform.io/agilize/jumpcloud/jumpcloud/admin/admin_users"
+
+	// Application - Resources
+	application_catalog "registry.terraform.io/agilize/jumpcloud/jumpcloud/application/catalog"
+	application_mappings "registry.terraform.io/agilize/jumpcloud/jumpcloud/application/mappings"
+	application_oauth "registry.terraform.io/agilize/jumpcloud/jumpcloud/application/oauth"
+	application_scim "registry.terraform.io/agilize/jumpcloud/jumpcloud/application/scim"
+	application_sso "registry.terraform.io/agilize/jumpcloud/jumpcloud/application/sso"
+
+	// Authentication - Resources
+	authentication_attempts "registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication/attempts"
+	authentication_conditional_access "registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication/conditional_access"
+	authentication_iplist "registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication/iplist"
+	authentication_mfa "registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication/mfa"
+	authentication_policies "registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication/policies"
+	authentication_radius "registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication/radius"
+
+	// Devices - Resources
+	devices_commands "registry.terraform.io/agilize/jumpcloud/jumpcloud/devices/commands"
+	devices_mdm "registry.terraform.io/agilize/jumpcloud/jumpcloud/devices/mdm"
+	devices_software_management "registry.terraform.io/agilize/jumpcloud/jumpcloud/devices/software_management"
+	devices "registry.terraform.io/agilize/jumpcloud/jumpcloud/devices/system_devices"
+	device_groups "registry.terraform.io/agilize/jumpcloud/jumpcloud/devices/system_groups"
+
+	// Insights - Resources
+	insights_directory_insights "registry.terraform.io/agilize/jumpcloud/jumpcloud/insights/directory_insights"
+
+	// Organization - Resources
+	organization_alerts "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/alerts"
+	organization_api_keys "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/api_keys"
+	organization_audit_logs "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/audit_logs"
+	organization_metrics "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/metrics"
+	organization_monitors "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/monitors"
+	organization_notifications "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/notifications"
+	organization_settings "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/settings"
+	organization_webhooks "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/webhooks"
+
+	// Password - Resources
+	password_manager "registry.terraform.io/agilize/jumpcloud/jumpcloud/password/password_manager"
+	password_policies "registry.terraform.io/agilize/jumpcloud/jumpcloud/password/password_policies"
+
+	// Users - Resources
+	user_associations "registry.terraform.io/agilize/jumpcloud/jumpcloud/users/user_associations"
+	user_groups "registry.terraform.io/agilize/jumpcloud/jumpcloud/users/user_groups"
+	users_directory "registry.terraform.io/agilize/jumpcloud/jumpcloud/users/users_directory"
 )
 
 // New returns a provider plugin instance
@@ -56,97 +87,195 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			// App Catalog - Resources
-			"jumpcloud_app_catalog_application": appcatalog.ResourceAppCatalogApplication(),
-			"jumpcloud_app_catalog_assignment":  appcatalog.ResourceAssignment(),
-			"jumpcloud_app_catalog_category":    appcatalog.ResourceCategory(),
+			// Admin Users - Resources
+			"jumpcloud_admin_user": admin_users.ResourceUser(),
 
-			// Legacy resource names - will be deprecated in future versions
-			//"jumpcloud_app_catalog_application": appcatalog.ResourceAppCatalogApplication(),
-			//"jumpcloud_app_catalog_assignment":  appcatalog.ResourceAssignment(),
-			//"jumpcloud_app_catalog_category":    appcatalog.ResourceCategory(),
+			// Admin Roles - Resources
+			"jumpcloud_admin_role":         admin_roles.ResourceRole(),
+			"jumpcloud_admin_role_binding": admin_roles.ResourceRoleBinding(),
 
-			// Authentication - Resources
-			"jumpcloud_auth_policy":             authentication.ResourcePolicy(),
-			"jumpcloud_auth_policy_binding":     authentication.ResourcePolicyBinding(),
-			"jumpcloud_conditional_access_rule": authentication.ResourceConditionalAccessRule(),
+			// Application Catalog - Resources
+			"jumpcloud_application_catalog_application": application_catalog.ResourceAppCatalogApplication(),
+			"jumpcloud_application_catalog_assignment":  application_catalog.ResourceAssignment(),
+			"jumpcloud_application_catalog_category":    application_catalog.ResourceCategory(),
 
-			// IP Lists - Resources
-			"jumpcloud_ip_list":            iplist.ResourceList(),
-			"jumpcloud_ip_list_assignment": iplist.ResourceListAssignment(),
+			// Application Mappings - Resources
+			"jumpcloud_application_mapping_user":  application_mappings.ResourceUserMapping(),
+			"jumpcloud_application_mapping_group": application_mappings.ResourceGroupMapping(),
 
-			// Platform Administrators - Resources
-			"jumpcloud_admin_user": admin.ResourceUser(),
-			//"jumpcloud_admin_role":         admin.ResourceRole(),
-			//"jumpcloud_admin_role_binding": admin.ResourceRoleBinding(),
+			// Application OAuth resources
+			"jumpcloud_application_oauth_authorization": application_oauth.ResourceAuthorization(),
+			"jumpcloud_application_oauth_user":          application_oauth.ResourceUser(),
+
+			// Application SCIM Resources
+			"jumpcloud_application_scim_server":            application_scim.ResourceServer(),
+			"jumpcloud_application_scim_attribute_mapping": application_scim.ResourceAttributeMapping(),
+			"jumpcloud_application_scim_integration":       application_scim.ResourceIntegration(),
+
+			// Application SSO Resources
+			"jumpcloud_application_sso_application": application_sso.ResourceSSOApplication(),
+
+			// Authentication Conditional Access - Resources
+			"jumpcloud_authentication_conditional_access_rule": authentication_conditional_access.ResourceConditionalAccessRule(),
+
+			// Authentication IP Lists - Resources
+			"jumpcloud_authentication_ip_list":            authentication_iplist.ResourceList(),
+			"jumpcloud_authentication_ip_list_assignment": authentication_iplist.ResourceListAssignment(),
+
+			// Authentication MFA - Resources
+			"jumpcloud_authentication_mfa_configuration": authentication_mfa.ResourceConfiguration(),
+			"jumpcloud_authentication_mfa_settings":      authentication_mfa.ResourceSettings(),
+
+			// Authentication Policies - Resources
+			"jumpcloud_authentication_policy":         authentication_policies.ResourcePolicy(),
+			"jumpcloud_authentication_policy_binding": authentication_policies.ResourcePolicyBinding(),
+
+			// Authentication RADIUS - Resources
+			"jumpcloud_authentication_radius_server": authentication_radius.ResourceServer(),
+
+			// Devices Commands - Resources
+			"jumpcloud_devices_command":             devices_commands.ResourceCommand(),
+			"jumpcloud_devices_command_association": devices_commands.ResourceCommandAssociation(),
+			"jumpcloud_devices_command_schedule":    devices_commands.ResourceCommandSchedule(),
+
+			// Device Groups - Resources
+			"jumpcloud_devices_group":            device_groups.ResourceGroup(),
+			"jumpcloud_devices_group_membership": device_groups.ResourceMembership(),
+
+			// Devices - Resources
+			"jumpcloud_devices": devices.ResourceSystem(),
+
+			// Devices MDM - Resources
+			"jumpcloud_devices_mdm_configuration":      devices_mdm.ResourceConfiguration(),
+			"jumpcloud_devices_mdm_enrollment_profile": devices_mdm.ResourceEnrollmentProfile(),
+			"jumpcloud_devices_mdm_policy":             devices_mdm.ResourcePolicy(),
+			"jumpcloud_devices_mdm_profile":            devices_mdm.ResourceProfile(),
+			"jumpcloud_devices_mdm_device_action":      devices_mdm.ResourceDeviceAction(),
+
+			// Devices Software Management - Resources
+			"jumpcloud_devices_software_package":       devices_software_management.ResourceSoftwarePackage(),
+			"jumpcloud_devices_software_update_policy": devices_software_management.ResourceSoftwareUpdatePolicy(),
+			"jumpcloud_devices_software_deployment":    devices_software_management.ResourceSoftwareDeployment(),
+
+			// Organization Alerts - Resources
+			"jumpcloud_organization_alert_configuration": organization_alerts.ResourceAlertConfiguration(),
+
+			// Organization API Keys - Resources
+			"jumpcloud_organization_api_key":         organization_api_keys.ResourceKey(),
+			"jumpcloud_organization_api_key_binding": organization_api_keys.ResourceKeyBinding(),
+
+			// Organization Monitoring - Resources
+			"jumpcloud_organization_monitoring_threshold": organization_monitors.ResourceThreshold(),
+
+			// Organization Notifications - Resources
+			"jumpcloud_organization_notification_channel": organization_notifications.ResourceChannel(),
+
+			// Organization Settings - Resources
+			"jumpcloud_organization":          organization_settings.ResourceOrganization(),
+			"jumpcloud_organization_settings": organization_settings.ResourceSettings(),
+
+			// Organization Webhooks - Resources
+			"jumpcloud_organization_webhook":              organization_webhooks.ResourceWebhook(),
+			"jumpcloud_organization_webhook_subscription": organization_webhooks.ResourceWebhookSubscription(),
+
+			// Directory Insights - Resources
+			"jumpcloud_directory_insights_configuration": insights_directory_insights.ResourceConfiguration(),
+
+			// Password Manager resources
+			"jumpcloud_password_safe":  password_manager.ResourceSafe(),
+			"jumpcloud_password_entry": password_manager.ResourceEntry(),
 
 			// Password Policies - Resources
 			"jumpcloud_password_policy": password_policies.ResourcePasswordPolicy(),
 
-			// User Group Resources
-			"jumpcloud_user_group_membership": users.ResourceMembership(),
-			"jumpcloud_user_group":            users.ResourceUserGroup(),
-
 			// User Association Resources
-			"jumpcloud_user_system_association": user_associations.ResourceSystem(),
+			"jumpcloud_user_device_association": user_associations.ResourceSystem(),
 
-			// System Group Resources
-			"jumpcloud_system_group":            system_groups.ResourceGroup(),
-			"jumpcloud_system_group_membership": system_groups.ResourceMembership(),
+			// User Groups Resources
+			"jumpcloud_user_group":            user_groups.ResourceUserGroup(),
+			"jumpcloud_user_group_membership": user_groups.ResourceMembership(),
 
-			// RADIUS Resources
-			"jumpcloud_radius_server": radius.ResourceServer(),
-
-			// SCIM Resources
-			"jumpcloud_scim_server":            scim.ResourceServer(),
-			"jumpcloud_scim_attribute_mapping": scim.ResourceAttributeMapping(),
-			"jumpcloud_scim_integration":       scim.ResourceIntegration(),
-
-			// SSO Resources
-			"jumpcloud_sso_application": sso.ResourceSSOApplication(),
-
-			// Webhooks - Resources
-			"jumpcloud_webhook":              webhooks.ResourceWebhook(),
-			"jumpcloud_webhook_subscription": webhooks.ResourceWebhookSubscription(),
-
-			// TODO: Move the remaining resources to their appropriate domain packages
-			// and update the imports here
+			// Users - Resources
+			"jumpcloud_user": users_directory.ResourceUser(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			// App Catalog - Data Sources
-			"jumpcloud_app_catalog_applications": appcatalog.DataSourceAppCatalogApplications(),
-			"jumpcloud_app_catalog_categories":   appcatalog.DataSourceCategories(),
+			// Admin Roles - Data Sources
+			"jumpcloud_admin_roles": admin_roles.DataSourceRoles(),
 
-			// Legacy data source names - will be deprecated in future versions
-			//"jumpcloud_app_catalog_applications": appcatalog.DataSourceAppCatalogApplications(),
-			//"jumpcloud_app_catalog_categories":   appcatalog.DataSourceCategories(),
+			// Admin Users - Data Sources
+			"jumpcloud_admin_users": admin_users.DataSourceUsers(),
 
-			// Authentication - Data Sources
-			"jumpcloud_auth_policy_templates": authentication.DataSourcePolicyTemplates(),
-			"jumpcloud_auth_policies":         authentication.DataSourcePolicies(),
+			// Application Catalog - Data Sources
+			"jumpcloud_application_catalog_application":  application_catalog.DataSourceApplication(),
+			"jumpcloud_application_catalog_applications": application_catalog.DataSourceAppCatalogApplications(),
+			"jumpcloud_application_catalog_categories":   application_catalog.DataSourceCategories(),
 
-			// IP Lists - Data Sources
-			"jumpcloud_ip_lists":     iplist.DataSourceLists(),
-			"jumpcloud_ip_locations": iplist.DataSourceLocations(),
+			// Application OAuth - Data Sources
+			"jumpcloud_application_oauth_users": application_oauth.DataSourceUsers(),
+
+			// Application SCIM - Data Sources
+			"jumpcloud_application_scim_servers": application_scim.DataSourceServers(),
+			"jumpcloud_application_scim_schema":  application_scim.DataSourceSchema(),
+
+			// Application SSO - Data Sources
+			"jumpcloud_application_sso_application": application_sso.DataSourceSSOApplication(),
+
+			// Authentication Attempts - Data Sources
+			"jumpcloud_authentication_attempts": authentication_attempts.DataSourceAttempts(),
+
+			// Authentication IP Lists - Data Sources
+			"jumpcloud_authentication_ip_lists":     authentication_iplist.DataSourceLists(),
+			"jumpcloud_authentication_ip_locations": authentication_iplist.DataSourceLocations(),
+
+			// Authentication MFA - Data Sources
+			"jumpcloud_authentication_mfa_settings": authentication_mfa.DataSourceSettings(),
+			"jumpcloud_authentication_mfa_stats":    authentication_mfa.DataSourceStats(),
+
+			// Authentication Policies - Data Sources
+			"jumpcloud_authentication_policy_templates": authentication_policies.DataSourcePolicyTemplates(),
+			"jumpcloud_authentication_policies":         authentication_policies.DataSourcePolicies(),
+
+			// Authentication RADIUS - Data Sources
+			"jumpcloud_authentication_radius_server": authentication_radius.DataSourceServer(),
+
+			// Devices Commands - Data Sources
+			"jumpcloud_devices_command": devices_commands.DataSourceCommand(),
+
+			// Devices System - Data Sources
+			"jumpcloud_devices_group": device_groups.DataSourceGroup(),
+			"jumpcloud_devices":       devices.DataSourceSystem(),
+
+			// Devices MDM - Data Sources
+			"jumpcloud_devices_mdm_stats":    devices_mdm.DataSourceStats(),
+			"jumpcloud_devices_mdm_devices":  devices_mdm.DataSourceDevices(),
+			"jumpcloud_devices_mdm_policies": devices_mdm.DataSourcePolicies(),
+
+			// Devices Software Management - Data Sources
+			"jumpcloud_devices_software_packages":          devices_software_management.DataSourceSoftwarePackages(),
+			"jumpcloud_devices_software_update_policies":   devices_software_management.DataSourceSoftwareUpdatePolicies(),
+			"jumpcloud_devices_software_deployment_status": devices_software_management.DataSourceSoftwareDeploymentStatus(),
+
+			// Directory Insights - Data Sources
+			"jumpcloud_directory_insights_events": insights_directory_insights.DataSourceEvents(),
+
+			// Organization Alerts - Data Sources
+			"jumpcloud_organization_alerts":          organization_alerts.DataSourceAlerts(),
+			"jumpcloud_organization_alert_templates": organization_alerts.DataSourceAlertTemplates(),
+
+			// Organization Audit Logs - Data Sources
+			"jumpcloud_organization_audit_logs": organization_audit_logs.DataSourceAuditLogs(),
+
+			// Organization Metrics - Data Sources
+			"jumpcloud_organization_system_metrics": organization_metrics.DataSourceSystemMetrics(),
+
+			// Organization Webhooks - Data Sources
+			"jumpcloud_organization_webhook": organization_webhooks.DataSourceWebhook(),
+
+			// Password Manager data sources
+			"jumpcloud_password_safes": password_manager.DataSourceSafes(),
 
 			// Password Policies - Data Sources
 			"jumpcloud_password_policies": password_policies.DataSourcePolicies(),
-
-			// Platform Administrators - Data Sources
-			"jumpcloud_admin_users": admin.DataSourceUsers(),
-
-			// SCIM - Data Sources
-			"jumpcloud_scim_servers": scim.DataSourceServers(),
-			"jumpcloud_scim_schema":  scim.DataSourceSchema(),
-
-			// SSO - Data Sources
-			"jumpcloud_sso_application": sso.DataSourceSSOApplication(),
-
-			// Webhooks - Data Sources
-			"jumpcloud_webhook": webhooks.DataSourceWebhook(),
-
-			// TODO: Move the remaining data sources to their appropriate domain packages
-			// and update the imports here
 		},
 		ConfigureContextFunc: providerConfigure,
 	}
