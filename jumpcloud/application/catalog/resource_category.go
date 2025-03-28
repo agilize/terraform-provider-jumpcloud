@@ -128,9 +128,7 @@ func resourceCategoryCreate(ctx context.Context, d *schema.ResourceData, meta in
 	if v, ok := d.GetOk("applications"); ok {
 		apps := v.([]interface{})
 		category.Applications = make([]interface{}, len(apps))
-		for i, app := range apps {
-			category.Applications[i] = app
-		}
+		copy(category.Applications, apps)
 	}
 
 	// Convert to JSON
@@ -269,9 +267,7 @@ func resourceCategoryUpdate(ctx context.Context, d *schema.ResourceData, meta in
 	if v, ok := d.GetOk("applications"); ok {
 		apps := v.([]interface{})
 		category.Applications = make([]interface{}, len(apps))
-		for i, app := range apps {
-			category.Applications[i] = app
-		}
+		copy(category.Applications, apps)
 	}
 
 	// Convert to JSON

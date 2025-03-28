@@ -53,14 +53,15 @@ func TestValidateWebhookSubscriptionEventTypes(t *testing.T) {
 	// Define validation function for webhook subscription event types
 	validateWebhookSubscriptionEventTypes := func() schema.SchemaValidateFunc {
 		return func(v interface{}, k string) (ws []string, errors []error) {
-			eventTypes := []string{}
+			eventTypes := make([]string, 0, len(v.([]interface{})))
+
 			for _, item := range v.([]interface{}) {
 				eventTypes = append(eventTypes, item.(string))
 			}
 
 			// For testing, assume all event types are valid
 			// This is a placeholder for the actual validation logic
-			return
+			return ws, errors
 		}
 	}
 

@@ -1,25 +1,16 @@
 package testing
 
 import (
+	"crypto/rand"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"os"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
-
-// globalRand is a global random number generator
-var globalRand *rand.Rand
-
-func init() {
-	// Initialize random seed with a source based on current time
-	source := rand.NewSource(time.Now().UnixNano())
-	globalRand = rand.New(source)
-}
 
 // TestCheckResourceAttrSet is a helper that checks if a resource's attribute is set
 func TestCheckResourceAttrSet(name, key string) resource.TestCheckFunc {
@@ -73,12 +64,12 @@ func TestCheckResourceAttrEqual(name1, key1, name2, key2 string) resource.TestCh
 
 // RandomName generates a random name for testing resources
 func RandomName(prefix string) string {
-	return fmt.Sprintf("%s-%d", prefix, globalRand.Intn(100000))
+	return fmt.Sprintf("%s-%d", prefix, secureRandomInt(100000))
 }
 
 // RandomEmail generates a random email for testing
 func RandomEmail(prefix string) string {
-	return fmt.Sprintf("%s-%d@example.com", prefix, globalRand.Intn(100000))
+	return fmt.Sprintf("%s-%d@example.com", prefix, secureRandomInt(100000))
 }
 
 // RandomString generates a random string of the specified length
@@ -86,9 +77,17 @@ func RandomString(length int) string {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	result := make([]byte, length)
 	for i := range result {
-		result[i] = charset[globalRand.Intn(len(charset))]
+		// Generate a random index in the charset
+		charIndex, _ := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		result[i] = charset[charIndex.Int64()]
 	}
 	return string(result)
+}
+
+// secureRandomInt generates a random integer between 0 and max using crypto/rand
+func secureRandomInt(max int) int {
+	n, _ := rand.Int(rand.Reader, big.NewInt(int64(max)))
+	return int(n.Int64())
 }
 
 // SkipIfEnvNotSet skips the test if the specified environment variable is not set

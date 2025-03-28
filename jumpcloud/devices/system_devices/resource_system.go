@@ -207,7 +207,7 @@ func resourceSystemRead(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 
 	// Set tags if they exist
-	if system.Tags != nil && len(system.Tags) > 0 {
+	if len(system.Tags) > 0 {
 		d.Set("tags", common.FlattenStringList(system.Tags))
 	}
 

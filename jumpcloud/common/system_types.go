@@ -13,7 +13,7 @@ type System struct {
 	LastContact                    string                 `json:"lastContact,omitempty"`
 	AgentVersion                   string                 `json:"agentVersion,omitempty"`
 	AllowMFA                       bool                   `json:"allowMFA,omitempty"`
-	AllowSshPassAuth               bool                   `json:"allowSshPasswordAuthentication,omitempty"`
+	AllowSshPassAuth               bool                   `json:"allowSshPassAuth,omitempty"`
 	AllowSshRootLogin              bool                   `json:"allowSshRootLogin,omitempty"`
 	AllowSshPasswordAuthentication bool                   `json:"allowSshPasswordAuthentication,omitempty"`
 	AllowMultiFactorAuthentication bool                   `json:"allowMultiFactorAuthentication,omitempty"`

@@ -283,7 +283,7 @@ func getOrganization(client interface{}, id string) (*Organization, error) {
 	resp, err := apiClient.DoRequest("GET", fmt.Sprintf("/organizations/%s", id), nil)
 	if err != nil {
 		// Check if it's a 404 error
-		if resp == nil || len(resp) == 0 {
+		if len(resp) == 0 {
 			return nil, fmt.Errorf("error getting organization: %w", err)
 		}
 		return nil, fmt.Errorf("error getting organization: %w", err)

@@ -258,7 +258,7 @@ func resourceMonitoringThresholdRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	// Convert actions map to JSON string
-	if threshold.Actions != nil && len(threshold.Actions) > 0 {
+	if len(threshold.Actions) > 0 {
 		actionsJSON, err := json.Marshal(threshold.Actions)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error serializing actions to JSON: %v", err))
