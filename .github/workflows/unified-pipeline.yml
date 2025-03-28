@@ -190,7 +190,7 @@ jobs:
           mkdir -p ${PLUGIN_DIR}
           
           # Compile for the platform with correct name
-          go build -o ${PLUGIN_DIR}/terraform-provider-jumpcloud_v${VERSION}${{ matrix.platform.suffix }}
+          go build -o ${PLUGIN_DIR}/terraform-provider-jumpcloud_v${VERSION}${{ matrix.platform.suffix }} ./cmd/terraform-provider-jumpcloud
           
           # Create ZIP for the binary with the structure expected by Terraform
           zip -j terraform-provider-jumpcloud_${VERSION}_${{ matrix.platform.goos }}_${{ matrix.platform.goarch }}.zip ${PLUGIN_DIR}/terraform-provider-jumpcloud_v${VERSION}${{ matrix.platform.suffix }}
