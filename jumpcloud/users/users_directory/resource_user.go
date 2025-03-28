@@ -179,7 +179,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	d.Set("password_never_expires", user.PasswordNeverExpires)
 
 	// Set custom attributes if present
-	if user.Attributes != nil && len(user.Attributes) > 0 {
+	if len(user.Attributes) > 0 {
 		d.Set("attributes", common.FlattenAttributes(user.Attributes))
 	}
 

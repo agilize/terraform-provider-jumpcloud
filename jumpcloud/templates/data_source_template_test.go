@@ -173,7 +173,7 @@ resource "jumpcloud_example" "test" {
 }
 
 func testAccDataSourceExampleConfig_byID() string {
-	return fmt.Sprintf(`
+	return `
 resource "jumpcloud_example" "test" {
   name        = "example-data-resource"
   description = "Used for data source testing"
@@ -185,11 +185,11 @@ resource "jumpcloud_example" "test" {
 data "jumpcloud_example" "test" {
   id = jumpcloud_example.test.id
 }
-`)
+`
 }
 
 func testAccDataSourceExampleConfig_byName() string {
-	return fmt.Sprintf(`
+	return `
 resource "jumpcloud_example" "test" {
   name        = "example-data-resource"
   description = "Used for data source testing"
@@ -201,7 +201,7 @@ resource "jumpcloud_example" "test" {
 data "jumpcloud_example" "test" {
   name = jumpcloud_example.test.name
 }
-`)
+`
 }
 
 func testAccDataSourceExamplesConfig_multipleResources() string {
