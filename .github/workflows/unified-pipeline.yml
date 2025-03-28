@@ -184,6 +184,11 @@ jobs:
         run: |
           echo "Building for $GOOS/$GOARCH - version v${VERSION}"
           echo "Current directory: $(pwd)"
+          echo "Listing directory content to debug:"
+          ls -la
+          ls -laR
+          echo "Checking cmd directory:"
+          ls -la cmd || echo "cmd directory not found"
           
           # Directory structure compatible with Terraform Registry
           # terraform-provider-jumpcloud_v${VERSION}_${OS}_${ARCH}/terraform-provider-jumpcloud_v${VERSION}
