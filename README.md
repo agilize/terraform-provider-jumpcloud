@@ -1,229 +1,163 @@
 # Terraform Provider for JumpCloud
 
-[![Build Status](https://github.com/agilize/terraform-provider-jumpcloud/workflows/Unified%20Build%20and%20Release%20Pipeline/badge.svg)](https://github.com/agilize/terraform-provider-jumpcloud/actions)
-[![Latest Release](https://img.shields.io/github/v/release/agilize/terraform-provider-jumpcloud?include_prereleases&sort=semver)](https://github.com/agilize/terraform-provider-jumpcloud/releases)
-[![GitHub Packages](https://img.shields.io/badge/GitHub%20Packages-Provider-blue)](https://github.com/agilize/terraform-provider-jumpcloud/pkgs/container/terraform-provider-jumpcloud)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jumpcloud/terraform-provider-jumpcloud)](https://goreportcard.com/report/github.com/jumpcloud/terraform-provider-jumpcloud)
+[![GoDoc](https://godoc.org/github.com/jumpcloud/terraform-provider-jumpcloud?status.svg)](https://godoc.org/github.com/jumpcloud/terraform-provider-jumpcloud)
+[![Release](https://img.shields.io/github/release/jumpcloud/terraform-provider-jumpcloud.svg)](https://github.com/jumpcloud/terraform-provider-jumpcloud/releases)
+[![License](https://img.shields.io/github/license/jumpcloud/terraform-provider-jumpcloud.svg)](https://github.com/jumpcloud/terraform-provider-jumpcloud/blob/master/LICENSE)
 
-The JumpCloud Terraform Provider allows you to manage resources on the [JumpCloud](https://jumpcloud.com) platform through Terraform.
+This provider enables Terraform to manage JumpCloud resources.
 
 ## Requirements
 
-- [Terraform](https://www.terraform.io/downloads.html) >= 1.0
-- [Go](https://golang.org/doc/install) >= 1.20 (for development)
-- [JumpCloud API Key](https://jumpcloud.com/support/api-key)
+- [Terraform](https://www.terraform.io/downloads.html) >= 0.12.x
+- [Go](https://golang.org/doc/install) >= 1.16 (to build the provider plugin)
 
-## Usage
+## Using the Provider
 
-### Provider Installation
-
-#### Option 1: Using Terraform Registry (Recommended)
-
-The provider is published to the Terraform Registry. To use it, simply configure your Terraform configuration file:
+To use the provider, add the following terraform block to your configuration to specify the required provider:
 
 ```hcl
 terraform {
   required_providers {
     jumpcloud = {
       source  = "registry.terraform.io/agilize/jumpcloud"
-      version = "~> 0.1.0"
+      version = "~> 1.0"
     }
   }
 }
 
 provider "jumpcloud" {
-  api_key = "your-api-key"  # Can also be set via JUMPCLOUD_API_KEY environment variable
+  api_key = var.jumpcloud_api_key # Or use JUMPCLOUD_API_KEY env var
+  org_id  = var.jumpcloud_org_id  # Optional: Or use JUMPCLOUD_ORG_ID env var
 }
 ```
 
-#### Option 2: Using GitHub Container Registry
-
-Configure the GitHub Container Registry as a source for the provider. Add the following to your `~/.terraformrc` file:
-
-```hcl
-provider_installation {
-  network_mirror {
-    url = "https://ghcr.io/agilize/terraform-provider-jumpcloud"
-    include = ["ghcr.io/agilize/jumpcloud"]
-  }
-  direct {
-    exclude = ["ghcr.io/agilize/jumpcloud"]
-  }
-}
-```
-
-Then, in your Terraform configuration:
-
-```hcl
-terraform {
-  required_providers {
-    jumpcloud = {
-      source  = "ghcr.io/agilize/jumpcloud"
-      version = "~> 0.1.0"
-    }
-  }
-}
-
-provider "jumpcloud" {
-  api_key = "your-api-key"  # Can also be set via JUMPCLOUD_API_KEY environment variable
-}
-```
-
-For detailed instructions, see [Using the Provider via GHCR](docs/ghcr-usage.md).
-
-#### Option 3: Using GitHub Releases
-
-To use the provider from GitHub Releases, add the following block to your Terraform configuration file:
-
-```hcl
-terraform {
-  required_providers {
-    jumpcloud = {
-      source  = "agilize/jumpcloud"
-      version = "~> 0.1.0"
-    }
-  }
-}
-
-provider "jumpcloud" {
-  api_key = "your-api-key"  # Can also be set via JUMPCLOUD_API_KEY environment variable
-}
-```
-
-### Resource Management
-
-#### Users
-
-```hcl
-resource "jumpcloud_user" "example" {
-  username = "john.doe"
-  email    = "john.doe@example.com"
-  firstname = "John"
-  lastname  = "Doe"
-  
-  password = "securePassword123!"
-  
-  tags = ["dev", "engineering"]
-}
-```
-
-#### User Groups
-
-```hcl
-resource "jumpcloud_user_group" "engineering" {
-  name = "Engineering Team"
-  description = "Group for engineering team members"
-}
-
-resource "jumpcloud_user_group_membership" "john_engineering" {
-  user_id       = jumpcloud_user.example.id
-  user_group_id = jumpcloud_user_group.engineering.id
-}
-```
-
-#### Systems
-
-```hcl
-data "jumpcloud_system" "laptop" {
-  display_name = "MacBook-Pro"
-}
-
-resource "jumpcloud_system_group" "dev_laptops" {
-  name = "Development Laptops"
-  description = "Group for development team laptops"
-}
-
-resource "jumpcloud_system_group_membership" "laptop_dev" {
-  system_id       = data.jumpcloud_system.laptop.id
-  system_group_id = jumpcloud_system_group.dev_laptops.id
-}
-```
-
-#### Commands
-
-```hcl
-resource "jumpcloud_command" "update_packages" {
-  name = "Update Packages"
-  command = "apt-get update && apt-get upgrade -y"
-  user = "root"
-  
-  system_ids = [
-    data.jumpcloud_system.laptop.id
-  ]
-  
-  trigger = "manual"
-}
-```
-
-## Available Resources
-
-| Resource Type | Description |
-|---------------|-------------|
-| `jumpcloud_user` | Manages JumpCloud users |
-| `jumpcloud_user_group` | Manages JumpCloud user groups |
-| `jumpcloud_user_group_membership` | Manages user membership in groups |
-| `jumpcloud_system_group` | Manages system groups |
-| `jumpcloud_system_group_membership` | Manages system membership in groups |
-| `jumpcloud_command` | Manages commands to be executed on systems |
-| `jumpcloud_policy` | Manages policies |
-| `jumpcloud_policy_association` | Manages policy associations |
-| `jumpcloud_user_system_association` | Manages associations between users and systems |
-| `jumpcloud_command_association` | Manages associations between commands and targets |
-| `jumpcloud_webhook` | Manages webhooks |
-| `jumpcloud_api_key` | Manages API keys |
-| `jumpcloud_mdm_policy` | Manages mobile device management policies |
-| `jumpcloud_mdm_configuration` | Manages MDM configurations |
-| `jumpcloud_authentication_policy` | Manages authentication policies |
-| `jumpcloud_password_policy` | Manages password policies |
-| `jumpcloud_organization_settings` | Manages organization settings |
-| `jumpcloud_notification_channel` | Manages notification channels |
-| `jumpcloud_app_catalog_application` | Manages application catalog applications |
-
-## Available Data Sources
-
-| Data Source | Description |
-|-------------|-------------|
-| `jumpcloud_user` | Retrieves information about a JumpCloud user |
-| `jumpcloud_user_group` | Retrieves information about a user group |
-| `jumpcloud_system` | Retrieves information about a system |
-| `jumpcloud_system_group` | Retrieves information about a system group |
-| `jumpcloud_command` | Retrieves information about a command |
-| `jumpcloud_policy` | Retrieves information about a policy |
-| `jumpcloud_user_system_association` | Verifies if a user is associated with a system |
-| `jumpcloud_organization` | Retrieves information about the JumpCloud organization |
-| `jumpcloud_ip_list` | Retrieves information about an IP list |
-| `jumpcloud_platform_administrator` | Retrieves information about a platform administrator |
-| `jumpcloud_mdm_devices` | Retrieves information about MDM devices |
-
-## Authentication
+### Authentication
 
 The provider supports the following authentication methods:
 
-1. Static credentials in the provider configuration:
-   ```hcl
-   provider "jumpcloud" {
-     api_key = "your-api-key"
-   }
-   ```
-
+1. Static credentials: Set the `api_key` (required) and `org_id` (optional) values in the provider block.
 2. Environment variables:
-   ```bash
-   export JUMPCLOUD_API_KEY="your-api-key"
-   export JUMPCLOUD_ORG_ID="your-org-id"  # Optional
-   ```
+   - `JUMPCLOUD_API_KEY`: API key for JumpCloud operations.
+   - `JUMPCLOUD_ORG_ID`: Organization ID for multi-tenant environments.
+
+## Example: Managing Users and Groups
+
+```hcl
+# Create a user
+resource "jumpcloud_user" "example" {
+  username  = "johndoe"
+  email     = "john.doe@example.com"
+  firstname = "John"
+  lastname  = "Doe"
+  password  = "securePassword123!"
+}
+
+# Create a user group
+resource "jumpcloud_user_group" "engineering" {
+  name        = "Engineering Team"
+  description = "Group for engineering staff"
+}
+
+# Add the user to the group
+resource "jumpcloud_user_group_membership" "example_membership" {
+  user_group_id = jumpcloud_user_group.engineering.id
+  user_id       = jumpcloud_user.example.id
+}
+```
+
+## Example: Authentication Policies
+
+```hcl
+# Create an authentication policy
+resource "jumpcloud_auth_policy" "secure_policy" {
+  name        = "Secure Access Policy"
+  description = "Requires MFA for all users"
+  
+  rule {
+    type = "AUTHENTICATION"
+    
+    conditions {
+      resource {
+        type = "USER_GROUP"
+        id   = jumpcloud_user_group.engineering.id
+      }
+    }
+    
+    effects {
+      allow_ssh_password_authentication    = false
+      allow_multi_factor_authentication    = true
+      force_multi_factor_authentication    = true
+      require_password_reset               = false
+      allow_password_management_self_serve = true
+    }
+  }
+}
+```
+
+## Documentation
+
+Comprehensive documentation for each module is available in their respective directories:
+
+- [Authentication](jumpcloud/authentication/README.md)
+- [App Catalog](jumpcloud/app_catalog/README.md)
+- [Admin](jumpcloud/admin/README.md)
+- [IP List](jumpcloud/iplist/README.md)
+- [Password Policies](jumpcloud/password_policies/README.md)
+- [RADIUS](jumpcloud/radius/README.md)
+- [SCIM](jumpcloud/scim/README.md)
+- [System Groups](jumpcloud/system_groups/README.md)
+- [User Associations](jumpcloud/user_associations/README.md)
+- [User Groups](jumpcloud/user_groups/README.md)
 
 ## Development
 
-See [DEVELOPMENT.md](DEVELOPMENT.md) for information on developing the provider.
+### Building the Provider
 
-## Testing
+Clone the repository:
 
-Testing documentation is available in the [tests README.md](tests/README.md).
+```bash
+git clone https://github.com/jumpcloud/terraform-provider-jumpcloud.git
+```
+
+Build the provider:
+
+```bash
+cd terraform-provider-jumpcloud
+go build
+```
+
+### Testing
+
+To run the tests, you will need:
+
+- A JumpCloud API key
+- Go installed on your machine
+
+Set the environment variable:
+
+```bash
+export JUMPCLOUD_API_KEY="your-api-key"
+export JUMPCLOUD_ORG_ID="your-org-id"  # Optional
+export TF_ACC=1  # For acceptance tests
+```
+
+Run the tests:
+
+```bash
+go test ./...
+```
+
+For acceptance tests:
+
+```bash
+go test ./... -v -run=TestAcc
+```
 
 ## Contributing
 
-Contributions are welcome! Please read the contribution guidelines before submitting a pull request.
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## License
 
-This provider is distributed under the MIT License. See [LICENSE](LICENSE) for more information. 
+This provider is distributed under the [Apache License, Version 2.0](LICENSE). 

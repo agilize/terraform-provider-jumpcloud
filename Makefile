@@ -16,6 +16,7 @@ BINARY_NAME=terraform-provider-jumpcloud
 VERSION=$(shell git describe --tags --always --dirty --match=v* 2> /dev/null || echo "dev")
 BUILD_DIR=dist
 OS_ARCH=darwin_amd64
+MAIN_DIR=cmd/terraform-provider-jumpcloud
 
 # Terraform directories
 LOCAL_PLUGIN_DIR=~/.terraform.d/plugins/registry.terraform.io/agilize/jumpcloud/$(VERSION)/$(OS_ARCH)
@@ -27,7 +28,7 @@ all: clean fmt lint vet test build
 build:
 	@echo "Building provider..."
 	mkdir -p $(BUILD_DIR)
-	$(GOBUILD) -o $(BUILD_DIR)/$(BINARY_NAME)
+	cd $(MAIN_DIR) && $(GOBUILD) -o ../../$(BUILD_DIR)/$(BINARY_NAME)
 
 clean:
 	@echo "Cleaning build artifacts..."
@@ -98,9 +99,9 @@ docs:
 release: clean mod-tidy fmt lint vet test build
 	@echo "Preparing release version $(VERSION)..."
 	mkdir -p $(BUILD_DIR)/releases
-	GOOS=darwin GOARCH=amd64 $(GOBUILD) -o $(BUILD_DIR)/releases/$(BINARY_NAME)_$(VERSION)_darwin_amd64
-	GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BUILD_DIR)/releases/$(BINARY_NAME)_$(VERSION)_linux_amd64
-	GOOS=windows GOARCH=amd64 $(GOBUILD) -o $(BUILD_DIR)/releases/$(BINARY_NAME)_$(VERSION)_windows_amd64.exe
+	cd $(MAIN_DIR) && GOOS=darwin GOARCH=amd64 $(GOBUILD) -o ../../$(BUILD_DIR)/releases/$(BINARY_NAME)_$(VERSION)_darwin_amd64
+	cd $(MAIN_DIR) && GOOS=linux GOARCH=amd64 $(GOBUILD) -o ../../$(BUILD_DIR)/releases/$(BINARY_NAME)_$(VERSION)_linux_amd64
+	cd $(MAIN_DIR) && GOOS=windows GOARCH=amd64 $(GOBUILD) -o ../../$(BUILD_DIR)/releases/$(BINARY_NAME)_$(VERSION)_windows_amd64.exe
 	cd $(BUILD_DIR)/releases && \
 		zip $(BINARY_NAME)_$(VERSION)_darwin_amd64.zip $(BINARY_NAME)_$(VERSION)_darwin_amd64 && \
 		zip $(BINARY_NAME)_$(VERSION)_linux_amd64.zip $(BINARY_NAME)_$(VERSION)_linux_amd64 && \
