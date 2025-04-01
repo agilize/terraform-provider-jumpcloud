@@ -114,16 +114,14 @@ func ResourceAttributeMapping() *schema.Resource {
 							Description: "Path of the target attribute",
 						},
 						"constant": {
-							Type:          schema.TypeString,
-							Optional:      true,
-							ConflictsWith: []string{"mappings.expression"},
-							Description:   "Constant value to be used (if not mapped from a source value)",
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Constant value to be used (if not mapped from a source value)",
 						},
 						"expression": {
-							Type:          schema.TypeString,
-							Optional:      true,
-							ConflictsWith: []string{"mappings.constant"},
-							Description:   "Custom transformation expression",
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Custom transformation expression",
 						},
 						"transform": {
 							Type:        schema.TypeString,
@@ -201,6 +199,14 @@ func resourceAttributeMappingCreate(ctx context.Context, d *schema.ResourceData,
 
 		for i, meta := range mappingsList {
 			mapData := meta.(map[string]interface{})
+
+			// Validate that constant and expression are not used together
+			constant, hasConstant := mapData["constant"].(string)
+			expression, hasExpression := mapData["expression"].(string)
+
+			if hasConstant && constant != "" && hasExpression && expression != "" {
+				return diag.FromErr(fmt.Errorf("error in mapping %d: 'constant' and 'expression' cannot be used together", i))
+			}
 
 			attributeMapping := AttributeMapping{
 				SourcePath:  mapData["source_path"].(string),
@@ -428,6 +434,14 @@ func resourceAttributeMappingUpdate(ctx context.Context, d *schema.ResourceData,
 
 		for i, meta := range mappingsList {
 			mapData := meta.(map[string]interface{})
+
+			// Validate that constant and expression are not used together
+			constant, hasConstant := mapData["constant"].(string)
+			expression, hasExpression := mapData["expression"].(string)
+
+			if hasConstant && constant != "" && hasExpression && expression != "" {
+				return diag.FromErr(fmt.Errorf("error in mapping %d: 'constant' and 'expression' cannot be used together", i))
+			}
 
 			attributeMapping := AttributeMapping{
 				SourcePath:  mapData["source_path"].(string),
