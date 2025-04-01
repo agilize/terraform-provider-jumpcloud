@@ -55,7 +55,6 @@ import (
 	user_associations "registry.terraform.io/agilize/jumpcloud/jumpcloud/users/user_associations"
 	user_groups "registry.terraform.io/agilize/jumpcloud/jumpcloud/users/user_groups"
 	users_directory "registry.terraform.io/agilize/jumpcloud/jumpcloud/users/users_directory"
-
 )
 
 // New returns a provider plugin instance
