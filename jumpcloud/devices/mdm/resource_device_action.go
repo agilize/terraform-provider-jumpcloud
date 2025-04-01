@@ -39,6 +39,7 @@ func ResourceDeviceAction() *schema.Resource {
 			"org_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "Organization ID for multi-tenant environments",
 			},
 			"device_id": {
@@ -79,6 +80,7 @@ func ResourceDeviceAction() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Default:     300,
+				ForceNew:    false,
 				Description: "Time in seconds to wait for the action to complete",
 			},
 		},

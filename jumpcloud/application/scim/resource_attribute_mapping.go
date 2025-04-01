@@ -116,13 +116,13 @@ func ResourceAttributeMapping() *schema.Resource {
 						"constant": {
 							Type:          schema.TypeString,
 							Optional:      true,
-							ConflictsWith: []string{"mappings.0.expression"},
+							ConflictsWith: []string{"mappings.expression"},
 							Description:   "Constant value to be used (if not mapped from a source value)",
 						},
 						"expression": {
 							Type:          schema.TypeString,
 							Optional:      true,
-							ConflictsWith: []string{"mappings.0.constant"},
+							ConflictsWith: []string{"mappings.constant"},
 							Description:   "Custom transformation expression",
 						},
 						"transform": {

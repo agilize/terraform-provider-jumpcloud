@@ -28,7 +28,6 @@ func ResourceListAssignment() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceListAssignmentCreate,
 		ReadContext:   resourceListAssignmentRead,
-		UpdateContext: resourceListAssignmentUpdate,
 		DeleteContext: resourceListAssignmentDelete,
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -165,12 +164,6 @@ func resourceListAssignmentRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	return diags
-}
-
-func resourceListAssignmentUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// IP List Assignments são imutáveis, exceto para o campo OrgID
-	// Como OrgID é ForceNew, precisamos apenas ler novamente os dados
-	return resourceListAssignmentRead(ctx, d, meta)
 }
 
 func resourceListAssignmentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
