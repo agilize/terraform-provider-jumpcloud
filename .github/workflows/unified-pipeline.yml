@@ -283,7 +283,7 @@ jobs:
     name: Create Tag
     needs: [prepare-release, version]
     # Runs only if it's a push to main, master or develop branches
-    if: ${{ github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/') && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') }}
+    #if: ${{ github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/') && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -312,12 +312,12 @@ jobs:
     name: Publish to GitHub Container Registry
     needs: [prepare-release, version, create-tag]
     # Runs only if it's a push to main, master, develop, or if a tag is created, or manual dispatch
-    if: |
-      success() && (
-        github.event_name == 'workflow_dispatch' || 
-        startsWith(github.ref, 'refs/tags/') || 
-        (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
-      )
+    #if: |
+    #  success() && (
+    #    github.event_name == 'workflow_dispatch' || 
+    #    startsWith(github.ref, 'refs/tags/') || 
+    #    (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
+    #  )
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -490,13 +490,13 @@ jobs:
     name: Create GitHub Release
     needs: [prepare-release, version, publish-packages]
     # Runs for tags, official releases, merges to main/master/develop and manual workflow
-    if: |
-      success() && (
-        startsWith(github.ref, 'refs/tags/') || 
-        github.event_name == 'release' || 
-        (github.event_name == 'workflow_dispatch') ||
-        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'))
-      )
+    #if: |
+    #  success() && (
+    #    startsWith(github.ref, 'refs/tags/') || 
+    #    github.event_name == 'release' || 
+    #    (github.event_name == 'workflow_dispatch') ||
+    #    (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'))
+    #  )
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
