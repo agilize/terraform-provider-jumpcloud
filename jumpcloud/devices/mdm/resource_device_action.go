@@ -30,6 +30,7 @@ func ResourceDeviceAction() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceMDMDeviceActionCreate,
 		ReadContext:   resourceMDMDeviceActionRead,
+		UpdateContext: resourceMDMDeviceActionUpdate,
 		DeleteContext: resourceMDMDeviceActionDelete,
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -80,7 +81,7 @@ func ResourceDeviceAction() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Default:     300,
-				ForceNew:    false,
+				ForceNew:    true,
 				Description: "Time in seconds to wait for the action to complete",
 			},
 		},
@@ -224,6 +225,13 @@ func resourceMDMDeviceActionRead(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	return diags
+}
+
+// resourceMDMDeviceActionUpdate is a no-op as all fields are ForceNew,
+// but it's required by Terraform's validation
+func resourceMDMDeviceActionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// All fields are ForceNew, so Update is a no-op
+	return resourceMDMDeviceActionRead(ctx, d, meta)
 }
 
 func resourceMDMDeviceActionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
