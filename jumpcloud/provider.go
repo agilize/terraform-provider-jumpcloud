@@ -11,12 +11,14 @@ import (
 	// Admin - Resources
 	admin_roles "registry.terraform.io/agilize/jumpcloud/jumpcloud/admin/admin_roles"
 	admin_users "registry.terraform.io/agilize/jumpcloud/jumpcloud/admin/admin_users"
+
 	// Application - Resources
 	application_catalog "registry.terraform.io/agilize/jumpcloud/jumpcloud/application/catalog"
 	application_mappings "registry.terraform.io/agilize/jumpcloud/jumpcloud/application/mappings"
 	application_oauth "registry.terraform.io/agilize/jumpcloud/jumpcloud/application/oauth"
 	application_scim "registry.terraform.io/agilize/jumpcloud/jumpcloud/application/scim"
 	application_sso "registry.terraform.io/agilize/jumpcloud/jumpcloud/application/sso"
+
 	// Authentication - Resources
 	authentication_attempts "registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication/attempts"
 	authentication_conditional_access "registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication/conditional_access"
@@ -24,14 +26,17 @@ import (
 	authentication_mfa "registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication/mfa"
 	authentication_policies "registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication/policies"
 	authentication_radius "registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication/radius"
+
 	// Devices - Resources
 	devices_commands "registry.terraform.io/agilize/jumpcloud/jumpcloud/devices/commands"
 	devices_mdm "registry.terraform.io/agilize/jumpcloud/jumpcloud/devices/mdm"
 	devices_software_management "registry.terraform.io/agilize/jumpcloud/jumpcloud/devices/software_management"
 	devices "registry.terraform.io/agilize/jumpcloud/jumpcloud/devices/system_devices"
 	device_groups "registry.terraform.io/agilize/jumpcloud/jumpcloud/devices/system_groups"
+
 	// Insights - Resources
 	insights_directory_insights "registry.terraform.io/agilize/jumpcloud/jumpcloud/insights/directory_insights"
+
 	// Organization - Resources
 	organization_alerts "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/alerts"
 	organization_api_keys "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/api_keys"
@@ -41,13 +46,16 @@ import (
 	organization_notifications "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/notifications"
 	organization_settings "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/settings"
 	organization_webhooks "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/webhooks"
+
 	// Password - Resources
 	password_manager "registry.terraform.io/agilize/jumpcloud/jumpcloud/password/password_manager"
 	password_policies "registry.terraform.io/agilize/jumpcloud/jumpcloud/password/password_policies"
+
 	// Users - Resources
 	user_associations "registry.terraform.io/agilize/jumpcloud/jumpcloud/users/user_associations"
 	user_groups "registry.terraform.io/agilize/jumpcloud/jumpcloud/users/user_groups"
 	users_directory "registry.terraform.io/agilize/jumpcloud/jumpcloud/users/users_directory"
+
 )
 
 // New returns a provider plugin instance
