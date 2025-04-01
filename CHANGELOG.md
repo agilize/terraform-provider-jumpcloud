@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.5 (2025-04-01)
+
+* Initial release
+
 ## v0.1.4 (2025-04-01)
 
 * Initial release
