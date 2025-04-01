@@ -52,14 +52,14 @@ func ResourceDeviceAction() *schema.Resource {
 			"action_type": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ForceNew:     true,
+				ForceNew:     false,
 				Description:  "Type of action to perform (lock, wipe, restart, shutdown, clear_passcode)",
 				ValidateFunc: validation.StringInSlice([]string{"lock", "wipe", "restart", "shutdown", "clear_passcode"}, false),
 			},
 			"reason": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
+				ForceNew:    false,
 				Description: "Reason for performing the action",
 			},
 			"status": {
@@ -81,7 +81,7 @@ func ResourceDeviceAction() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Default:     300,
-				ForceNew:    true,
+				ForceNew:    false,
 				Description: "Time in seconds to wait for the action to complete",
 			},
 		},
