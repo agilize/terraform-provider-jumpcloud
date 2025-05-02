@@ -2,6 +2,7 @@ package apiclient
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -97,10 +98,11 @@ func NewClient(config *Config) *Client {
 	}
 }
 
-// DoRequest makes an HTTP request to the JumpCloud API
+// DoRequestWithContext makes an HTTP request to the JumpCloud API with context
 // It handles authentication, error handling, and response processing
 //
 // Parameters:
+// - ctx: Context for the request (can be used for cancellation and timeouts)
 // - method: HTTP method (GET, POST, PUT, DELETE)
 // - path: API endpoint path (e.g. "/systemusers")
 // - body: Request body to be serialized as JSON (can be nil)
@@ -110,7 +112,7 @@ func NewClient(config *Config) *Client {
 // - Error if the request failed
 //
 // API documentation: https://docs.jumpcloud.com/api/
-func (c *Client) DoRequest(method, path string, body interface{}) ([]byte, error) {
+func (c *Client) DoRequestWithContext(ctx context.Context, method, path string, body any) ([]byte, error) {
 	var reqBody io.Reader
 
 	// Convert body to JSON if provided
@@ -125,8 +127,8 @@ func (c *Client) DoRequest(method, path string, body interface{}) ([]byte, error
 	// Construct full URL
 	url := fmt.Sprintf("%s%s", c.APIURL, path)
 
-	// Create HTTP request
-	req, err := http.NewRequest(method, url, reqBody)
+	// Create HTTP request with context
+	req, err := http.NewRequestWithContext(ctx, method, url, reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %v", err)
 	}
@@ -165,76 +167,134 @@ func (c *Client) DoRequest(method, path string, body interface{}) ([]byte, error
 	return respBody, nil
 }
 
-// GetV1 is a convenience method for making GET requests to the JumpCloud API v1
-func (c *Client) GetV1(path string) ([]byte, error) {
+// DoRequest makes an HTTP request to the JumpCloud API
+// It handles authentication, error handling, and response processing
+//
+// Parameters:
+// - method: HTTP method (GET, POST, PUT, DELETE)
+// - path: API endpoint path (e.g. "/systemusers")
+// - body: Request body to be serialized as JSON (can be nil)
+//
+// Returns:
+// - Response body as a byte array
+// - Error if the request failed
+//
+// API documentation: https://docs.jumpcloud.com/api/
+func (c *Client) DoRequest(method, path string, body any) ([]byte, error) {
+	// Use the context-aware version with a background context
+	return c.DoRequestWithContext(context.Background(), method, path, body)
+}
+
+// GetV1WithContext is a convenience method for making GET requests to the JumpCloud API v1 with context
+func (c *Client) GetV1WithContext(ctx context.Context, path string) ([]byte, error) {
 	tempAPIURL := c.APIURL
 	c.APIURL = JUMPCLOUD_API_V1_URL
 	defer func() { c.APIURL = tempAPIURL }()
 
-	return c.DoRequest(http.MethodGet, path, nil)
+	return c.DoRequestWithContext(ctx, http.MethodGet, path, nil)
+}
+
+// GetV1 is a convenience method for making GET requests to the JumpCloud API v1
+func (c *Client) GetV1(path string) ([]byte, error) {
+	return c.GetV1WithContext(context.Background(), path)
+}
+
+// GetV2WithContext is a convenience method for making GET requests to the JumpCloud API v2 with context
+func (c *Client) GetV2WithContext(ctx context.Context, path string) ([]byte, error) {
+	tempAPIURL := c.APIURL
+	c.APIURL = JUMPCLOUD_API_V2_URL
+	defer func() { c.APIURL = tempAPIURL }()
+
+	return c.DoRequestWithContext(ctx, http.MethodGet, path, nil)
 }
 
 // GetV2 is a convenience method for making GET requests to the JumpCloud API v2
 func (c *Client) GetV2(path string) ([]byte, error) {
+	return c.GetV2WithContext(context.Background(), path)
+}
+
+// PostV1WithContext is a convenience method for making POST requests to the JumpCloud API v1 with context
+func (c *Client) PostV1WithContext(ctx context.Context, path string, body any) ([]byte, error) {
+	tempAPIURL := c.APIURL
+	c.APIURL = JUMPCLOUD_API_V1_URL
+	defer func() { c.APIURL = tempAPIURL }()
+
+	return c.DoRequestWithContext(ctx, http.MethodPost, path, body)
+}
+
+// PostV2WithContext is a convenience method for making POST requests to the JumpCloud API v2 with context
+func (c *Client) PostV2WithContext(ctx context.Context, path string, body any) ([]byte, error) {
 	tempAPIURL := c.APIURL
 	c.APIURL = JUMPCLOUD_API_V2_URL
 	defer func() { c.APIURL = tempAPIURL }()
 
-	return c.DoRequest(http.MethodGet, path, nil)
+	return c.DoRequestWithContext(ctx, http.MethodPost, path, body)
+}
+
+// PutV1WithContext is a convenience method for making PUT requests to the JumpCloud API v1 with context
+func (c *Client) PutV1WithContext(ctx context.Context, path string, body any) ([]byte, error) {
+	tempAPIURL := c.APIURL
+	c.APIURL = JUMPCLOUD_API_V1_URL
+	defer func() { c.APIURL = tempAPIURL }()
+
+	return c.DoRequestWithContext(ctx, http.MethodPut, path, body)
+}
+
+// PutV2WithContext is a convenience method for making PUT requests to the JumpCloud API v2 with context
+func (c *Client) PutV2WithContext(ctx context.Context, path string, body any) ([]byte, error) {
+	tempAPIURL := c.APIURL
+	c.APIURL = JUMPCLOUD_API_V2_URL
+	defer func() { c.APIURL = tempAPIURL }()
+
+	return c.DoRequestWithContext(ctx, http.MethodPut, path, body)
+}
+
+// DeleteV1WithContext is a convenience method for making DELETE requests to the JumpCloud API v1 with context
+func (c *Client) DeleteV1WithContext(ctx context.Context, path string) ([]byte, error) {
+	tempAPIURL := c.APIURL
+	c.APIURL = JUMPCLOUD_API_V1_URL
+	defer func() { c.APIURL = tempAPIURL }()
+
+	return c.DoRequestWithContext(ctx, http.MethodDelete, path, nil)
+}
+
+// DeleteV2WithContext is a convenience method for making DELETE requests to the JumpCloud API v2 with context
+func (c *Client) DeleteV2WithContext(ctx context.Context, path string) ([]byte, error) {
+	tempAPIURL := c.APIURL
+	c.APIURL = JUMPCLOUD_API_V2_URL
+	defer func() { c.APIURL = tempAPIURL }()
+
+	return c.DoRequestWithContext(ctx, http.MethodDelete, path, nil)
 }
 
 // PostV1 is a convenience method for making POST requests to the JumpCloud API v1
-func (c *Client) PostV1(path string, body interface{}) ([]byte, error) {
-	tempAPIURL := c.APIURL
-	c.APIURL = JUMPCLOUD_API_V1_URL
-	defer func() { c.APIURL = tempAPIURL }()
-
-	return c.DoRequest(http.MethodPost, path, body)
+func (c *Client) PostV1(path string, body any) ([]byte, error) {
+	return c.PostV1WithContext(context.Background(), path, body)
 }
 
 // PostV2 is a convenience method for making POST requests to the JumpCloud API v2
-func (c *Client) PostV2(path string, body interface{}) ([]byte, error) {
-	tempAPIURL := c.APIURL
-	c.APIURL = JUMPCLOUD_API_V2_URL
-	defer func() { c.APIURL = tempAPIURL }()
-
-	return c.DoRequest(http.MethodPost, path, body)
+func (c *Client) PostV2(path string, body any) ([]byte, error) {
+	return c.PostV2WithContext(context.Background(), path, body)
 }
 
 // PutV1 is a convenience method for making PUT requests to the JumpCloud API v1
-func (c *Client) PutV1(path string, body interface{}) ([]byte, error) {
-	tempAPIURL := c.APIURL
-	c.APIURL = JUMPCLOUD_API_V1_URL
-	defer func() { c.APIURL = tempAPIURL }()
-
-	return c.DoRequest(http.MethodPut, path, body)
+func (c *Client) PutV1(path string, body any) ([]byte, error) {
+	return c.PutV1WithContext(context.Background(), path, body)
 }
 
 // PutV2 is a convenience method for making PUT requests to the JumpCloud API v2
-func (c *Client) PutV2(path string, body interface{}) ([]byte, error) {
-	tempAPIURL := c.APIURL
-	c.APIURL = JUMPCLOUD_API_V2_URL
-	defer func() { c.APIURL = tempAPIURL }()
-
-	return c.DoRequest(http.MethodPut, path, body)
+func (c *Client) PutV2(path string, body any) ([]byte, error) {
+	return c.PutV2WithContext(context.Background(), path, body)
 }
 
 // DeleteV1 is a convenience method for making DELETE requests to the JumpCloud API v1
 func (c *Client) DeleteV1(path string) ([]byte, error) {
-	tempAPIURL := c.APIURL
-	c.APIURL = JUMPCLOUD_API_V1_URL
-	defer func() { c.APIURL = tempAPIURL }()
-
-	return c.DoRequest(http.MethodDelete, path, nil)
+	return c.DeleteV1WithContext(context.Background(), path)
 }
 
 // DeleteV2 is a convenience method for making DELETE requests to the JumpCloud API v2
 func (c *Client) DeleteV2(path string) ([]byte, error) {
-	tempAPIURL := c.APIURL
-	c.APIURL = JUMPCLOUD_API_V2_URL
-	defer func() { c.APIURL = tempAPIURL }()
-
-	return c.DoRequest(http.MethodDelete, path, nil)
+	return c.DeleteV2WithContext(context.Background(), path)
 }
 
 // GetApiKey returns the API key used by the client

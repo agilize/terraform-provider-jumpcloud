@@ -10,7 +10,7 @@ This provider enables Terraform to manage JumpCloud resources.
 ## Requirements
 
 - [Terraform](https://www.terraform.io/downloads.html) >= 0.12.x
-- [Go](https://golang.org/doc/install) >= 1.16 (to build the provider plugin)
+- [Go](https://golang.org/doc/install) >= 1.18 (to build the provider plugin)
 
 ## Using the Provider
 
@@ -73,17 +73,17 @@ resource "jumpcloud_user_group_membership" "example_membership" {
 resource "jumpcloud_auth_policy" "secure_policy" {
   name        = "Secure Access Policy"
   description = "Requires MFA for all users"
-  
+
   rule {
     type = "AUTHENTICATION"
-    
+
     conditions {
       resource {
         type = "USER_GROUP"
         id   = jumpcloud_user_group.engineering.id
       }
     }
-    
+
     effects {
       allow_ssh_password_authentication    = false
       allow_multi_factor_authentication    = true
@@ -109,6 +109,29 @@ Comprehensive documentation for each module is available in their respective dir
 - [System Groups](jumpcloud/system_groups/README.md)
 - [User Associations](jumpcloud/user_associations/README.md)
 - [User Groups](jumpcloud/user_groups/README.md)
+
+### Error Handling
+
+The provider includes robust error handling for JumpCloud API responses:
+
+- `IsNotFoundError`: Detects 404 Not Found errors
+- `IsConflictError`: Detects 409 Conflict errors
+- `IsBadRequestError`: Detects 400 Bad Request errors
+- `IsUnauthorizedError`: Detects 401 Unauthorized errors
+- `IsForbiddenError`: Detects 403 Forbidden errors
+
+These functions are used throughout the provider to handle API errors consistently.
+
+### Context Support
+
+The provider supports context-aware API requests, which enables:
+
+- Proper timeout handling
+- Request cancellation
+- Better error propagation
+- Improved logging
+
+All API client methods have context-aware versions (e.g., `DoRequestWithContext`, `GetV1WithContext`) for advanced use cases.
 
 ## Development
 
@@ -160,4 +183,4 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for det
 
 ## License
 
-This provider is distributed under the [Apache License, Version 2.0](LICENSE). 
+This provider is distributed under the [Apache License, Version 2.0](LICENSE).
