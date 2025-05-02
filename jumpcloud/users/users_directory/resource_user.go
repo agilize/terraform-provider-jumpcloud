@@ -14,16 +14,16 @@ import (
 
 // User represents a JumpCloud user
 type User struct {
-	ID                   string                 `json:"_id,omitempty"`
-	Username             string                 `json:"username"`
-	Email                string                 `json:"email"`
-	FirstName            string                 `json:"firstname,omitempty"`
-	LastName             string                 `json:"lastname,omitempty"`
-	Password             string                 `json:"password,omitempty"`
-	Description          string                 `json:"description,omitempty"`
-	Attributes           map[string]interface{} `json:"attributes,omitempty"`
-	MFAEnabled           bool                   `json:"mfa_enabled,omitempty"`
-	PasswordNeverExpires bool                   `json:"password_never_expires,omitempty"`
+	ID                   string         `json:"_id,omitempty"`
+	Username             string         `json:"username"`
+	Email                string         `json:"email"`
+	FirstName            string         `json:"firstname,omitempty"`
+	LastName             string         `json:"lastname,omitempty"`
+	Password             string         `json:"password,omitempty"`
+	Description          string         `json:"description,omitempty"`
+	Attributes           map[string]any `json:"attributes,omitempty"`
+	MFAEnabled           bool           `json:"mfa_enabled,omitempty"`
+	PasswordNeverExpires bool           `json:"password_never_expires,omitempty"`
 }
 
 func ResourceUser() *schema.Resource {
@@ -93,7 +93,7 @@ func ResourceUser() *schema.Resource {
 	}
 }
 
-func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
@@ -113,7 +113,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta interf
 
 	// Set custom attributes if present
 	if v, ok := d.GetOk("attributes"); ok {
-		user.Attributes = common.ExpandAttributes(v.(map[string]interface{}))
+		user.Attributes = common.ExpandAttributes(v.(map[string]any))
 	}
 
 	// Convert user to JSON
@@ -123,7 +123,8 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 
 	// Create user via API
-	resp, err := c.DoRequest(http.MethodPost, "/api/v2/users", userJSON)
+	// The correct endpoint for creating users is /systemusers
+	resp, err := c.DoRequest(http.MethodPost, "/systemusers", userJSON)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error creating user: %v", err))
 	}
@@ -141,7 +142,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	return resourceUserRead(ctx, d, meta)
 }
 
-func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	c, diagErr := common.GetClientFromMeta(meta)
@@ -152,10 +153,11 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	userID := d.Id()
 
 	// Get user via API
-	resp, err := c.DoRequest(http.MethodGet, fmt.Sprintf("/api/v2/users/%s", userID), nil)
+	// The correct endpoint for getting users is /systemusers/{id}
+	resp, err := c.DoRequest(http.MethodGet, fmt.Sprintf("/systemusers/%s", userID), nil)
 	if err != nil {
 		// Handle 404 specifically to mark the resource as removed
-		if err.Error() == "status code 404" {
+		if common.IsNotFoundError(err) {
 			tflog.Warn(ctx, fmt.Sprintf("User %s not found, removing from state", userID))
 			d.SetId("")
 			return diags
@@ -186,7 +188,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	return diags
 }
 
-func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
@@ -211,7 +213,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 
 	// Set custom attributes if present
 	if v, ok := d.GetOk("attributes"); ok {
-		user.Attributes = common.ExpandAttributes(v.(map[string]interface{}))
+		user.Attributes = common.ExpandAttributes(v.(map[string]any))
 	}
 
 	// Convert user to JSON
@@ -221,7 +223,8 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 
 	// Update user via API
-	_, err = c.DoRequest(http.MethodPut, fmt.Sprintf("/api/v2/users/%s", userID), userJSON)
+	// The correct endpoint for updating users is /systemusers/{id}
+	_, err = c.DoRequest(http.MethodPut, fmt.Sprintf("/systemusers/%s", userID), userJSON)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error updating user %s: %v", userID, err))
 	}
@@ -229,7 +232,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 	return resourceUserRead(ctx, d, meta)
 }
 
-func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c, diagErr := common.GetClientFromMeta(meta)
 	if diagErr != nil {
 		return diagErr
@@ -238,8 +241,15 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta interf
 	userID := d.Id()
 
 	// Delete user via API
-	_, err := c.DoRequest(http.MethodDelete, fmt.Sprintf("/api/v2/users/%s", userID), nil)
+	// The correct endpoint for deleting users is /systemusers/{id}
+	_, err := c.DoRequest(http.MethodDelete, fmt.Sprintf("/systemusers/%s", userID), nil)
 	if err != nil {
+		// If the resource is already gone, don't return an error
+		if common.IsNotFoundError(err) {
+			tflog.Warn(ctx, fmt.Sprintf("User %s not found during delete, removing from state", userID))
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(fmt.Errorf("error deleting user %s: %v", userID, err))
 	}
 
