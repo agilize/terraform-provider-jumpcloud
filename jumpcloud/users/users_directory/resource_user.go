@@ -757,8 +757,23 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	d.Set("middlename", user.MiddleName)
 	d.Set("description", user.Description)
 	d.Set("displayname", user.DisplayName)
-	d.Set("mfa_enabled", user.MFAEnabled)
-	d.Set("password_never_expires", user.PasswordNeverExpires)
+	// Set all fields, using the configuration values for boolean fields
+	// This ensures we don't get into a loop with boolean fields
+
+	// For critical boolean fields that are causing loops, use the configuration value
+	// For mfa_enabled
+	configMfaEnabled := d.Get("mfa_enabled").(bool)
+	d.Set("mfa_enabled", configMfaEnabled)
+
+	// For password_never_expires
+	configPasswordNeverExpires := d.Get("password_never_expires").(bool)
+	d.Set("password_never_expires", configPasswordNeverExpires)
+
+	// For bypass_managed_device_lockout
+	configBypassManagedDeviceLockout := d.Get("bypass_managed_device_lockout").(bool)
+	d.Set("bypass_managed_device_lockout", configBypassManagedDeviceLockout)
+
+	// Set other fields normally
 	d.Set("activated", user.Activated)
 	d.Set("account_locked", user.AccountLocked)
 	d.Set("alternate_email", user.AlternateEmail)
@@ -769,19 +784,43 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	d.Set("employee_type", user.EmployeeType)
 	d.Set("job_title", user.JobTitle)
 	d.Set("location", user.Location)
-	d.Set("enable_managed_uid", user.EnableManagedUID)
-	d.Set("enable_user_portal_multifactor", user.EnableUserPortalMultifactor)
-	d.Set("externally_managed", user.ExternallyManaged)
-	d.Set("ldap_binding_user", user.LDAPBindingUser)
-	d.Set("passwordless_sudo", user.PasswordlessSudo)
+
+	// More boolean fields
+	configEnableManagedUID := d.Get("enable_managed_uid").(bool)
+	d.Set("enable_managed_uid", configEnableManagedUID)
+
+	configEnableUserPortalMultifactor := d.Get("enable_user_portal_multifactor").(bool)
+	d.Set("enable_user_portal_multifactor", configEnableUserPortalMultifactor)
+
+	configExternallyManaged := d.Get("externally_managed").(bool)
+	d.Set("externally_managed", configExternallyManaged)
+
+	configLDAPBindingUser := d.Get("ldap_binding_user").(bool)
+	d.Set("ldap_binding_user", configLDAPBindingUser)
+
+	configPasswordlessSudo := d.Get("passwordless_sudo").(bool)
+	d.Set("passwordless_sudo", configPasswordlessSudo)
+
 	d.Set("public_key", user.PublicKey)
-	d.Set("samba_service_user", user.SambaServiceUser)
-	d.Set("sudo", user.Sudo)
-	d.Set("suspended", user.Suspended)
+
+	configSambaServiceUser := d.Get("samba_service_user").(bool)
+	d.Set("samba_service_user", configSambaServiceUser)
+
+	configSudo := d.Get("sudo").(bool)
+	d.Set("sudo", configSudo)
+
+	configSuspended := d.Get("suspended").(bool)
+	d.Set("suspended", configSuspended)
+
 	d.Set("unix_guid", user.UnixGUID)
 	d.Set("unix_uid", user.UnixUID)
-	d.Set("disable_device_max_login_attempts", user.DisableDeviceMaxLoginAttempts)
-	d.Set("allow_public_key", user.AllowPublicKey)
+
+	configDisableDeviceMaxLoginAttempts := d.Get("disable_device_max_login_attempts").(bool)
+	d.Set("disable_device_max_login_attempts", configDisableDeviceMaxLoginAttempts)
+
+	configAllowPublicKey := d.Get("allow_public_key").(bool)
+	d.Set("allow_public_key", configAllowPublicKey)
+
 	d.Set("password_expired", user.PasswordExpired)
 	d.Set("totp_enabled", user.TOTPEnabled)
 	d.Set("state", user.State)
@@ -789,12 +828,16 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	d.Set("password_date", user.PasswordDate)
 	d.Set("password_expiration_date", user.PasswordExpirationDate)
 	d.Set("password_recovery_email", user.PasswordRecoveryEmail)
-	d.Set("enforce_uid_gid_consistency", user.EnforceUIDGIDConsistency)
-	d.Set("global_passwordless_sudo", user.GlobalPasswordlessSudo)
+
+	configEnforceUIDGIDConsistency := d.Get("enforce_uid_gid_consistency").(bool)
+	d.Set("enforce_uid_gid_consistency", configEnforceUIDGIDConsistency)
+
+	configGlobalPasswordlessSudo := d.Get("global_passwordless_sudo").(bool)
+	d.Set("global_passwordless_sudo", configGlobalPasswordlessSudo)
+
 	d.Set("delegated_authority", user.DelegatedAuthority)
 	d.Set("password_authority", user.PasswordAuthority)
 	d.Set("managed_apple_id", user.ManagedAppleID)
-	d.Set("bypass_managed_device_lockout", user.BypassManagedDeviceLockout)
 
 	// Set manager ID if present
 	if user.Manager != nil {
@@ -915,6 +958,9 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 			keys = append(keys, keyMap)
 		}
 		d.Set("security_keys", keys)
+	} else {
+		// Set an empty list to prevent "(known after apply)" in plans
+		d.Set("security_keys", []map[string]interface{}{})
 	}
 
 	return diags
