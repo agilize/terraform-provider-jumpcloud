@@ -248,7 +248,7 @@ func resourceConfigurationRead(ctx context.Context, d *schema.ResourceData, meta
 	if err != nil {
 		// Se o recurso não foi encontrado, removê-lo do estado
 		if common.IsNotFoundError(err) {
-			tflog.Warn(ctx, fmt.Sprintf("Configuração MFA não encontrada, removendo do state"))
+			tflog.Warn(ctx, "Configuração MFA não encontrada, removendo do state")
 			d.SetId("")
 			return diags
 		}
