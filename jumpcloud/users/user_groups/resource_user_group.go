@@ -5,12 +5,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/common"
 )
+
+// sanitizeAttributeName ensures attribute names only contain letters and numbers
+// as required by the JumpCloud API
+func sanitizeAttributeName(name string) string {
+	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
+	return reg.ReplaceAllString(name, "")
+}
 
 // ResourceUserGroup returns the resource for JumpCloud user groups
 func ResourceUserGroup() *schema.Resource {
@@ -84,7 +92,9 @@ func resourceUserGroupCreate(ctx context.Context, d *schema.ResourceData, meta i
 	if attr, ok := d.GetOk("attributes"); ok {
 		attributes := make(map[string]interface{})
 		for k, v := range attr.(map[string]interface{}) {
-			attributes[k] = v
+			// Sanitize attribute name for API
+			sanitizedName := sanitizeAttributeName(k)
+			attributes[sanitizedName] = v
 		}
 		group.Attributes = attributes
 	}
@@ -147,11 +157,28 @@ func resourceUserGroupRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("description", group.Description)
 	d.Set("type", group.Type)
 
-	// Process attributes
+	// Process attributes, preserving original names
 	if group.Attributes != nil {
+		// Get the original attributes from the configuration
+		oldAttrs := d.Get("attributes").(map[string]interface{})
+
+		// Create a map of sanitized name -> original name
+		sanitizedToOriginal := make(map[string]string)
+		for origName := range oldAttrs {
+			sanitizedToOriginal[sanitizeAttributeName(origName)] = origName
+		}
+
+		// Create new attribute map preserving original names
 		attributes := make(map[string]interface{})
-		for k, v := range group.Attributes {
-			attributes[k] = fmt.Sprintf("%v", v)
+		for attrName, attrValue := range group.Attributes {
+			// Check if we have this attribute in the old configuration
+			if origName, exists := sanitizedToOriginal[attrName]; exists {
+				// Use the original name
+				attributes[origName] = fmt.Sprintf("%v", attrValue)
+			} else {
+				// Use the name from the API
+				attributes[attrName] = fmt.Sprintf("%v", attrValue)
+			}
 		}
 		d.Set("attributes", attributes)
 	}
@@ -178,7 +205,9 @@ func resourceUserGroupUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	if attr, ok := d.GetOk("attributes"); ok {
 		attributes := make(map[string]interface{})
 		for k, v := range attr.(map[string]interface{}) {
-			attributes[k] = v
+			// Sanitize attribute name for API
+			sanitizedName := sanitizeAttributeName(k)
+			attributes[sanitizedName] = v
 		}
 		group.Attributes = attributes
 	}

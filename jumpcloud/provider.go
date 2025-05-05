@@ -208,7 +208,8 @@ func Provider() *schema.Provider {
 			"jumpcloud_admin_users": admin_users.DataSourceUsers(),
 
 			// Users - Data Sources
-			"jumpcloud_user": users_directory.DataSourceUser(),
+			"jumpcloud_user":       users_directory.DataSourceUser(),
+			"jumpcloud_user_group": user_groups.DataSourceUserGroup(),
 
 			// Application Catalog - Data Sources
 			"jumpcloud_application_catalog_application":  application_catalog.DataSourceApplication(),
