@@ -603,9 +603,8 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 		attrMap := v.(map[string]any)
 		var attributes []UserAttribute
 		for name, value := range attrMap {
-			// Keep the original attribute name for the state
-			// but use a sanitized version for the API
-			originalName := name
+			// Sanitize the attribute name for the API
+			sanitizedName := sanitizeAttributeName(name)
 
 			// Convert value to string if it's not already
 			var strValue string
@@ -621,7 +620,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 			}
 
 			attributes = append(attributes, UserAttribute{
-				Name:  originalName,
+				Name:  sanitizedName, // Use sanitized name for API
 				Value: strValue,
 			})
 		}
@@ -1001,9 +1000,8 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 		attrMap := v.(map[string]any)
 		var attributes []UserAttribute
 		for name, value := range attrMap {
-			// Keep the original attribute name for the state
-			// but use a sanitized version for the API
-			originalName := name
+			// Sanitize the attribute name for the API
+			sanitizedName := sanitizeAttributeName(name)
 
 			// Convert value to string if it's not already
 			var strValue string
@@ -1019,7 +1017,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 			}
 
 			attributes = append(attributes, UserAttribute{
-				Name:  originalName,
+				Name:  sanitizedName, // Use sanitized name for API
 				Value: strValue,
 			})
 		}
