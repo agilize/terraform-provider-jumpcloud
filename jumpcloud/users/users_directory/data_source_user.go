@@ -244,13 +244,17 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 	// Determine search method based on provided parameters
 	if userID, ok := d.GetOk("user_id"); ok {
+		// Direct lookup by ID
 		path = fmt.Sprintf("/systemusers/%s", userID.(string))
 		searchType = "ID"
-	} else if username, ok := d.GetOk("username"); ok {
-		path = fmt.Sprintf("/search/systemusers?filter=username:%s", username.(string))
+	} else if _, ok := d.GetOk("username"); ok {
+		// For username, we'll get all users and filter client-side
+		// This is more reliable than using the search endpoint
+		path = "/systemusers"
 		searchType = "username"
-	} else if email, ok := d.GetOk("email"); ok {
-		path = fmt.Sprintf("/search/systemusers?filter=email:%s", email.(string))
+	} else if _, ok := d.GetOk("email"); ok {
+		// For email, we'll get all users and filter client-side
+		path = "/systemusers"
 		searchType = "email"
 	} else {
 		return diag.FromErr(fmt.Errorf("one of user_id, username, or email must be provided"))
@@ -272,24 +276,33 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, meta interf
 			return diag.FromErr(fmt.Errorf("error parsing user response: %v", err))
 		}
 	} else {
-		// Search returns a results array
-		var searchResp struct {
-			TotalCount int    `json:"totalCount"`
-			Results    []User `json:"results"`
-		}
-		if err := json.Unmarshal(resp, &searchResp); err != nil {
-			return diag.FromErr(fmt.Errorf("error parsing search response: %v", err))
+		// For username or email, we get all users and filter client-side
+		var users []User
+		if err := json.Unmarshal(resp, &users); err != nil {
+			return diag.FromErr(fmt.Errorf("error parsing users response: %v", err))
 		}
 
-		if searchResp.TotalCount == 0 || len(searchResp.Results) == 0 {
-			return diag.FromErr(fmt.Errorf("no user found with %s: %s", searchType, d.Get(searchType).(string)))
+		// Filter users based on search type
+		var matchedUsers []User
+		searchValue := d.Get(searchType).(string)
+
+		for _, u := range users {
+			if searchType == "username" && u.Username == searchValue {
+				matchedUsers = append(matchedUsers, u)
+			} else if searchType == "email" && u.Email == searchValue {
+				matchedUsers = append(matchedUsers, u)
+			}
 		}
 
-		if searchResp.TotalCount > 1 {
-			tflog.Warn(ctx, fmt.Sprintf("Multiple users found with %s: %s, using the first one", searchType, d.Get(searchType).(string)))
+		if len(matchedUsers) == 0 {
+			return diag.FromErr(fmt.Errorf("no user found with %s: %s", searchType, searchValue))
 		}
 
-		user = searchResp.Results[0]
+		if len(matchedUsers) > 1 {
+			tflog.Warn(ctx, fmt.Sprintf("Multiple users found with %s: %s, using the first one", searchType, searchValue))
+		}
+
+		user = matchedUsers[0]
 	}
 
 	// Set the ID
