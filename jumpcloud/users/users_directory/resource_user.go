@@ -827,7 +827,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	d.Set("created", user.Created)
 	d.Set("password_date", user.PasswordDate)
 	d.Set("password_expiration_date", user.PasswordExpirationDate)
-	d.Set("password_recovery_email", user.PasswordRecoveryEmail)
+	// password_recovery_email is handled below
 
 	configEnforceUIDGIDConsistency := d.Get("enforce_uid_gid_consistency").(bool)
 	d.Set("enforce_uid_gid_consistency", configEnforceUIDGIDConsistency)
@@ -835,8 +835,28 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	configGlobalPasswordlessSudo := d.Get("global_passwordless_sudo").(bool)
 	d.Set("global_passwordless_sudo", configGlobalPasswordlessSudo)
 
-	d.Set("delegated_authority", user.DelegatedAuthority)
-	d.Set("password_authority", user.PasswordAuthority)
+	// Handle string fields that might be causing issues
+	// For delegated_authority
+	if v, ok := d.GetOk("delegated_authority"); ok {
+		d.Set("delegated_authority", v.(string))
+	} else {
+		d.Set("delegated_authority", user.DelegatedAuthority)
+	}
+
+	// For password_authority
+	if v, ok := d.GetOk("password_authority"); ok {
+		d.Set("password_authority", v.(string))
+	} else {
+		d.Set("password_authority", user.PasswordAuthority)
+	}
+
+	// For password_recovery_email
+	if v, ok := d.GetOk("password_recovery_email"); ok {
+		d.Set("password_recovery_email", v.(string))
+	} else {
+		d.Set("password_recovery_email", user.PasswordRecoveryEmail)
+	}
+
 	d.Set("managed_apple_id", user.ManagedAppleID)
 
 	// Set manager ID if present
