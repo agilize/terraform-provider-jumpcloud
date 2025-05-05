@@ -1,7 +1,6 @@
 package users_directory_test
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -51,7 +50,7 @@ func TestAccDataSourceUser_basic(t *testing.T) {
 }
 
 func testAccDataSourceUserConfig_basic() string {
-	return fmt.Sprintf(`
+	return `
 resource "jumpcloud_user" "test" {
   username  = "testuser"
   email     = "testuser@example.com"
@@ -64,7 +63,7 @@ data "jumpcloud_user" "test" {
   username = jumpcloud_user.test.username
   depends_on = [jumpcloud_user.test]
 }
-`)
+`
 }
 
 func TestAccDataSourceUser_byEmail(t *testing.T) {
@@ -88,7 +87,7 @@ func TestAccDataSourceUser_byEmail(t *testing.T) {
 }
 
 func testAccDataSourceUserConfig_byEmail() string {
-	return fmt.Sprintf(`
+	return `
 resource "jumpcloud_user" "test_email" {
   username  = "emailuser"
   email     = "emailuser@example.com"
@@ -101,7 +100,7 @@ data "jumpcloud_user" "test_email" {
   email = jumpcloud_user.test_email.email
   depends_on = [jumpcloud_user.test_email]
 }
-`)
+`
 }
 
 func TestAccDataSourceUser_byID(t *testing.T) {
@@ -125,7 +124,7 @@ func TestAccDataSourceUser_byID(t *testing.T) {
 }
 
 func testAccDataSourceUserConfig_byID() string {
-	return fmt.Sprintf(`
+	return `
 resource "jumpcloud_user" "test_id" {
   username  = "iduser"
   email     = "iduser@example.com"
@@ -138,7 +137,7 @@ data "jumpcloud_user" "test_id" {
   user_id = jumpcloud_user.test_id.id
   depends_on = [jumpcloud_user.test_id]
 }
-`)
+`
 }
 
 func TestAccDataSourceUser_complete(t *testing.T) {
@@ -169,7 +168,7 @@ func TestAccDataSourceUser_complete(t *testing.T) {
 }
 
 func testAccDataSourceUserConfig_complete() string {
-	return fmt.Sprintf(`
+	return `
 resource "jumpcloud_user" "test_complete" {
   username  = "completeuser"
   email     = "completeuser@example.com"
@@ -189,5 +188,5 @@ data "jumpcloud_user" "test_complete" {
   username = jumpcloud_user.test_complete.username
   depends_on = [jumpcloud_user.test_complete]
 }
-`)
+`
 }
