@@ -15,15 +15,33 @@ For more details on the underlying API, see:
 
 ## Example Usage
 
+### Minimal Required Attributes
+
+This example shows the minimum required attributes to create a JumpCloud user:
+
+```hcl
+resource "jumpcloud_user" "minimal_example" {
+  # These three fields are the only required attributes
+  username = "jsmith"
+  email    = "john.smith@example.com"
+  password = "SecurePassword123!"
+}
+```
+
 ### Basic User Creation
+
+A typical basic configuration with some common optional attributes:
 
 ```hcl
 resource "jumpcloud_user" "example" {
+  # Required attributes
   username    = "example.user"
   email       = "example.user@example.com"
+  password    = "securePassword123!"
+
+  # Common optional attributes
   firstname   = "Example"
   lastname    = "User"
-  password    = "securePassword123!"
   description = "Created by Terraform"
 }
 ```
@@ -116,6 +134,40 @@ resource "jumpcloud_user" "complete_example" {
     office      = "northwing"
     project     = "atlas"
     manageremail = "manager@example.com"
+  }
+}
+```
+
+### Recommended Practical Configuration
+
+This example shows a practical configuration with commonly used attributes for organizational user management:
+
+```hcl
+resource "jumpcloud_user" "recommended_example" {
+  # Required fields
+  username  = "jsmith"
+  email     = "john.smith@example.com"
+  password  = "SecurePassword123!"
+
+  # Personal information
+  firstname = "John"
+  lastname  = "Smith"
+
+  # Organizational information
+  company     = "Example Corp"
+  department  = "Engineering"
+  job_title   = "Developer"
+
+  # Security settings
+  mfa_enabled = true
+  password_never_expires = false
+
+  # Custom attributes for organizational tracking
+  attributes = {
+    team       = "backend"
+    location   = "remote"
+    manager    = "jane.doe"
+    employeeid = "e12345"
   }
 }
 ```
