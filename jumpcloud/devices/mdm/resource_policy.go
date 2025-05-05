@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/common"
 )
 
 // MDMPolicy represents an MDM policy in JumpCloud
@@ -107,9 +108,10 @@ func ResourcePolicy() *schema.Resource {
 }
 
 func resourceMDMPolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(interface {
-		DoRequest(method, path string, body []byte) ([]byte, error)
-	})
+	c, diagErr := common.GetClientFromMeta(meta)
+	if diagErr != nil {
+		return diagErr
+	}
 
 	// Build MDM policy
 	policy := &MDMPolicy{
@@ -184,9 +186,10 @@ func resourceMDMPolicyCreate(ctx context.Context, d *schema.ResourceData, meta i
 func resourceMDMPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c := meta.(interface {
-		DoRequest(method, path string, body []byte) ([]byte, error)
-	})
+	c, diagErr := common.GetClientFromMeta(meta)
+	if diagErr != nil {
+		return diagErr
+	}
 
 	id := d.Id()
 	if id == "" {
@@ -197,7 +200,7 @@ func resourceMDMPolicyRead(ctx context.Context, d *schema.ResourceData, meta int
 	tflog.Debug(ctx, fmt.Sprintf("Reading MDM policy with ID: %s", id))
 	resp, err := c.DoRequest(http.MethodGet, fmt.Sprintf("/api/v2/mdm/policies/%s", id), nil)
 	if err != nil {
-		if err.Error() == "404 Not Found" {
+		if common.IsNotFoundError(err) {
 			tflog.Warn(ctx, fmt.Sprintf("MDM policy %s not found, removing from state", id))
 			d.SetId("")
 			return diags
@@ -245,9 +248,10 @@ func resourceMDMPolicyRead(ctx context.Context, d *schema.ResourceData, meta int
 }
 
 func resourceMDMPolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(interface {
-		DoRequest(method, path string, body []byte) ([]byte, error)
-	})
+	c, diagErr := common.GetClientFromMeta(meta)
+	if diagErr != nil {
+		return diagErr
+	}
 
 	id := d.Id()
 	if id == "" {
@@ -323,9 +327,10 @@ func resourceMDMPolicyUpdate(ctx context.Context, d *schema.ResourceData, meta i
 func resourceMDMPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	c := meta.(interface {
-		DoRequest(method, path string, body []byte) ([]byte, error)
-	})
+	c, diagErr := common.GetClientFromMeta(meta)
+	if diagErr != nil {
+		return diagErr
+	}
 
 	id := d.Id()
 	if id == "" {
@@ -336,7 +341,7 @@ func resourceMDMPolicyDelete(ctx context.Context, d *schema.ResourceData, meta i
 	tflog.Debug(ctx, fmt.Sprintf("Deleting MDM policy: %s", id))
 	_, err := c.DoRequest(http.MethodDelete, fmt.Sprintf("/api/v2/mdm/policies/%s", id), nil)
 	if err != nil {
-		if err.Error() == "404 Not Found" {
+		if common.IsNotFoundError(err) {
 			tflog.Warn(ctx, fmt.Sprintf("MDM policy %s not found, considering deleted", id))
 		} else {
 			return diag.FromErr(fmt.Errorf("error deleting MDM policy: %v", err))

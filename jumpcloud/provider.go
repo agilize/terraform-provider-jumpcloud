@@ -2,6 +2,8 @@ package jumpcloud
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -205,6 +207,9 @@ func Provider() *schema.Provider {
 			// Admin Users - Data Sources
 			"jumpcloud_admin_users": admin_users.DataSourceUsers(),
 
+			// Users - Data Sources
+			"jumpcloud_user": users_directory.DataSourceUser(),
+
 			// Application Catalog - Data Sources
 			"jumpcloud_application_catalog_application":  application_catalog.DataSourceApplication(),
 			"jumpcloud_application_catalog_applications": application_catalog.DataSourceAppCatalogApplications(),
@@ -282,7 +287,7 @@ func Provider() *schema.Provider {
 }
 
 // providerConfigure configures the provider with authentication details
-func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+func providerConfigure(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
 	tflog.Info(ctx, "Configuring JumpCloud client")
 
 	apiKey := d.Get("api_key").(string)
@@ -295,15 +300,85 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		APIURL: apiURL,
 	}
 
-	client := apiclient.NewClient(config)
+	apiClient := apiclient.NewClient(config)
+
+	// Wrap the API client with an adapter that implements the ClientInterface
+	client := &clientAdapter{apiClient: apiClient}
 
 	tflog.Debug(ctx, "JumpCloud client configured")
 	return client, nil
 }
 
+// clientAdapter adapts the apiclient.Client to the ClientInterface
+type clientAdapter struct {
+	apiClient *apiclient.Client
+}
+
+// DoRequest implements the ClientInterface method with the correct signature
+func (a *clientAdapter) DoRequest(method, path string, body []byte) ([]byte, error) {
+	var requestBody any
+	if len(body) > 0 {
+		// First try to unmarshal as JSON object
+		if err := json.Unmarshal(body, &requestBody); err != nil {
+			// If that fails, try to use the raw bytes as a string
+			bodyStr := string(body)
+			if len(bodyStr) > 0 && (bodyStr[0] == '{' || bodyStr[0] == '[') {
+				// This looks like JSON but couldn't be parsed, log a warning
+				tflog.Warn(context.Background(), fmt.Sprintf("Failed to unmarshal JSON request body: %v. Using raw bytes.", err))
+			}
+			// Use the raw bytes as the request body
+			requestBody = body
+		}
+	}
+
+	// Call the underlying API client
+	return a.apiClient.DoRequest(method, path, requestBody)
+}
+
+// GetApiKey implements the ClientInterface method with the correct signature
+func (a *clientAdapter) GetApiKey() string {
+	return a.apiClient.GetApiKey()
+}
+
+// GetOrgID implements the ClientInterface method with the correct signature
+func (a *clientAdapter) GetOrgID() string {
+	return a.apiClient.GetOrgID()
+}
+
+// DoRequestWithContext implements the ClientInterface method with the correct signature
+func (a *clientAdapter) DoRequestWithContext(ctx context.Context, method, path string, body []byte) ([]byte, error) {
+	// Log the request for debugging
+	tflog.Debug(ctx, fmt.Sprintf("Making API request with context: %s %s", method, path))
+
+	// Use the same body processing logic as in DoRequest
+	var requestBody any
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &requestBody); err != nil {
+			bodyStr := string(body)
+			if len(bodyStr) > 0 && (bodyStr[0] == '{' || bodyStr[0] == '[') {
+				tflog.Warn(ctx, fmt.Sprintf("Failed to unmarshal JSON request body: %v. Using raw bytes.", err))
+			}
+			requestBody = body
+		}
+	}
+
+	// Call the underlying API client
+	// Note: The current apiclient.Client doesn't have a context-aware method,
+	// so we're using the regular DoRequest method for now.
+	// This should be updated when the API client supports context.
+	result, err := a.apiClient.DoRequest(method, path, requestBody)
+
+	// Log any errors
+	if err != nil {
+		tflog.Error(ctx, fmt.Sprintf("API request failed: %v", err))
+	}
+
+	return result, err
+}
+
 // JumpCloudClient is an interface for interaction with the JumpCloud API
 type JumpCloudClient interface {
-	DoRequest(method, path string, body interface{}) ([]byte, error)
+	DoRequest(method, path string, body any) ([]byte, error)
 	GetApiKey() string
 	GetOrgID() string
 }
