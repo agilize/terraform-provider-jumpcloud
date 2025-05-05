@@ -2,12 +2,36 @@ package users_directory
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud"
 )
 
+// testAccPreCheck validates the necessary test API keys exist
+func testAccPreCheck(t *testing.T) {
+	if v := os.Getenv("JUMPCLOUD_API_KEY"); v == "" {
+		t.Skip("JUMPCLOUD_API_KEY must be set for acceptance tests")
+	}
+}
+
+// testAccProviders is a map of providers used for testing
+var testAccProviders map[string]*schema.Provider
+
+func init() {
+	testAccProvider := jumpcloud.Provider()
+	testAccProviders = map[string]*schema.Provider{
+		"jumpcloud": testAccProvider,
+	}
+}
+
 func TestAccDataSourceUser_basic(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless TF_ACC=1 is set")
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -44,6 +68,10 @@ data "jumpcloud_user" "test" {
 }
 
 func TestAccDataSourceUser_byEmail(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless TF_ACC=1 is set")
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -77,6 +105,10 @@ data "jumpcloud_user" "test_email" {
 }
 
 func TestAccDataSourceUser_byID(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless TF_ACC=1 is set")
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -110,6 +142,10 @@ data "jumpcloud_user" "test_id" {
 }
 
 func TestAccDataSourceUser_complete(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless TF_ACC=1 is set")
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -142,7 +178,7 @@ resource "jumpcloud_user" "test_complete" {
   password  = "TestPassword123!"
   company   = "Test Company"
   department = "IT"
-  
+
   attributes = {
     department = "IT"
     location   = "Remote"
