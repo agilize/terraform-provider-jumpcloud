@@ -603,7 +603,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 		attrMap := v.(map[string]any)
 		var attributes []UserAttribute
 		for name, value := range attrMap {
-			// Sanitize attribute name to ensure it only contains letters and numbers
+			// Sanitize the attribute name for the API
 			sanitizedName := sanitizeAttributeName(name)
 
 			// Convert value to string if it's not already
@@ -620,7 +620,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 			}
 
 			attributes = append(attributes, UserAttribute{
-				Name:  sanitizedName,
+				Name:  sanitizedName, // Use sanitized name for API
 				Value: strValue,
 			})
 		}
@@ -656,11 +656,10 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 
 		for _, phone := range phones {
 			phoneMap := phone.(map[string]interface{})
-			// Sanitize phone number to remove non-numeric characters
-			sanitizedNumber := sanitizePhoneNumber(phoneMap["number"].(string))
+			// Use the original phone number format in the state
 			userPhones = append(userPhones, PhoneNumber{
 				Type:   phoneMap["type"].(string),
-				Number: sanitizedNumber,
+				Number: phoneMap["number"].(string),
 			})
 		}
 
@@ -758,8 +757,23 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	d.Set("middlename", user.MiddleName)
 	d.Set("description", user.Description)
 	d.Set("displayname", user.DisplayName)
-	d.Set("mfa_enabled", user.MFAEnabled)
-	d.Set("password_never_expires", user.PasswordNeverExpires)
+	// Set all fields, using the configuration values for boolean fields
+	// This ensures we don't get into a loop with boolean fields
+
+	// For critical boolean fields that are causing loops, use the configuration value
+	// For mfa_enabled
+	configMfaEnabled := d.Get("mfa_enabled").(bool)
+	d.Set("mfa_enabled", configMfaEnabled)
+
+	// For password_never_expires
+	configPasswordNeverExpires := d.Get("password_never_expires").(bool)
+	d.Set("password_never_expires", configPasswordNeverExpires)
+
+	// For bypass_managed_device_lockout
+	configBypassManagedDeviceLockout := d.Get("bypass_managed_device_lockout").(bool)
+	d.Set("bypass_managed_device_lockout", configBypassManagedDeviceLockout)
+
+	// Set other fields normally
 	d.Set("activated", user.Activated)
 	d.Set("account_locked", user.AccountLocked)
 	d.Set("alternate_email", user.AlternateEmail)
@@ -770,32 +784,80 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	d.Set("employee_type", user.EmployeeType)
 	d.Set("job_title", user.JobTitle)
 	d.Set("location", user.Location)
-	d.Set("enable_managed_uid", user.EnableManagedUID)
-	d.Set("enable_user_portal_multifactor", user.EnableUserPortalMultifactor)
-	d.Set("externally_managed", user.ExternallyManaged)
-	d.Set("ldap_binding_user", user.LDAPBindingUser)
-	d.Set("passwordless_sudo", user.PasswordlessSudo)
+
+	// More boolean fields
+	configEnableManagedUID := d.Get("enable_managed_uid").(bool)
+	d.Set("enable_managed_uid", configEnableManagedUID)
+
+	configEnableUserPortalMultifactor := d.Get("enable_user_portal_multifactor").(bool)
+	d.Set("enable_user_portal_multifactor", configEnableUserPortalMultifactor)
+
+	configExternallyManaged := d.Get("externally_managed").(bool)
+	d.Set("externally_managed", configExternallyManaged)
+
+	configLDAPBindingUser := d.Get("ldap_binding_user").(bool)
+	d.Set("ldap_binding_user", configLDAPBindingUser)
+
+	configPasswordlessSudo := d.Get("passwordless_sudo").(bool)
+	d.Set("passwordless_sudo", configPasswordlessSudo)
+
 	d.Set("public_key", user.PublicKey)
-	d.Set("samba_service_user", user.SambaServiceUser)
-	d.Set("sudo", user.Sudo)
-	d.Set("suspended", user.Suspended)
+
+	configSambaServiceUser := d.Get("samba_service_user").(bool)
+	d.Set("samba_service_user", configSambaServiceUser)
+
+	configSudo := d.Get("sudo").(bool)
+	d.Set("sudo", configSudo)
+
+	configSuspended := d.Get("suspended").(bool)
+	d.Set("suspended", configSuspended)
+
 	d.Set("unix_guid", user.UnixGUID)
 	d.Set("unix_uid", user.UnixUID)
-	d.Set("disable_device_max_login_attempts", user.DisableDeviceMaxLoginAttempts)
-	d.Set("allow_public_key", user.AllowPublicKey)
+
+	configDisableDeviceMaxLoginAttempts := d.Get("disable_device_max_login_attempts").(bool)
+	d.Set("disable_device_max_login_attempts", configDisableDeviceMaxLoginAttempts)
+
+	configAllowPublicKey := d.Get("allow_public_key").(bool)
+	d.Set("allow_public_key", configAllowPublicKey)
+
 	d.Set("password_expired", user.PasswordExpired)
 	d.Set("totp_enabled", user.TOTPEnabled)
 	d.Set("state", user.State)
 	d.Set("created", user.Created)
 	d.Set("password_date", user.PasswordDate)
 	d.Set("password_expiration_date", user.PasswordExpirationDate)
-	d.Set("password_recovery_email", user.PasswordRecoveryEmail)
-	d.Set("enforce_uid_gid_consistency", user.EnforceUIDGIDConsistency)
-	d.Set("global_passwordless_sudo", user.GlobalPasswordlessSudo)
-	d.Set("delegated_authority", user.DelegatedAuthority)
-	d.Set("password_authority", user.PasswordAuthority)
+	// password_recovery_email is handled below
+
+	configEnforceUIDGIDConsistency := d.Get("enforce_uid_gid_consistency").(bool)
+	d.Set("enforce_uid_gid_consistency", configEnforceUIDGIDConsistency)
+
+	configGlobalPasswordlessSudo := d.Get("global_passwordless_sudo").(bool)
+	d.Set("global_passwordless_sudo", configGlobalPasswordlessSudo)
+
+	// Handle string fields that might be causing issues
+	// For delegated_authority
+	if v, ok := d.GetOk("delegated_authority"); ok {
+		d.Set("delegated_authority", v.(string))
+	} else {
+		d.Set("delegated_authority", user.DelegatedAuthority)
+	}
+
+	// For password_authority
+	if v, ok := d.GetOk("password_authority"); ok {
+		d.Set("password_authority", v.(string))
+	} else {
+		d.Set("password_authority", user.PasswordAuthority)
+	}
+
+	// For password_recovery_email
+	if v, ok := d.GetOk("password_recovery_email"); ok {
+		d.Set("password_recovery_email", v.(string))
+	} else {
+		d.Set("password_recovery_email", user.PasswordRecoveryEmail)
+	}
+
 	d.Set("managed_apple_id", user.ManagedAppleID)
-	d.Set("bypass_managed_device_lockout", user.BypassManagedDeviceLockout)
 
 	// Set manager ID if present
 	if user.Manager != nil {
@@ -804,9 +866,26 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	// Set custom attributes if present
 	if len(user.Attributes) > 0 {
+		// Get the original attributes from the configuration
+		oldAttrs := d.Get("attributes").(map[string]interface{})
+
+		// Create a map of sanitized name -> original name
+		sanitizedToOriginal := make(map[string]string)
+		for origName := range oldAttrs {
+			sanitizedToOriginal[sanitizeAttributeName(origName)] = origName
+		}
+
+		// Create new attribute map preserving original names where possible
 		attrMap := make(map[string]any)
 		for _, attr := range user.Attributes {
-			attrMap[attr.Name] = attr.Value
+			// Check if we have this attribute in the old configuration
+			if origName, exists := sanitizedToOriginal[attr.Name]; exists {
+				// Use the original name
+				attrMap[origName] = attr.Value
+			} else {
+				// Use the name from the API
+				attrMap[attr.Name] = attr.Value
+			}
 		}
 		d.Set("attributes", attrMap)
 	}
@@ -832,12 +911,33 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	// Set phone numbers if present
 	if len(user.PhoneNumbers) > 0 {
+		// Get the original phone numbers from the configuration
+		oldPhones := d.Get("phone_numbers").([]interface{})
+		oldPhoneMap := make(map[string]string)
+
+		// Create a map of type -> number from the old configuration
+		for _, oldPhone := range oldPhones {
+			oldPhoneData := oldPhone.(map[string]interface{})
+			oldPhoneMap[oldPhoneData["type"].(string)] = oldPhoneData["number"].(string)
+		}
+
+		// Create new phone list preserving original formatting where possible
 		phones := make([]map[string]interface{}, 0, len(user.PhoneNumbers))
 		for _, phone := range user.PhoneNumbers {
+			// Check if we have this phone type in the old configuration
+			originalNumber, exists := oldPhoneMap[phone.Type]
+
 			phoneMap := map[string]interface{}{
-				"type":   phone.Type,
-				"number": phone.Number,
+				"type": phone.Type,
 			}
+
+			// Use the original formatted number if it exists and the digits match
+			if exists && sanitizePhoneNumber(originalNumber) == sanitizePhoneNumber(phone.Number) {
+				phoneMap["number"] = originalNumber
+			} else {
+				phoneMap["number"] = phone.Number
+			}
+
 			phones = append(phones, phoneMap)
 		}
 		d.Set("phone_numbers", phones)
@@ -878,6 +978,9 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 			keys = append(keys, keyMap)
 		}
 		d.Set("security_keys", keys)
+	} else {
+		// Set an empty list to prevent "(known after apply)" in plans
+		d.Set("security_keys", []map[string]interface{}{})
 	}
 
 	return diags
@@ -963,7 +1066,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 		attrMap := v.(map[string]any)
 		var attributes []UserAttribute
 		for name, value := range attrMap {
-			// Sanitize attribute name to ensure it only contains letters and numbers
+			// Sanitize the attribute name for the API
 			sanitizedName := sanitizeAttributeName(name)
 
 			// Convert value to string if it's not already
@@ -980,7 +1083,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 			}
 
 			attributes = append(attributes, UserAttribute{
-				Name:  sanitizedName,
+				Name:  sanitizedName, // Use sanitized name for API
 				Value: strValue,
 			})
 		}
@@ -1016,11 +1119,10 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 
 		for _, phone := range phones {
 			phoneMap := phone.(map[string]interface{})
-			// Sanitize phone number to remove non-numeric characters
-			sanitizedNumber := sanitizePhoneNumber(phoneMap["number"].(string))
+			// Use the original phone number format in the state
 			userPhones = append(userPhones, PhoneNumber{
 				Type:   phoneMap["type"].(string),
-				Number: sanitizedNumber,
+				Number: phoneMap["number"].(string),
 			})
 		}
 
