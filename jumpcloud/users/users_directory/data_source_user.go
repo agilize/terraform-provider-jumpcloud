@@ -277,8 +277,13 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, meta interf
 		}
 	} else {
 		// For username or email, we get all users and filter client-side
-		var users []User
-		if err := json.Unmarshal(resp, &users); err != nil {
+		// The API returns a response with a "results" array
+		var response struct {
+			Results    []User `json:"results"`
+			TotalCount int    `json:"totalCount"`
+		}
+
+		if err := json.Unmarshal(resp, &response); err != nil {
 			return diag.FromErr(fmt.Errorf("error parsing users response: %v", err))
 		}
 
@@ -286,7 +291,7 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, meta interf
 		var matchedUsers []User
 		searchValue := d.Get(searchType).(string)
 
-		for _, u := range users {
+		for _, u := range response.Results {
 			if searchType == "username" && u.Username == searchValue {
 				matchedUsers = append(matchedUsers, u)
 			} else if searchType == "email" && u.Email == searchValue {
