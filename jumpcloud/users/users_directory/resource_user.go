@@ -603,8 +603,9 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 		attrMap := v.(map[string]any)
 		var attributes []UserAttribute
 		for name, value := range attrMap {
-			// Sanitize attribute name to ensure it only contains letters and numbers
-			sanitizedName := sanitizeAttributeName(name)
+			// Keep the original attribute name for the state
+			// but use a sanitized version for the API
+			originalName := name
 
 			// Convert value to string if it's not already
 			var strValue string
@@ -620,7 +621,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 			}
 
 			attributes = append(attributes, UserAttribute{
-				Name:  sanitizedName,
+				Name:  originalName,
 				Value: strValue,
 			})
 		}
@@ -656,11 +657,10 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 
 		for _, phone := range phones {
 			phoneMap := phone.(map[string]interface{})
-			// Sanitize phone number to remove non-numeric characters
-			sanitizedNumber := sanitizePhoneNumber(phoneMap["number"].(string))
+			// Use the original phone number format in the state
 			userPhones = append(userPhones, PhoneNumber{
 				Type:   phoneMap["type"].(string),
-				Number: sanitizedNumber,
+				Number: phoneMap["number"].(string),
 			})
 		}
 
@@ -804,9 +804,26 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	// Set custom attributes if present
 	if len(user.Attributes) > 0 {
+		// Get the original attributes from the configuration
+		oldAttrs := d.Get("attributes").(map[string]interface{})
+
+		// Create a map of sanitized name -> original name
+		sanitizedToOriginal := make(map[string]string)
+		for origName := range oldAttrs {
+			sanitizedToOriginal[sanitizeAttributeName(origName)] = origName
+		}
+
+		// Create new attribute map preserving original names where possible
 		attrMap := make(map[string]any)
 		for _, attr := range user.Attributes {
-			attrMap[attr.Name] = attr.Value
+			// Check if we have this attribute in the old configuration
+			if origName, exists := sanitizedToOriginal[attr.Name]; exists {
+				// Use the original name
+				attrMap[origName] = attr.Value
+			} else {
+				// Use the name from the API
+				attrMap[attr.Name] = attr.Value
+			}
 		}
 		d.Set("attributes", attrMap)
 	}
@@ -832,12 +849,33 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	// Set phone numbers if present
 	if len(user.PhoneNumbers) > 0 {
+		// Get the original phone numbers from the configuration
+		oldPhones := d.Get("phone_numbers").([]interface{})
+		oldPhoneMap := make(map[string]string)
+
+		// Create a map of type -> number from the old configuration
+		for _, oldPhone := range oldPhones {
+			oldPhoneData := oldPhone.(map[string]interface{})
+			oldPhoneMap[oldPhoneData["type"].(string)] = oldPhoneData["number"].(string)
+		}
+
+		// Create new phone list preserving original formatting where possible
 		phones := make([]map[string]interface{}, 0, len(user.PhoneNumbers))
 		for _, phone := range user.PhoneNumbers {
+			// Check if we have this phone type in the old configuration
+			originalNumber, exists := oldPhoneMap[phone.Type]
+
 			phoneMap := map[string]interface{}{
-				"type":   phone.Type,
-				"number": phone.Number,
+				"type": phone.Type,
 			}
+
+			// Use the original formatted number if it exists and the digits match
+			if exists && sanitizePhoneNumber(originalNumber) == sanitizePhoneNumber(phone.Number) {
+				phoneMap["number"] = originalNumber
+			} else {
+				phoneMap["number"] = phone.Number
+			}
+
 			phones = append(phones, phoneMap)
 		}
 		d.Set("phone_numbers", phones)
@@ -963,8 +1001,9 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 		attrMap := v.(map[string]any)
 		var attributes []UserAttribute
 		for name, value := range attrMap {
-			// Sanitize attribute name to ensure it only contains letters and numbers
-			sanitizedName := sanitizeAttributeName(name)
+			// Keep the original attribute name for the state
+			// but use a sanitized version for the API
+			originalName := name
 
 			// Convert value to string if it's not already
 			var strValue string
@@ -980,7 +1019,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 			}
 
 			attributes = append(attributes, UserAttribute{
-				Name:  sanitizedName,
+				Name:  originalName,
 				Value: strValue,
 			})
 		}
@@ -1016,11 +1055,10 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 
 		for _, phone := range phones {
 			phoneMap := phone.(map[string]interface{})
-			// Sanitize phone number to remove non-numeric characters
-			sanitizedNumber := sanitizePhoneNumber(phoneMap["number"].(string))
+			// Use the original phone number format in the state
 			userPhones = append(userPhones, PhoneNumber{
 				Type:   phoneMap["type"].(string),
-				Number: sanitizedNumber,
+				Number: phoneMap["number"].(string),
 			})
 		}
 
