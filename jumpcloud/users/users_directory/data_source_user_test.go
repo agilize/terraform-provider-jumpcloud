@@ -1,4 +1,4 @@
-package users_directory
+package users_directory_test
 
 import (
 	"fmt"
