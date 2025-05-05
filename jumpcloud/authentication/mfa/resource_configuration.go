@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/common"
 )
 
 // MFAConfig represents JumpCloud MFA configuration
@@ -158,11 +159,9 @@ func ResourceConfiguration() *schema.Resource {
 }
 
 func resourceConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c, ok := meta.(interface {
-		DoRequest(method, path string, body []byte) ([]byte, error)
-	})
-	if !ok {
-		return diag.Errorf("error: client does not implement DoRequest method")
+	c, diagErr := common.GetClientFromMeta(meta)
+	if diagErr != nil {
+		return diagErr
 	}
 
 	// Verificamos se já existe uma configuração para a organização
@@ -222,11 +221,9 @@ func resourceConfigurationCreate(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourceConfigurationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c, ok := meta.(interface {
-		DoRequest(method, path string, body []byte) ([]byte, error)
-	})
-	if !ok {
-		return diag.Errorf("error: client does not implement DoRequest method")
+	c, diagErr := common.GetClientFromMeta(meta)
+	if diagErr != nil {
+		return diagErr
 	}
 
 	var diags diag.Diagnostics
@@ -250,7 +247,8 @@ func resourceConfigurationRead(ctx context.Context, d *schema.ResourceData, meta
 	resp, err := c.DoRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		// Se o recurso não foi encontrado, removê-lo do estado
-		if err.Error() == "404 Not Found" {
+		if common.IsNotFoundError(err) {
+			tflog.Warn(ctx, "Configuração MFA não encontrada, removendo do state")
 			d.SetId("")
 			return diags
 		}
@@ -288,11 +286,9 @@ func resourceConfigurationRead(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func resourceConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c, ok := meta.(interface {
-		DoRequest(method, path string, body []byte) ([]byte, error)
-	})
-	if !ok {
-		return diag.Errorf("error: client does not implement DoRequest method")
+	c, diagErr := common.GetClientFromMeta(meta)
+	if diagErr != nil {
+		return diagErr
 	}
 
 	// Construir a configuração a partir do resource
@@ -322,11 +318,9 @@ func resourceConfigurationUpdate(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourceConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c, ok := meta.(interface {
-		DoRequest(method, path string, body []byte) ([]byte, error)
-	})
-	if !ok {
-		return diag.Errorf("error: client does not implement DoRequest method")
+	c, diagErr := common.GetClientFromMeta(meta)
+	if diagErr != nil {
+		return diagErr
 	}
 
 	var diags diag.Diagnostics
