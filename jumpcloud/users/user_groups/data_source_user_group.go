@@ -46,6 +46,73 @@ func DataSourceUserGroup() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "Custom attributes for the user group",
 			},
+			"membership_method": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Method for determining group membership (STATIC, DYNAMIC_REVIEW_REQUIRED, or DYNAMIC_AUTOMATED)",
+			},
+			"member_query": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Query for determining dynamic group membership",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"query_type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type of query",
+						},
+						"filter": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Filters for the query",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"field": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Field to filter on",
+									},
+									"operator": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Operator for the filter",
+									},
+									"value": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Value for the filter",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"member_query_exemptions": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Users exempted from the dynamic group query",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "ID of the exempted user",
+						},
+						"type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type of the exemption",
+						},
+					},
+				},
+			},
+			"member_suggestions_notify": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Whether to send email notifications for membership suggestions",
+			},
 		},
 	}
 }
@@ -63,7 +130,7 @@ func dataSourceUserGroupRead(ctx context.Context, d *schema.ResourceData, meta i
 
 	// Determine search method based on provided parameters
 	if groupID, ok := d.GetOk("group_id"); ok {
-		// Direct lookup by ID
+		// Direct lookup by ID using direct API path
 		path = fmt.Sprintf("/api/v2/usergroups/%s", groupID.(string))
 		searchType = "ID"
 	} else if _, ok := d.GetOk("name"); ok {
@@ -91,13 +158,10 @@ func dataSourceUserGroupRead(ctx context.Context, d *schema.ResourceData, meta i
 		}
 	} else {
 		// For name, we get all groups and filter client-side
-		// The API returns a response with a "results" array
-		var response struct {
-			Results    []common.UserGroup `json:"results"`
-			TotalCount int                `json:"totalCount"`
-		}
+		// The API returns an array of groups
+		var groups []common.UserGroup
 
-		if err := json.Unmarshal(resp, &response); err != nil {
+		if err := json.Unmarshal(resp, &groups); err != nil {
 			return diag.FromErr(fmt.Errorf("error parsing user groups response: %v", err))
 		}
 
@@ -105,7 +169,7 @@ func dataSourceUserGroupRead(ctx context.Context, d *schema.ResourceData, meta i
 		var matchedGroups []common.UserGroup
 		searchValue := d.Get("name").(string)
 
-		for _, g := range response.Results {
+		for _, g := range groups {
 			if g.Name == searchValue {
 				matchedGroups = append(matchedGroups, g)
 			}
@@ -129,6 +193,24 @@ func dataSourceUserGroupRead(ctx context.Context, d *schema.ResourceData, meta i
 	d.Set("name", group.Name)
 	d.Set("description", group.Description)
 	d.Set("type", group.Type)
+
+	// Set dynamic group fields
+	d.Set("membership_method", group.MembershipMethod)
+	d.Set("member_suggestions_notify", group.MemberSuggestionsNotify)
+
+	// Set member query if present
+	if group.MemberQuery != nil {
+		if err := d.Set("member_query", flattenMemberQuery(group.MemberQuery)); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting member_query: %v", err))
+		}
+	}
+
+	// Set member query exemptions if present
+	if len(group.MemberQueryExemptions) > 0 {
+		if err := d.Set("member_query_exemptions", flattenMemberQueryExemptions(group.MemberQueryExemptions)); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting member_query_exemptions: %v", err))
+		}
+	}
 
 	// Process attributes
 	if group.Attributes != nil {

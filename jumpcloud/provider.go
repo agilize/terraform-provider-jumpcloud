@@ -84,7 +84,7 @@ func Provider() *schema.Provider {
 			"api_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("JUMPCLOUD_API_URL", "https://console.jumpcloud.com/api"),
+				DefaultFunc: schema.EnvDefaultFunc("JUMPCLOUD_API_URL", "https://console.jumpcloud.com"),
 				Description: "JumpCloud API URL.",
 			},
 		},
@@ -332,8 +332,24 @@ func (a *clientAdapter) DoRequest(method, path string, body []byte) ([]byte, err
 		}
 	}
 
+	// Log the request for debugging
+	fmt.Printf("DEBUG: Making API request: %s %s\n", method, path)
+	if requestBody != nil {
+		bodyBytes, _ := json.Marshal(requestBody)
+		fmt.Printf("DEBUG: Request body: %s\n", string(bodyBytes))
+	}
+
 	// Call the underlying API client
-	return a.apiClient.DoRequest(method, path, requestBody)
+	result, err := a.apiClient.DoRequest(method, path, requestBody)
+
+	// Log the response for debugging
+	if err != nil {
+		fmt.Printf("DEBUG: API request failed: %v\n", err)
+	} else {
+		fmt.Printf("DEBUG: API response: %s\n", string(result))
+	}
+
+	return result, err
 }
 
 // GetApiKey implements the ClientInterface method with the correct signature

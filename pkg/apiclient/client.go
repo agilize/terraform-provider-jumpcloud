@@ -7,14 +7,15 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
 // JUMPCLOUD_API_V1_URL is the base URL for JumpCloud API v1
-const JUMPCLOUD_API_V1_URL = "https://console.jumpcloud.com/api"
+const JUMPCLOUD_API_V1_URL = "https://console.jumpcloud.com"
 
 // JUMPCLOUD_API_V2_URL is the base URL for JumpCloud API v2
-const JUMPCLOUD_API_V2_URL = "https://console.jumpcloud.com/api/v2"
+const JUMPCLOUD_API_V2_URL = "https://console.jumpcloud.com"
 
 // APIVersion represents the JumpCloud API version
 type APIVersion string
@@ -127,6 +128,9 @@ func (c *Client) DoRequestWithContext(ctx context.Context, method, path string, 
 	// Construct full URL
 	url := fmt.Sprintf("%s%s", c.APIURL, path)
 
+	// Log the full URL for debugging
+	fmt.Printf("DEBUG: Making request to URL: %s\n", url)
+
 	// Create HTTP request with context
 	req, err := http.NewRequestWithContext(ctx, method, url, reqBody)
 	if err != nil {
@@ -158,6 +162,10 @@ func (c *Client) DoRequestWithContext(ctx context.Context, method, path string, 
 	if err != nil {
 		return nil, fmt.Errorf("error reading response body: %v", err)
 	}
+
+	// Log response status and body for debugging
+	fmt.Printf("DEBUG: Response status: %d\n", resp.StatusCode)
+	fmt.Printf("DEBUG: Response body: %s\n", string(respBody))
 
 	// Check for HTTP error status
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
@@ -191,6 +199,11 @@ func (c *Client) GetV1WithContext(ctx context.Context, path string) ([]byte, err
 	c.APIURL = JUMPCLOUD_API_V1_URL
 	defer func() { c.APIURL = tempAPIURL }()
 
+	// Ensure path starts with /api
+	if !strings.HasPrefix(path, "/api") {
+		path = "/api" + path
+	}
+
 	return c.DoRequestWithContext(ctx, http.MethodGet, path, nil)
 }
 
@@ -204,6 +217,15 @@ func (c *Client) GetV2WithContext(ctx context.Context, path string) ([]byte, err
 	tempAPIURL := c.APIURL
 	c.APIURL = JUMPCLOUD_API_V2_URL
 	defer func() { c.APIURL = tempAPIURL }()
+
+	// Ensure path starts with /api/v2
+	if !strings.HasPrefix(path, "/api/v2") {
+		if strings.HasPrefix(path, "/") {
+			path = "/api/v2" + path
+		} else {
+			path = "/api/v2/" + path
+		}
+	}
 
 	return c.DoRequestWithContext(ctx, http.MethodGet, path, nil)
 }
@@ -219,6 +241,15 @@ func (c *Client) PostV1WithContext(ctx context.Context, path string, body any) (
 	c.APIURL = JUMPCLOUD_API_V1_URL
 	defer func() { c.APIURL = tempAPIURL }()
 
+	// Ensure path starts with /api
+	if !strings.HasPrefix(path, "/api") {
+		if strings.HasPrefix(path, "/") {
+			path = "/api" + path
+		} else {
+			path = "/api/" + path
+		}
+	}
+
 	return c.DoRequestWithContext(ctx, http.MethodPost, path, body)
 }
 
@@ -227,6 +258,15 @@ func (c *Client) PostV2WithContext(ctx context.Context, path string, body any) (
 	tempAPIURL := c.APIURL
 	c.APIURL = JUMPCLOUD_API_V2_URL
 	defer func() { c.APIURL = tempAPIURL }()
+
+	// Ensure path starts with /api/v2
+	if !strings.HasPrefix(path, "/api/v2") {
+		if strings.HasPrefix(path, "/") {
+			path = "/api/v2" + path
+		} else {
+			path = "/api/v2/" + path
+		}
+	}
 
 	return c.DoRequestWithContext(ctx, http.MethodPost, path, body)
 }
@@ -237,6 +277,15 @@ func (c *Client) PutV1WithContext(ctx context.Context, path string, body any) ([
 	c.APIURL = JUMPCLOUD_API_V1_URL
 	defer func() { c.APIURL = tempAPIURL }()
 
+	// Ensure path starts with /api
+	if !strings.HasPrefix(path, "/api") {
+		if strings.HasPrefix(path, "/") {
+			path = "/api" + path
+		} else {
+			path = "/api/" + path
+		}
+	}
+
 	return c.DoRequestWithContext(ctx, http.MethodPut, path, body)
 }
 
@@ -245,6 +294,15 @@ func (c *Client) PutV2WithContext(ctx context.Context, path string, body any) ([
 	tempAPIURL := c.APIURL
 	c.APIURL = JUMPCLOUD_API_V2_URL
 	defer func() { c.APIURL = tempAPIURL }()
+
+	// Ensure path starts with /api/v2
+	if !strings.HasPrefix(path, "/api/v2") {
+		if strings.HasPrefix(path, "/") {
+			path = "/api/v2" + path
+		} else {
+			path = "/api/v2/" + path
+		}
+	}
 
 	return c.DoRequestWithContext(ctx, http.MethodPut, path, body)
 }
@@ -255,6 +313,15 @@ func (c *Client) DeleteV1WithContext(ctx context.Context, path string) ([]byte, 
 	c.APIURL = JUMPCLOUD_API_V1_URL
 	defer func() { c.APIURL = tempAPIURL }()
 
+	// Ensure path starts with /api
+	if !strings.HasPrefix(path, "/api") {
+		if strings.HasPrefix(path, "/") {
+			path = "/api" + path
+		} else {
+			path = "/api/" + path
+		}
+	}
+
 	return c.DoRequestWithContext(ctx, http.MethodDelete, path, nil)
 }
 
@@ -263,6 +330,15 @@ func (c *Client) DeleteV2WithContext(ctx context.Context, path string) ([]byte, 
 	tempAPIURL := c.APIURL
 	c.APIURL = JUMPCLOUD_API_V2_URL
 	defer func() { c.APIURL = tempAPIURL }()
+
+	// Ensure path starts with /api/v2
+	if !strings.HasPrefix(path, "/api/v2") {
+		if strings.HasPrefix(path, "/") {
+			path = "/api/v2" + path
+		} else {
+			path = "/api/v2/" + path
+		}
+	}
 
 	return c.DoRequestWithContext(ctx, http.MethodDelete, path, nil)
 }
