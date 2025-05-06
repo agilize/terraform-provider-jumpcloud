@@ -53,11 +53,9 @@ func ResourceMembership() *schema.Resource {
 func resourceMembershipCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, "Creating user group membership in JumpCloud")
 
-	client, ok := meta.(interface {
-		DoRequest(method string, path string, body interface{}) ([]byte, error)
-	})
-	if !ok {
-		return diag.Errorf("error asserting API client")
+	c, diagErr := common.GetClientFromMeta(meta)
+	if diagErr != nil {
+		return diagErr
 	}
 
 	userGroupID := d.Get("user_group_id").(string)
@@ -76,10 +74,48 @@ func resourceMembershipCreate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(fmt.Errorf("error serializing request body: %v", err))
 	}
 
-	// Send request to associate the user with the group
-	_, err = client.DoRequest(http.MethodPost, fmt.Sprintf("/api/v2/usergroups/%s/members", userGroupID), jsonData)
+	// Check if the user is already a member of the group
+	checkUrl := fmt.Sprintf("/api/v2/usergroups/%s/members", userGroupID)
+	resp, err := c.DoRequest(http.MethodGet, checkUrl, nil)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error associating user with group: %v", err))
+		return diag.FromErr(fmt.Errorf("error checking group membership: %v", err))
+	}
+
+	// Debug log the response
+	tflog.Debug(ctx, fmt.Sprintf("Group members response: %s", string(resp)))
+
+	// Decode the response - the API returns an array of membership objects
+	var memberships []map[string]interface{}
+	if err := json.Unmarshal(resp, &memberships); err != nil {
+		return diag.FromErr(fmt.Errorf("error deserializing response: %v", err))
+	}
+
+	// Check if the user is already associated with the group
+	alreadyMember := false
+	for _, membership := range memberships {
+		// Check if this is a user membership
+		if to, ok := membership["to"].(map[string]interface{}); ok {
+			if id, ok := to["id"].(string); ok && id == userID {
+				alreadyMember = true
+				break
+			}
+		}
+	}
+
+	if alreadyMember {
+		tflog.Info(ctx, fmt.Sprintf("User %s is already a member of group %s", userID, userGroupID))
+	} else {
+		// Send request to associate the user with the group
+		url := fmt.Sprintf("/api/v2/usergroups/%s/members", userGroupID)
+		_, err = c.DoRequest(http.MethodPost, url, jsonData)
+		if err != nil {
+			// If the error is "Already Exists", that's fine, we can continue
+			if strings.Contains(err.Error(), "Already Exists") {
+				tflog.Info(ctx, fmt.Sprintf("User %s is already a member of group %s (API reported)", userID, userGroupID))
+			} else {
+				return diag.FromErr(fmt.Errorf("error associating user with group: %v", err))
+			}
+		}
 	}
 
 	// Set resource ID as a combination of group ID and user ID
@@ -94,11 +130,9 @@ func resourceMembershipRead(ctx context.Context, d *schema.ResourceData, meta in
 
 	var diags diag.Diagnostics
 
-	client, ok := meta.(interface {
-		DoRequest(method string, path string, body interface{}) ([]byte, error)
-	})
-	if !ok {
-		return diag.Errorf("error asserting API client")
+	c, diagErr := common.GetClientFromMeta(meta)
+	if diagErr != nil {
+		return diagErr
 	}
 
 	// Extract IDs from the composite resource ID
@@ -118,8 +152,9 @@ func resourceMembershipRead(ctx context.Context, d *schema.ResourceData, meta in
 		diags = append(diags, diag.FromErr(err)...)
 	}
 
-	// Check if the association still exists
-	resp, err := client.DoRequest(http.MethodGet, fmt.Sprintf("/api/v2/usergroups/%s/members/%s", userGroupID, userID), nil)
+	// Check if the association still exists by getting all members of the group
+	url := fmt.Sprintf("/api/v2/usergroups/%s/members", userGroupID)
+	resp, err := c.DoRequest(http.MethodGet, url, nil)
 	if err != nil {
 		if common.IsNotFoundError(err) {
 			// If not found, that's expected, we're checking if it exists
@@ -129,24 +164,24 @@ func resourceMembershipRead(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.FromErr(fmt.Errorf("error checking if user is member of group: %v", err))
 	}
 
-	// Decode the response
-	var members struct {
-		Results []struct {
-			To struct {
-				ID string `json:"id"`
-			} `json:"to"`
-		} `json:"results"`
-	}
-	if err := json.Unmarshal(resp, &members); err != nil {
+	// Debug log the response
+	tflog.Debug(ctx, fmt.Sprintf("Group members response: %s", string(resp)))
+
+	// Decode the response - the API returns an array of membership objects
+	var memberships []map[string]interface{}
+	if err := json.Unmarshal(resp, &memberships); err != nil {
 		return diag.FromErr(fmt.Errorf("error deserializing response: %v", err))
 	}
 
 	// Check if the user is still associated with the group
 	found := false
-	for _, member := range members.Results {
-		if member.To.ID == userID {
-			found = true
-			break
+	for _, membership := range memberships {
+		// Check if this is a user membership
+		if to, ok := membership["to"].(map[string]interface{}); ok {
+			if id, ok := to["id"].(string); ok && id == userID {
+				found = true
+				break
+			}
 		}
 	}
 
@@ -164,11 +199,9 @@ func resourceMembershipDelete(ctx context.Context, d *schema.ResourceData, meta 
 
 	var diags diag.Diagnostics
 
-	client, ok := meta.(interface {
-		DoRequest(method string, path string, body interface{}) ([]byte, error)
-	})
-	if !ok {
-		return diag.Errorf("error asserting API client")
+	c, diagErr := common.GetClientFromMeta(meta)
+	if diagErr != nil {
+		return diagErr
 	}
 
 	// Extract IDs from the composite resource ID
@@ -194,7 +227,8 @@ func resourceMembershipDelete(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	// Send request to remove the association
-	_, err = client.DoRequest(http.MethodPost, fmt.Sprintf("/api/v2/usergroups/%s/members", userGroupID), jsonData)
+	url := fmt.Sprintf("/api/v2/usergroups/%s/members", userGroupID)
+	_, err = c.DoRequest(http.MethodPost, url, jsonData)
 	if err != nil {
 		// Ignore error if the resource has already been removed
 		if common.IsNotFoundError(err) {

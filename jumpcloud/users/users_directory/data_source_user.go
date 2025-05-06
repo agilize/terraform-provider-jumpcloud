@@ -244,17 +244,17 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 	// Determine search method based on provided parameters
 	if userID, ok := d.GetOk("user_id"); ok {
-		// Direct lookup by ID
-		path = fmt.Sprintf("/systemusers/%s", userID.(string))
+		// Direct lookup by ID using direct API path
+		path = fmt.Sprintf("/api/systemusers/%s", userID.(string))
 		searchType = "ID"
 	} else if _, ok := d.GetOk("username"); ok {
 		// For username, we'll get all users and filter client-side
 		// This is more reliable than using the search endpoint
-		path = "/systemusers"
+		path = "/api/systemusers"
 		searchType = "username"
 	} else if _, ok := d.GetOk("email"); ok {
 		// For email, we'll get all users and filter client-side
-		path = "/systemusers"
+		path = "/api/systemusers"
 		searchType = "email"
 	} else {
 		return diag.FromErr(fmt.Errorf("one of user_id, username, or email must be provided"))

@@ -701,8 +701,12 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 	}
 
 	// Create user via API
-	// The correct endpoint for creating users is /systemusers
-	resp, err := c.DoRequest(http.MethodPost, "/systemusers", userJSON)
+	// Use the constant for the system users path
+	tflog.Debug(ctx, fmt.Sprintf("Creating user with URL: %s", common.SystemUsersPath))
+	tflog.Debug(ctx, fmt.Sprintf("Request body: %s", string(userJSON)))
+
+	// Try with direct API path
+	resp, err := c.DoRequest(http.MethodPost, "/api/systemusers", userJSON)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error creating user: %v", err))
 	}
@@ -731,8 +735,9 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	userID := d.Id()
 
 	// Get user via API
-	// The correct endpoint for getting users is /systemusers/{id}
-	resp, err := c.DoRequest(http.MethodGet, fmt.Sprintf("/systemusers/%s", userID), nil)
+	// Use the same direct API path as in create
+	tflog.Debug(ctx, fmt.Sprintf("Reading user with ID: %s", userID))
+	resp, err := c.DoRequest(http.MethodGet, fmt.Sprintf("/api/systemusers/%s", userID), nil)
 	if err != nil {
 		// Handle 404 specifically to mark the resource as removed
 		if common.IsNotFoundError(err) {
@@ -1164,8 +1169,9 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 	}
 
 	// Update user via API
-	// The correct endpoint for updating users is /systemusers/{id}
-	_, err = c.DoRequest(http.MethodPut, fmt.Sprintf("/systemusers/%s", userID), userJSON)
+	// Use the same direct API path as in create and read
+	tflog.Debug(ctx, fmt.Sprintf("Updating user with ID: %s", userID))
+	_, err = c.DoRequest(http.MethodPut, fmt.Sprintf("/api/systemusers/%s", userID), userJSON)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error updating user %s: %v", userID, err))
 	}
@@ -1182,8 +1188,9 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta any) d
 	userID := d.Id()
 
 	// Delete user via API
-	// The correct endpoint for deleting users is /systemusers/{id}
-	_, err := c.DoRequest(http.MethodDelete, fmt.Sprintf("/systemusers/%s", userID), nil)
+	// Use the same direct API path as in create, read, and update
+	tflog.Debug(ctx, fmt.Sprintf("Deleting user with ID: %s", userID))
+	_, err := c.DoRequest(http.MethodDelete, fmt.Sprintf("/api/systemusers/%s", userID), nil)
 	if err != nil {
 		// If the resource is already gone, don't return an error
 		if common.IsNotFoundError(err) {
