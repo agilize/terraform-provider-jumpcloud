@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.8 (2025-05-06)
+
+* Initial release
+
 ## v0.1.7 (2025-05-05)
 
 * Initial release
