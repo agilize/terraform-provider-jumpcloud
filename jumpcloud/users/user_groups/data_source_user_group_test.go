@@ -30,7 +30,6 @@ func TestAccDataSourceUserGroup_basic(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("Acceptance tests skipped unless TF_ACC=1 is set")
 	}
-	
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -66,7 +65,6 @@ func TestAccDataSourceUserGroup_byName(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("Acceptance tests skipped unless TF_ACC=1 is set")
 	}
-	
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -101,7 +99,6 @@ func TestAccDataSourceUserGroup_withAttributes(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("Acceptance tests skipped unless TF_ACC=1 is set")
 	}
-	
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -123,7 +120,7 @@ func testAccDataSourceUserGroupConfig_withAttributes() string {
 resource "jumpcloud_user_group" "test_attrs" {
   name        = "test-group-with-attrs"
   description = "Test user group with attributes"
-  
+
   attributes = {
     department = "IT"
     location   = "Remote"

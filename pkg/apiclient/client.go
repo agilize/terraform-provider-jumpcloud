@@ -81,7 +81,7 @@ func NewClient(config *Config) *Client {
 	// Set default API URL if not specified
 	apiURL := config.APIURL
 	if apiURL == "" {
-		apiURL = JUMPCLOUD_API_V1_URL
+		apiURL = JUMPCLOUD_API_V1_URL + "/api"
 	}
 
 	// Set default API version if not specified
