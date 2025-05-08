@@ -121,16 +121,19 @@ func DataSourceUser() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Whether managed UID is enabled for the user",
+				Deprecated:  "This field is deprecated and will be removed in a future version.",
 			},
 			"enable_user_portal_multifactor": {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Whether multifactor authentication is enabled for the user portal",
+				Deprecated:  "This field is deprecated and will be removed in a future version. Use mfa_enabled instead.",
 			},
 			"externally_managed": {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Whether the user is externally managed",
+				Deprecated:  "This field is deprecated and will be removed in a future version. Use password_authority instead.",
 			},
 			"ldap_binding_user": {
 				Type:        schema.TypeBool,
@@ -146,11 +149,6 @@ func DataSourceUser() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Whether global passwordless sudo is enabled for the user",
-			},
-			"public_key": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The public SSH key for the user",
 			},
 			"allow_public_key": {
 				Type:        schema.TypeBool,
@@ -186,6 +184,7 @@ func DataSourceUser() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Whether maximum login attempts are disabled for the user's devices",
+				Deprecated:  "This field is deprecated and will be removed in a future version. Use bypass_managed_device_lockout instead.",
 			},
 			"password_recovery_email": {
 				Type:        schema.TypeString,
@@ -391,9 +390,6 @@ func setUserFields(d *schema.ResourceData, user *User) error {
 	}
 	if err := d.Set("global_passwordless_sudo", user.GlobalPasswordlessSudo); err != nil {
 		return fmt.Errorf("error setting global_passwordless_sudo: %v", err)
-	}
-	if err := d.Set("public_key", user.PublicKey); err != nil {
-		return fmt.Errorf("error setting public_key: %v", err)
 	}
 	if err := d.Set("allow_public_key", user.AllowPublicKey); err != nil {
 		return fmt.Errorf("error setting allow_public_key: %v", err)
