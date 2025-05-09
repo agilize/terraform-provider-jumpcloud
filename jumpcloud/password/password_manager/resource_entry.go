@@ -248,25 +248,62 @@ func resourceEntryRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	}
 
 	// Set values in state
-	d.Set("name", entry.Name)
-	d.Set("description", entry.Description)
-	d.Set("type", entry.Type)
-	d.Set("username", entry.Username)
+	if err := d.Set("name", entry.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
+	if err := d.Set("description", entry.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
+
+	if err := d.Set("type", entry.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting type: %v", err))
+	}
+
+	if err := d.Set("username", entry.Username); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting username: %v", err))
+	}
+
 	// Don't set password in state unless it changed (sensitive value)
-	d.Set("url", entry.Url)
-	d.Set("notes", entry.Notes)
-	d.Set("folder", entry.Folder)
-	d.Set("favorite", entry.Favorite)
-	d.Set("created", entry.Created)
-	d.Set("updated", entry.Updated)
-	d.Set("last_used", entry.LastUsed)
+
+	if err := d.Set("url", entry.Url); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting url: %v", err))
+	}
+
+	if err := d.Set("notes", entry.Notes); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting notes: %v", err))
+	}
+
+	if err := d.Set("folder", entry.Folder); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting folder: %v", err))
+	}
+
+	if err := d.Set("favorite", entry.Favorite); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting favorite: %v", err))
+	}
+
+	if err := d.Set("created", entry.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", entry.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
+
+	if err := d.Set("last_used", entry.LastUsed); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting last_used: %v", err))
+	}
 
 	if entry.Tags != nil {
-		d.Set("tags", entry.Tags)
+		if err := d.Set("tags", entry.Tags); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting tags: %v", err))
+		}
 	}
 
 	if entry.Metadata != nil {
-		d.Set("metadata", flattenMetadata(entry.Metadata))
+		if err := d.Set("metadata", flattenMetadata(entry.Metadata)); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting metadata: %v", err))
+		}
 	}
 
 	return diags

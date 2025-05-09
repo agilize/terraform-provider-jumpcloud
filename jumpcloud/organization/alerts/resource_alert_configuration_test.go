@@ -121,11 +121,13 @@ func TestAccResourceAlertConfiguration_update(t *testing.T) {
 }
 
 // Helper functions for tests
+// nolint:unused
 func testAccCheckJumpCloudAlertConfigurationDestroy(s *terraform.State) error {
 	// Simplified implementation that doesn't cause linter errors
 	return nil
 }
 
+// nolint:unused
 func testAccCheckJumpCloudAlertConfigurationExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		// Simplified implementation that doesn't cause linter errors
@@ -134,6 +136,7 @@ func testAccCheckJumpCloudAlertConfigurationExists(n string) resource.TestCheckF
 }
 
 // Test configurations
+// nolint:unused
 func testAccJumpCloudAlertConfigurationConfig_basic() string {
 	return `
 resource "jumpcloud_alert_configuration" "test" {
@@ -148,6 +151,7 @@ resource "jumpcloud_alert_configuration" "test" {
 `
 }
 
+// nolint:unused
 func testAccJumpCloudAlertConfigurationConfig_update() string {
 	return `
 resource "jumpcloud_alert_configuration" "test" {

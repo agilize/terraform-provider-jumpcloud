@@ -10,7 +10,10 @@ import (
 )
 
 // These would be defined in a shared testing.go file
+// nolint:unused
 var testAccProviders map[string]*schema.Provider
+
+// nolint:unused
 var testAccProvider *schema.Provider
 
 func testAccPreCheck(t *testing.T) {
@@ -177,7 +180,7 @@ func testAccDataSourceExampleConfig_byID() string {
 resource "jumpcloud_example" "test" {
   name        = "example-data-resource"
   description = "Used for data source testing"
-  type        = "type1" 
+  type        = "type1"
   status      = "active"
   tags        = ["test", "data-source"]
 }

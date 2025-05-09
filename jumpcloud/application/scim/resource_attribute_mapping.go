@@ -312,7 +312,9 @@ func resourceAttributeMappingRead(ctx context.Context, d *schema.ResourceData, m
 		}
 
 		serverID = mapping.ServerID
-		d.Set("server_id", serverID)
+		if err := d.Set("server_id", serverID); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting server_id: %v", err))
+		}
 	}
 
 	// Get orgId parameter if available
@@ -343,15 +345,41 @@ func resourceAttributeMappingRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	// Set values in state
-	d.Set("name", mapping.Name)
-	d.Set("description", mapping.Description)
-	d.Set("server_id", mapping.ServerID)
-	d.Set("schema_id", mapping.SchemaID)
-	d.Set("direction", mapping.Direction)
-	d.Set("object_class", mapping.ObjectClass)
-	d.Set("auto_generate", mapping.AutoGenerate)
-	d.Set("created", mapping.Created)
-	d.Set("updated", mapping.Updated)
+	if err := d.Set("name", mapping.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
+	if err := d.Set("description", mapping.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
+
+	if err := d.Set("server_id", mapping.ServerID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting server_id: %v", err))
+	}
+
+	if err := d.Set("schema_id", mapping.SchemaID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting schema_id: %v", err))
+	}
+
+	if err := d.Set("direction", mapping.Direction); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting direction: %v", err))
+	}
+
+	if err := d.Set("object_class", mapping.ObjectClass); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting object_class: %v", err))
+	}
+
+	if err := d.Set("auto_generate", mapping.AutoGenerate); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting auto_generate: %v", err))
+	}
+
+	if err := d.Set("created", mapping.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", mapping.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
 
 	// Process attribute mappings
 	if mapping.Mappings != nil {
@@ -386,7 +414,9 @@ func resourceAttributeMappingRead(ctx context.Context, d *schema.ResourceData, m
 
 	// Set OrgID if present
 	if mapping.OrgID != "" {
-		d.Set("org_id", mapping.OrgID)
+		if err := d.Set("org_id", mapping.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting org_id: %v", err))
+		}
 	}
 
 	return diags

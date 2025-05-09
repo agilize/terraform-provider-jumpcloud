@@ -153,14 +153,30 @@ func resourceListAssignmentRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	// Definir valores no state
-	d.Set("ip_list_id", assignment.IPListID)
-	d.Set("resource_id", assignment.ResourceID)
-	d.Set("resource_type", assignment.ResourceType)
-	d.Set("created", assignment.Created)
-	d.Set("updated", assignment.Updated)
+	if err := d.Set("ip_list_id", assignment.IPListID); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir ip_list_id: %v", err))
+	}
+
+	if err := d.Set("resource_id", assignment.ResourceID); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir resource_id: %v", err))
+	}
+
+	if err := d.Set("resource_type", assignment.ResourceType); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir resource_type: %v", err))
+	}
+
+	if err := d.Set("created", assignment.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir created: %v", err))
+	}
+
+	if err := d.Set("updated", assignment.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir updated: %v", err))
+	}
 
 	if assignment.OrgID != "" {
-		d.Set("org_id", assignment.OrgID)
+		if err := d.Set("org_id", assignment.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir org_id: %v", err))
+		}
 	}
 
 	return diags

@@ -190,11 +190,25 @@ func dataSourceSoftwareDeploymentStatusRead(ctx context.Context, d *schema.Resou
 	d.SetId(deploymentID)
 
 	// Set attributes
-	d.Set("status", statusResp.Status)
-	d.Set("progress", statusResp.Progress)
-	d.Set("package_id", statusResp.PackageID)
-	d.Set("package_name", statusResp.PackageName)
-	d.Set("package_version", statusResp.PackageVersion)
+	if err := d.Set("status", statusResp.Status); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting status: %v", err))
+	}
+
+	if err := d.Set("progress", statusResp.Progress); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting progress: %v", err))
+	}
+
+	if err := d.Set("package_id", statusResp.PackageID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting package_id: %v", err))
+	}
+
+	if err := d.Set("package_name", statusResp.PackageName); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting package_name: %v", err))
+	}
+
+	if err := d.Set("package_version", statusResp.PackageVersion); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting package_version: %v", err))
+	}
 
 	// Set targets
 	if len(statusResp.Targets) > 0 {

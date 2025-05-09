@@ -169,19 +169,44 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	}
 
 	// Update state
-	d.Set("application_id", oauthUser.ApplicationID)
-	d.Set("user_id", oauthUser.UserID)
-	d.Set("scopes", oauthUser.Scopes)
-	d.Set("username", oauthUser.Username)
-	d.Set("email", oauthUser.Email)
-	d.Set("first_name", oauthUser.FirstName)
-	d.Set("last_name", oauthUser.LastName)
+	if err := d.Set("application_id", oauthUser.ApplicationID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting application_id: %v", err))
+	}
+
+	if err := d.Set("user_id", oauthUser.UserID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting user_id: %v", err))
+	}
+
+	if err := d.Set("scopes", oauthUser.Scopes); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting scopes: %v", err))
+	}
+
+	if err := d.Set("username", oauthUser.Username); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting username: %v", err))
+	}
+
+	if err := d.Set("email", oauthUser.Email); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting email: %v", err))
+	}
+
+	if err := d.Set("first_name", oauthUser.FirstName); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting first_name: %v", err))
+	}
+
+	if err := d.Set("last_name", oauthUser.LastName); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting last_name: %v", err))
+	}
 
 	if !oauthUser.Created.IsZero() {
-		d.Set("created", oauthUser.Created.Format(time.RFC3339))
+		if err := d.Set("created", oauthUser.Created.Format(time.RFC3339)); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+		}
 	}
+
 	if !oauthUser.Updated.IsZero() {
-		d.Set("updated", oauthUser.Updated.Format(time.RFC3339))
+		if err := d.Set("updated", oauthUser.Updated.Format(time.RFC3339)); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+		}
 	}
 
 	return diag.Diagnostics{}

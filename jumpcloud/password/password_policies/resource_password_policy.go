@@ -276,36 +276,98 @@ func resourcePasswordPolicyRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	// Set values in state
-	d.Set("name", policy.Name)
-	d.Set("description", policy.Description)
-	d.Set("status", policy.Status)
-	d.Set("min_length", policy.MinLength)
-	d.Set("max_length", policy.MaxLength)
-	d.Set("require_uppercase", policy.RequireUppercase)
-	d.Set("require_lowercase", policy.RequireLowercase)
-	d.Set("require_number", policy.RequireNumber)
-	d.Set("require_symbol", policy.RequireSymbol)
-	d.Set("minimum_age", policy.MinimumAge)
-	d.Set("expiration_time", policy.ExpirationTime)
-	d.Set("expiration_warning_time", policy.ExpirationWarningTime)
-	d.Set("disallow_previous_passwords", policy.DisallowPreviousPasswords)
-	d.Set("disallow_common_passwords", policy.DisallowCommonPasswords)
-	d.Set("disallow_username", policy.DisallowUsername)
-	d.Set("disallow_name_and_email", policy.DisallowNameAndEmail)
-	d.Set("scope", policy.Scope)
-	d.Set("created", policy.Created)
-	d.Set("updated", policy.Updated)
+	if err := d.Set("name", policy.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
+	if err := d.Set("description", policy.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
+
+	if err := d.Set("status", policy.Status); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting status: %v", err))
+	}
+
+	if err := d.Set("min_length", policy.MinLength); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting min_length: %v", err))
+	}
+
+	if err := d.Set("max_length", policy.MaxLength); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting max_length: %v", err))
+	}
+
+	if err := d.Set("require_uppercase", policy.RequireUppercase); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting require_uppercase: %v", err))
+	}
+
+	if err := d.Set("require_lowercase", policy.RequireLowercase); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting require_lowercase: %v", err))
+	}
+
+	if err := d.Set("require_number", policy.RequireNumber); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting require_number: %v", err))
+	}
+
+	if err := d.Set("require_symbol", policy.RequireSymbol); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting require_symbol: %v", err))
+	}
+
+	if err := d.Set("minimum_age", policy.MinimumAge); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting minimum_age: %v", err))
+	}
+
+	if err := d.Set("expiration_time", policy.ExpirationTime); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting expiration_time: %v", err))
+	}
+
+	if err := d.Set("expiration_warning_time", policy.ExpirationWarningTime); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting expiration_warning_time: %v", err))
+	}
+
+	if err := d.Set("disallow_previous_passwords", policy.DisallowPreviousPasswords); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting disallow_previous_passwords: %v", err))
+	}
+
+	if err := d.Set("disallow_common_passwords", policy.DisallowCommonPasswords); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting disallow_common_passwords: %v", err))
+	}
+
+	if err := d.Set("disallow_username", policy.DisallowUsername); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting disallow_username: %v", err))
+	}
+
+	if err := d.Set("disallow_name_and_email", policy.DisallowNameAndEmail); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting disallow_name_and_email: %v", err))
+	}
+
+	if err := d.Set("scope", policy.Scope); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting scope: %v", err))
+	}
+
+	if err := d.Set("created", policy.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", policy.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
 
 	if policy.DisallowPasswordsFromList != nil {
-		d.Set("disallow_passwords_from_list", policy.DisallowPasswordsFromList)
+		if err := d.Set("disallow_passwords_from_list", policy.DisallowPasswordsFromList); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting disallow_passwords_from_list: %v", err))
+		}
 	}
 
 	if policy.TargetResources != nil {
-		d.Set("target_resources", policy.TargetResources)
+		if err := d.Set("target_resources", policy.TargetResources); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting target_resources: %v", err))
+		}
 	}
 
 	if policy.OrgID != "" {
-		d.Set("org_id", policy.OrgID)
+		if err := d.Set("org_id", policy.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting org_id: %v", err))
+		}
 	}
 
 	return diags

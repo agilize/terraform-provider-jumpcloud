@@ -40,3 +40,13 @@ Thumbs.db
 
 # Arquivos de coverage
 coverage.* 
+
+# Exclude dependencies
+node_modules
+
+# Exclude secrets
+.env
+
+# Exclude build artifacts
+out
+build

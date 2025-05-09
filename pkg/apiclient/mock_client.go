@@ -27,7 +27,9 @@ func CreateMockServer(t *testing.T, method string) (*httptest.Server, *Client) {
 
 		// Return a successful response
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"success": true}`))
+		if _, err := w.Write([]byte(`{"success": true}`)); err != nil {
+			t.Errorf("Error writing response: %v", err)
+		}
 	}))
 
 	// Create a client with the test server URL

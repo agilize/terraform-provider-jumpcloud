@@ -213,24 +213,61 @@ func resourceMDMConfigurationRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	// Set values in state
-	d.Set("enabled", config.Enabled)
-	d.Set("apple_enabled", config.AppleEnabled)
-	d.Set("android_enabled", config.AndroidEnabled)
-	d.Set("windows_enabled", config.WindowsEnabled)
-	d.Set("apple_mdm_server_url", config.AppleMDMServerURL)
-	d.Set("apple_mdm_token_expires_at", config.AppleMDMTokenExpiresAt)
-	d.Set("android_enterprise_enabled", config.AndroidEnterpriseEnabled)
-	d.Set("android_play_store_id", config.AndroidPlayStoreID)
-	d.Set("default_app_catalog_enabled", config.DefaultAppCatalogEnabled)
-	d.Set("auto_enrollment_enabled", config.AutoEnrollmentEnabled)
-	d.Set("created", config.Created)
-	d.Set("updated", config.Updated)
+	if err := d.Set("enabled", config.Enabled); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting enabled: %v", err))
+	}
+
+	if err := d.Set("apple_enabled", config.AppleEnabled); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting apple_enabled: %v", err))
+	}
+
+	if err := d.Set("android_enabled", config.AndroidEnabled); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting android_enabled: %v", err))
+	}
+
+	if err := d.Set("windows_enabled", config.WindowsEnabled); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting windows_enabled: %v", err))
+	}
+
+	if err := d.Set("apple_mdm_server_url", config.AppleMDMServerURL); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting apple_mdm_server_url: %v", err))
+	}
+
+	if err := d.Set("apple_mdm_token_expires_at", config.AppleMDMTokenExpiresAt); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting apple_mdm_token_expires_at: %v", err))
+	}
+
+	if err := d.Set("android_enterprise_enabled", config.AndroidEnterpriseEnabled); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting android_enterprise_enabled: %v", err))
+	}
+
+	if err := d.Set("android_play_store_id", config.AndroidPlayStoreID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting android_play_store_id: %v", err))
+	}
+
+	if err := d.Set("default_app_catalog_enabled", config.DefaultAppCatalogEnabled); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting default_app_catalog_enabled: %v", err))
+	}
+
+	if err := d.Set("auto_enrollment_enabled", config.AutoEnrollmentEnabled); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting auto_enrollment_enabled: %v", err))
+	}
+
+	if err := d.Set("created", config.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", config.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
 
 	// We don't set the Apple push certificate in the state as it's sensitive
 	// and isn't returned in full by the API
 
 	if config.OrgID != "" {
-		d.Set("org_id", config.OrgID)
+		if err := d.Set("org_id", config.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting org_id: %v", err))
+		}
 	}
 
 	return diags

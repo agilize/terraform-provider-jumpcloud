@@ -171,7 +171,7 @@ func resourceConfigurationCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if createdConfig.ID == "" {
-		return diag.FromErr(fmt.Errorf("Directory Insights configuration created without an ID"))
+		return diag.FromErr(fmt.Errorf("directory insights configuration created without an ID"))
 	}
 
 	d.SetId(createdConfig.ID)
@@ -189,7 +189,7 @@ func resourceConfigurationRead(ctx context.Context, d *schema.ResourceData, meta
 
 	id := d.Id()
 	if id == "" {
-		return diag.FromErr(fmt.Errorf("Directory Insights configuration ID not provided"))
+		return diag.FromErr(fmt.Errorf("directory insights configuration ID not provided"))
 	}
 
 	// Get configuration via API
@@ -211,27 +211,46 @@ func resourceConfigurationRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	// Set values in state
-	d.Set("retention_days", config.RetentionDays)
-	d.Set("export_to_cloudwatch", config.ExportToCloudWatch)
-	d.Set("export_to_datadog", config.ExportToDatadog)
-	d.Set("datadog_region", config.DatadogRegion)
+	if err := d.Set("retention_days", config.RetentionDays); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting retention_days: %v", err))
+	}
+
+	if err := d.Set("export_to_cloudwatch", config.ExportToCloudWatch); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting export_to_cloudwatch: %v", err))
+	}
+
+	if err := d.Set("export_to_datadog", config.ExportToDatadog); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting export_to_datadog: %v", err))
+	}
+
+	if err := d.Set("datadog_region", config.DatadogRegion); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting datadog_region: %v", err))
+	}
 
 	// Don't set datadog_api_key to avoid exposing sensitive credentials
 
 	if config.OrgID != "" {
-		d.Set("org_id", config.OrgID)
+		if err := d.Set("org_id", config.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting org_id: %v", err))
+		}
 	}
 
 	if config.EnabledEventTypes != nil {
-		d.Set("enabled_event_types", config.EnabledEventTypes)
+		if err := d.Set("enabled_event_types", config.EnabledEventTypes); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting enabled_event_types: %v", err))
+		}
 	}
 
 	if config.EnabledAlertingEvents != nil {
-		d.Set("enabled_alerting_events", config.EnabledAlertingEvents)
+		if err := d.Set("enabled_alerting_events", config.EnabledAlertingEvents); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting enabled_alerting_events: %v", err))
+		}
 	}
 
 	if config.NotificationEmails != nil {
-		d.Set("notification_emails", config.NotificationEmails)
+		if err := d.Set("notification_emails", config.NotificationEmails); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting notification_emails: %v", err))
+		}
 	}
 
 	return diags
@@ -246,7 +265,7 @@ func resourceConfigurationUpdate(ctx context.Context, d *schema.ResourceData, me
 
 	id := d.Id()
 	if id == "" {
-		return diag.FromErr(fmt.Errorf("Directory Insights configuration ID not provided"))
+		return diag.FromErr(fmt.Errorf("directory insights configuration ID not provided"))
 	}
 
 	// Check if anything changed
@@ -332,7 +351,7 @@ func resourceConfigurationDelete(ctx context.Context, d *schema.ResourceData, me
 
 	id := d.Id()
 	if id == "" {
-		return diag.FromErr(fmt.Errorf("Directory Insights configuration ID not provided"))
+		return diag.FromErr(fmt.Errorf("directory insights configuration ID not provided"))
 	}
 
 	// Delete configuration via API

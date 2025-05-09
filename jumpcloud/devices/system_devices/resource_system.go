@@ -208,19 +208,47 @@ func resourceSystemRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 	// Set tags if they exist
 	if len(system.Tags) > 0 {
-		d.Set("tags", common.FlattenStringList(system.Tags))
+		if err := d.Set("tags", common.FlattenStringList(system.Tags)); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir tags: %v", err))
+		}
 	}
 
 	// Set fields in resource data
-	d.Set("display_name", system.DisplayName)
-	d.Set("system_type", system.SystemType)
-	d.Set("os", system.OS)
-	d.Set("version", system.Version)
-	d.Set("agent_version", system.AgentVersion)
-	d.Set("allow_ssh_root_login", system.AllowSshRootLogin)
-	d.Set("allow_ssh_password_authentication", system.AllowSshPasswordAuthentication)
-	d.Set("allow_multi_factor_authentication", system.AllowMultiFactorAuthentication)
-	d.Set("description", system.Description)
+	if err := d.Set("display_name", system.DisplayName); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir display_name: %v", err))
+	}
+
+	if err := d.Set("system_type", system.SystemType); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir system_type: %v", err))
+	}
+
+	if err := d.Set("os", system.OS); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir os: %v", err))
+	}
+
+	if err := d.Set("version", system.Version); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir version: %v", err))
+	}
+
+	if err := d.Set("agent_version", system.AgentVersion); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir agent_version: %v", err))
+	}
+
+	if err := d.Set("allow_ssh_root_login", system.AllowSshRootLogin); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir allow_ssh_root_login: %v", err))
+	}
+
+	if err := d.Set("allow_ssh_password_authentication", system.AllowSshPasswordAuthentication); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir allow_ssh_password_authentication: %v", err))
+	}
+
+	if err := d.Set("allow_multi_factor_authentication", system.AllowMultiFactorAuthentication); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir allow_multi_factor_authentication: %v", err))
+	}
+
+	if err := d.Set("description", system.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir description: %v", err))
+	}
 
 	// Handle attributes
 	if system.Attributes != nil {
@@ -228,7 +256,9 @@ func resourceSystemRead(ctx context.Context, d *schema.ResourceData, meta interf
 		for k, v := range system.Attributes {
 			attributes[k] = fmt.Sprintf("%v", v)
 		}
-		d.Set("attributes", attributes)
+		if err := d.Set("attributes", attributes); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir attributes: %v", err))
+		}
 	}
 
 	return diags

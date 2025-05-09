@@ -171,8 +171,13 @@ func resourceUserMappingRead(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	// Update state
-	d.Set("application_id", applicationID)
-	d.Set("user_id", userID)
+	if err := d.Set("application_id", applicationID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting application_id: %v", err))
+	}
+
+	if err := d.Set("user_id", userID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting user_id: %v", err))
+	}
 
 	// Process attributes if present
 	if mapping.Attributes != nil {
@@ -192,7 +197,9 @@ func resourceUserMappingRead(ctx context.Context, d *schema.ResourceData, meta i
 			}
 		}
 
-		d.Set("attributes", attributeMap)
+		if err := d.Set("attributes", attributeMap); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting attributes: %v", err))
+		}
 	}
 
 	return diags
@@ -285,8 +292,14 @@ func resourceUserMappingImport(ctx context.Context, d *schema.ResourceData, meta
 	userID := parts[1]
 
 	d.SetId(fmt.Sprintf("%s:%s", applicationID, userID))
-	d.Set("application_id", applicationID)
-	d.Set("user_id", userID)
+
+	if err := d.Set("application_id", applicationID); err != nil {
+		return nil, fmt.Errorf("error setting application_id: %v", err)
+	}
+
+	if err := d.Set("user_id", userID); err != nil {
+		return nil, fmt.Errorf("error setting user_id: %v", err)
+	}
 
 	return []*schema.ResourceData{d}, nil
 }

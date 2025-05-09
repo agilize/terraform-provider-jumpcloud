@@ -140,11 +140,25 @@ func resourceWebhookSubscriptionRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	// Set resource data
-	d.Set("webhook_id", subscription.WebhookID)
-	d.Set("event_type", subscription.EventType)
-	d.Set("description", subscription.Description)
-	d.Set("created", subscription.Created)
-	d.Set("updated", subscription.Updated)
+	if err := d.Set("webhook_id", subscription.WebhookID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting webhook_id: %v", err))
+	}
+
+	if err := d.Set("event_type", subscription.EventType); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting event_type: %v", err))
+	}
+
+	if err := d.Set("description", subscription.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
+
+	if err := d.Set("created", subscription.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", subscription.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
 
 	return diags
 }

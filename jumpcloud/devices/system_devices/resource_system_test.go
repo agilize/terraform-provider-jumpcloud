@@ -161,10 +161,12 @@ func TestHelperFunctions(t *testing.T) {
 }
 
 // Define resources for testing
+// nolint:unused
 var testResources = jctest.ProviderResources{
 	"jumpcloud_system": ResourceSystem(),
 }
 
+// nolint:unused
 var testDataSources = jctest.ProviderDataSources{
 	"jumpcloud_system": DataSourceSystem(),
 }
@@ -303,7 +305,7 @@ func testAccJumpCloudSystemConfig_tags() string {
 resource "jumpcloud_system" "test_tags" {
   display_name = "test-system-tags"
   description  = "Test system with tags"
-  
+
   tags = [
     "dev",
     "test",

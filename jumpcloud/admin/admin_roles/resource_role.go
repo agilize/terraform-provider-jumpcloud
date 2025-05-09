@@ -179,16 +179,38 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	}
 
 	// Definir valores no state
-	d.Set("name", adminRole.Name)
-	d.Set("description", adminRole.Description)
-	d.Set("type", adminRole.Type)
-	d.Set("scope", adminRole.Scope)
-	d.Set("permissions", adminRole.Permissions)
-	d.Set("created", adminRole.Created)
-	d.Set("updated", adminRole.Updated)
+	if err := d.Set("name", adminRole.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir name: %v", err))
+	}
+
+	if err := d.Set("description", adminRole.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir description: %v", err))
+	}
+
+	if err := d.Set("type", adminRole.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir type: %v", err))
+	}
+
+	if err := d.Set("scope", adminRole.Scope); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir scope: %v", err))
+	}
+
+	if err := d.Set("permissions", adminRole.Permissions); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir permissions: %v", err))
+	}
+
+	if err := d.Set("created", adminRole.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir created: %v", err))
+	}
+
+	if err := d.Set("updated", adminRole.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir updated: %v", err))
+	}
 
 	if adminRole.OrgID != "" {
-		d.Set("org_id", adminRole.OrgID)
+		if err := d.Set("org_id", adminRole.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir org_id: %v", err))
+		}
 	}
 
 	return diags

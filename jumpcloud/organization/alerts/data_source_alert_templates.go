@@ -286,7 +286,9 @@ func dataSourceAlertTemplatesRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("erro ao definir templates: %v", err))
 	}
 
-	d.Set("total_count", response.TotalCount)
+	if err := d.Set("total_count", response.TotalCount); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir total_count: %v", err))
+	}
 
 	// Definir ID do data source (usando timestamp para garantir unicidade)
 	d.SetId(fmt.Sprintf("alert_templates_%d", time.Now().Unix()))

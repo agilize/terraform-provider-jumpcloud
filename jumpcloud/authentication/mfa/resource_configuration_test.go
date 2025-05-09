@@ -134,6 +134,7 @@ resource "jumpcloud_mfa_configuration" "test" {
 `
 }
 
+// nolint:unused
 func testAccJumpCloudMFAConfigurationConfig_withDuo() string {
 	return `
 resource "jumpcloud_mfa_configuration" "test" {

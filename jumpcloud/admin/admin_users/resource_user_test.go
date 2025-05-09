@@ -18,6 +18,7 @@ func TestAccResourceAdminUser_update(t *testing.T) {
 }
 
 // Test configurations
+// nolint:unused
 func testAccResourceAdminUserConfig_basic(email string) string {
 	return fmt.Sprintf(`
 resource "jumpcloud_admin_user" "test" {
@@ -29,6 +30,7 @@ resource "jumpcloud_admin_user" "test" {
 `, email)
 }
 
+// nolint:unused
 func testAccResourceAdminUserConfig_updated(email string) string {
 	return fmt.Sprintf(`
 resource "jumpcloud_admin_user" "test" {

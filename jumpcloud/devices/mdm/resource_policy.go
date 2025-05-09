@@ -215,9 +215,17 @@ func resourceMDMPolicyRead(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	// Set values in state
-	d.Set("name", policy.Name)
-	d.Set("description", policy.Description)
-	d.Set("platform", policy.Platform)
+	if err := d.Set("name", policy.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
+	if err := d.Set("description", policy.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
+
+	if err := d.Set("platform", policy.Platform); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting platform: %v", err))
+	}
 
 	// Format settings as JSON string
 	if policy.Settings != nil {
@@ -225,23 +233,39 @@ func resourceMDMPolicyRead(ctx context.Context, d *schema.ResourceData, meta int
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error normalizing settings JSON: %v", err))
 		}
-		d.Set("settings", settingsStr)
+		if err := d.Set("settings", settingsStr); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting settings: %v", err))
+		}
 	}
 
-	d.Set("scope_type", policy.ScopeType)
-	d.Set("created", policy.Created)
-	d.Set("updated", policy.Updated)
+	if err := d.Set("scope_type", policy.ScopeType); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting scope_type: %v", err))
+	}
+
+	if err := d.Set("created", policy.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", policy.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
 
 	if policy.OrgID != "" {
-		d.Set("org_id", policy.OrgID)
+		if err := d.Set("org_id", policy.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting org_id: %v", err))
+		}
 	}
 
 	if len(policy.ScopeIDs) > 0 {
-		d.Set("scope_ids", policy.ScopeIDs)
+		if err := d.Set("scope_ids", policy.ScopeIDs); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting scope_ids: %v", err))
+		}
 	}
 
 	if len(policy.Tags) > 0 {
-		d.Set("tags", policy.Tags)
+		if err := d.Set("tags", policy.Tags); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting tags: %v", err))
+		}
 	}
 
 	return diags

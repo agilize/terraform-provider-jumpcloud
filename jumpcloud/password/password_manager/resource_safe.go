@@ -209,24 +209,50 @@ func resourceSafeRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	}
 
 	// Set values in state
-	d.Set("name", safe.Name)
-	d.Set("description", safe.Description)
-	d.Set("type", safe.Type)
-	d.Set("status", safe.Status)
-	d.Set("owner_id", safe.OwnerID)
-	d.Set("created", safe.Created)
-	d.Set("updated", safe.Updated)
+	if err := d.Set("name", safe.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
+	if err := d.Set("description", safe.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
+
+	if err := d.Set("type", safe.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting type: %v", err))
+	}
+
+	if err := d.Set("status", safe.Status); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting status: %v", err))
+	}
+
+	if err := d.Set("owner_id", safe.OwnerID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting owner_id: %v", err))
+	}
+
+	if err := d.Set("created", safe.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", safe.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
 
 	if safe.MemberIDs != nil {
-		d.Set("member_ids", safe.MemberIDs)
+		if err := d.Set("member_ids", safe.MemberIDs); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting member_ids: %v", err))
+		}
 	}
 
 	if safe.GroupIDs != nil {
-		d.Set("group_ids", safe.GroupIDs)
+		if err := d.Set("group_ids", safe.GroupIDs); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting group_ids: %v", err))
+		}
 	}
 
 	if safe.OrgID != "" {
-		d.Set("org_id", safe.OrgID)
+		if err := d.Set("org_id", safe.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting org_id: %v", err))
+		}
 	}
 
 	return diags

@@ -226,20 +226,54 @@ func resourceConditionalAccessRuleRead(ctx context.Context, d *schema.ResourceDa
 	}
 
 	// Definir valores no state
-	d.Set("name", rule.Name)
-	d.Set("description", rule.Description)
-	d.Set("status", rule.Status)
-	d.Set("policy_id", rule.PolicyID)
-	d.Set("conditions", string(conditionsJSON))
-	d.Set("action", rule.Action)
-	d.Set("priority", rule.Priority)
-	d.Set("applies_to", rule.AppliesTo)
-	d.Set("does_not_apply", rule.DoesNotApply)
-	d.Set("created", rule.Created)
-	d.Set("updated", rule.Updated)
+	if err := d.Set("name", rule.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir name: %v", err))
+	}
+
+	if err := d.Set("description", rule.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir description: %v", err))
+	}
+
+	if err := d.Set("status", rule.Status); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir status: %v", err))
+	}
+
+	if err := d.Set("policy_id", rule.PolicyID); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir policy_id: %v", err))
+	}
+
+	if err := d.Set("conditions", string(conditionsJSON)); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir conditions: %v", err))
+	}
+
+	if err := d.Set("action", rule.Action); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir action: %v", err))
+	}
+
+	if err := d.Set("priority", rule.Priority); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir priority: %v", err))
+	}
+
+	if err := d.Set("applies_to", rule.AppliesTo); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir applies_to: %v", err))
+	}
+
+	if err := d.Set("does_not_apply", rule.DoesNotApply); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir does_not_apply: %v", err))
+	}
+
+	if err := d.Set("created", rule.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir created: %v", err))
+	}
+
+	if err := d.Set("updated", rule.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir updated: %v", err))
+	}
 
 	if rule.OrgID != "" {
-		d.Set("org_id", rule.OrgID)
+		if err := d.Set("org_id", rule.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir org_id: %v", err))
+		}
 	}
 
 	return diags

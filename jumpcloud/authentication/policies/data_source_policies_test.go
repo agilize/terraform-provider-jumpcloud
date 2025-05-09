@@ -109,6 +109,7 @@ data "jumpcloud_authentication_policies" "all" {}
 
 // Definindo as provider factories
 
+// nolint:unused
 func testAccDataSourceJumpCloudAuthPoliciesConfig() string {
 	return `
 resource "jumpcloud_authentication_policy" "test" {

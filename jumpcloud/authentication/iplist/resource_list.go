@@ -180,19 +180,34 @@ func resourceListRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	}
 
 	// Definir valores no state
-	d.Set("name", ipList.Name)
-	d.Set("description", ipList.Description)
-	d.Set("type", ipList.Type)
+	if err := d.Set("name", ipList.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir name: %v", err))
+	}
+
+	if err := d.Set("description", ipList.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir description: %v", err))
+	}
+
+	if err := d.Set("type", ipList.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir type: %v", err))
+	}
 
 	if err := d.Set("ips", flattenIPAddressEntries(ipList.IPs)); err != nil {
 		return diag.FromErr(fmt.Errorf("erro ao definir ips: %v", err))
 	}
 
-	d.Set("created", ipList.Created)
-	d.Set("updated", ipList.Updated)
+	if err := d.Set("created", ipList.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir created: %v", err))
+	}
+
+	if err := d.Set("updated", ipList.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir updated: %v", err))
+	}
 
 	if ipList.OrgID != "" {
-		d.Set("org_id", ipList.OrgID)
+		if err := d.Set("org_id", ipList.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir org_id: %v", err))
+		}
 	}
 
 	return diags

@@ -285,15 +285,41 @@ func resourceServerRead(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 
 	// Set values in state
-	d.Set("name", server.Name)
-	d.Set("description", server.Description)
-	d.Set("type", server.Type)
-	d.Set("base_url", server.BaseURL)
-	d.Set("enabled", server.Enabled)
-	d.Set("auth_type", server.AuthType)
-	d.Set("status", server.Status)
-	d.Set("created", server.Created)
-	d.Set("updated", server.Updated)
+	if err := d.Set("name", server.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
+	if err := d.Set("description", server.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
+
+	if err := d.Set("type", server.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting type: %v", err))
+	}
+
+	if err := d.Set("base_url", server.BaseURL); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting base_url: %v", err))
+	}
+
+	if err := d.Set("enabled", server.Enabled); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting enabled: %v", err))
+	}
+
+	if err := d.Set("auth_type", server.AuthType); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting auth_type: %v", err))
+	}
+
+	if err := d.Set("status", server.Status); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting status: %v", err))
+	}
+
+	if err := d.Set("created", server.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", server.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
 
 	// Set custom headers
 	if server.CustomHeaders != nil {

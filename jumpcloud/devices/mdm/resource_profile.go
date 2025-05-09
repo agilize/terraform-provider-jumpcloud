@@ -220,10 +220,21 @@ func resourceMDMProfileRead(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	// Set values in state
-	d.Set("name", profile.Name)
-	d.Set("description", profile.Description)
-	d.Set("platform", profile.Platform)
-	d.Set("payload_type", profile.PayloadType)
+	if err := d.Set("name", profile.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
+	if err := d.Set("description", profile.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
+
+	if err := d.Set("platform", profile.Platform); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting platform: %v", err))
+	}
+
+	if err := d.Set("payload_type", profile.PayloadType); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting payload_type: %v", err))
+	}
 
 	// Format payload as JSON string
 	if profile.Payload != nil {
@@ -231,23 +242,39 @@ func resourceMDMProfileRead(ctx context.Context, d *schema.ResourceData, meta in
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error normalizing payload JSON: %v", err))
 		}
-		d.Set("payload", payloadStr)
+		if err := d.Set("payload", payloadStr); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting payload: %v", err))
+		}
 	}
 
-	d.Set("scope_type", profile.ScopeType)
-	d.Set("created", profile.Created)
-	d.Set("updated", profile.Updated)
+	if err := d.Set("scope_type", profile.ScopeType); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting scope_type: %v", err))
+	}
+
+	if err := d.Set("created", profile.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", profile.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
 
 	if profile.OrgID != "" {
-		d.Set("org_id", profile.OrgID)
+		if err := d.Set("org_id", profile.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting org_id: %v", err))
+		}
 	}
 
 	if len(profile.ScopeIDs) > 0 {
-		d.Set("scope_ids", profile.ScopeIDs)
+		if err := d.Set("scope_ids", profile.ScopeIDs); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting scope_ids: %v", err))
+		}
 	}
 
 	if len(profile.Tags) > 0 {
-		d.Set("tags", profile.Tags)
+		if err := d.Set("tags", profile.Tags); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting tags: %v", err))
+		}
 	}
 
 	return diags
