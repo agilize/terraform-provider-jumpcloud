@@ -207,10 +207,22 @@ func dataSourceUsersRead(ctx context.Context, d *schema.ResourceData, meta inter
 
 	// Update state
 	d.SetId(time.Now().Format(time.RFC3339)) // Unique ID for the data source
-	d.Set("users", users)
-	d.Set("total_count", usersResp.TotalCount)
-	d.Set("has_more", usersResp.HasMore)
-	d.Set("next_offset", usersResp.NextOffset)
+
+	if err := d.Set("users", users); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting users: %v", err))
+	}
+
+	if err := d.Set("total_count", usersResp.TotalCount); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting total_count: %v", err))
+	}
+
+	if err := d.Set("has_more", usersResp.HasMore); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting has_more: %v", err))
+	}
+
+	if err := d.Set("next_offset", usersResp.NextOffset); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting next_offset: %v", err))
+	}
 
 	return diag.Diagnostics{}
 }

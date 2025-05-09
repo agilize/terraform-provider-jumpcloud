@@ -33,7 +33,9 @@ func TestDoRequestWithCanceledContext(t *testing.T) {
 		// Sleep for 100ms to simulate a slow response
 		time.Sleep(100 * time.Millisecond)
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"success": true}`))
+		if _, err := w.Write([]byte(`{"success": true}`)); err != nil {
+			t.Errorf("Error writing response: %v", err)
+		}
 	}))
 	defer server.Close()
 

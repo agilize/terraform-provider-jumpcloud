@@ -236,7 +236,9 @@ func dataSourceCommandRead(ctx context.Context, d *schema.ResourceData, meta int
 			Created time.Time `json:"created"`
 		}
 		if err := json.Unmarshal(metaResp, &metadata); err == nil {
-			d.Set("created", metadata.Created.Format(time.RFC3339))
+			if err := d.Set("created", metadata.Created.Format(time.RFC3339)); err != nil {
+				return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+			}
 		}
 	}
 
@@ -256,9 +258,10 @@ func dataSourceCommandRead(ctx context.Context, d *schema.ResourceData, meta int
 			var groups []string
 
 			for _, assoc := range associations.Results {
-				if assoc.To.Type == "system" {
+				switch assoc.To.Type {
+				case "system":
 					systems = append(systems, assoc.To.ID)
-				} else if assoc.To.Type == "system_group" {
+				case "system_group":
 					groups = append(groups, assoc.To.ID)
 				}
 			}

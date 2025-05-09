@@ -195,21 +195,48 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	}
 
 	// Definir valores no state
-	d.Set("email", adminUser.Email)
-	d.Set("first_name", adminUser.FirstName)
-	d.Set("last_name", adminUser.LastName)
-	d.Set("status", adminUser.Status)
-	d.Set("is_mfa_enabled", adminUser.IsMFAEnabled)
-	d.Set("created", adminUser.Created)
-	d.Set("updated", adminUser.Updated)
-	d.Set("last_login", adminUser.LastLogin)
+	if err := d.Set("email", adminUser.Email); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir email: %v", err))
+	}
+
+	if err := d.Set("first_name", adminUser.FirstName); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir first_name: %v", err))
+	}
+
+	if err := d.Set("last_name", adminUser.LastName); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir last_name: %v", err))
+	}
+
+	if err := d.Set("status", adminUser.Status); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir status: %v", err))
+	}
+
+	if err := d.Set("is_mfa_enabled", adminUser.IsMFAEnabled); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir is_mfa_enabled: %v", err))
+	}
+
+	if err := d.Set("created", adminUser.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir created: %v", err))
+	}
+
+	if err := d.Set("updated", adminUser.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir updated: %v", err))
+	}
+
+	if err := d.Set("last_login", adminUser.LastLogin); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir last_login: %v", err))
+	}
 
 	if adminUser.OrgID != "" {
-		d.Set("org_id", adminUser.OrgID)
+		if err := d.Set("org_id", adminUser.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir org_id: %v", err))
+		}
 	}
 
 	if adminUser.RoleIDs != nil {
-		d.Set("role_ids", adminUser.RoleIDs)
+		if err := d.Set("role_ids", adminUser.RoleIDs); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir role_ids: %v", err))
+		}
 	}
 
 	return diags

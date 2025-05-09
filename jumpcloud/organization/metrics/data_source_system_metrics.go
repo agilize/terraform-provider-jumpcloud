@@ -339,7 +339,9 @@ func dataSourceSystemMetricsRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(fmt.Errorf("erro ao definir metrics: %v", err))
 	}
 
-	d.Set("total_count", response.TotalCount)
+	if err := d.Set("total_count", response.TotalCount); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting total_count: %v", err))
+	}
 
 	// Definir ID do data source (usando timestamp para garantir unicidade)
 	d.SetId(fmt.Sprintf("system_metrics_%d", time.Now().Unix()))

@@ -245,13 +245,23 @@ func resourceGroupMappingRead(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	// Update state
-	d.Set("application_id", applicationID)
-	d.Set("group_id", groupID)
-	d.Set("type", groupType)
+	if err := d.Set("application_id", applicationID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting application_id: %v", err))
+	}
+
+	if err := d.Set("group_id", groupID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting group_id: %v", err))
+	}
+
+	if err := d.Set("type", groupType); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting type: %v", err))
+	}
 
 	// Update attributes
 	if mapping.Attributes != nil {
-		d.Set("attributes", flattenAttributes(mapping.Attributes))
+		if err := d.Set("attributes", flattenAttributes(mapping.Attributes)); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting attributes: %v", err))
+		}
 	}
 
 	return diags
@@ -368,9 +378,18 @@ func resourceGroupMappingImport(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	d.SetId(fmt.Sprintf("%s:%s:%s", applicationID, groupType, groupID))
-	d.Set("application_id", applicationID)
-	d.Set("type", groupType)
-	d.Set("group_id", groupID)
+
+	if err := d.Set("application_id", applicationID); err != nil {
+		return nil, fmt.Errorf("error setting application_id: %v", err)
+	}
+
+	if err := d.Set("type", groupType); err != nil {
+		return nil, fmt.Errorf("error setting type: %v", err)
+	}
+
+	if err := d.Set("group_id", groupID); err != nil {
+		return nil, fmt.Errorf("error setting group_id: %v", err)
+	}
 
 	return []*schema.ResourceData{d}, nil
 }

@@ -18,6 +18,7 @@ func TestAccDataSourceAdminRoles_filtered(t *testing.T) {
 }
 
 // Test configurations
+// nolint:unused
 func testAccDataSourceAdminRolesConfig_basic(name string) string {
 	return fmt.Sprintf(`
 resource "jumpcloud_admin_role" "test" {
@@ -29,6 +30,7 @@ data "jumpcloud_admin_roles" "all" {}
 `, name)
 }
 
+// nolint:unused
 func testAccDataSourceAdminRolesConfig_filtered(name string) string {
 	return fmt.Sprintf(`
 resource "jumpcloud_admin_role" "test" {

@@ -198,20 +198,48 @@ func resourceAuthorizationRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	// Update state
-	d.Set("application_id", auth.ApplicationID)
-	d.Set("expires_at", auth.ExpiresAt.Format(time.RFC3339))
-	d.Set("client_name", auth.ClientName)
-	d.Set("client_description", auth.ClientDescription)
-	d.Set("client_contact_email", auth.ClientContactEmail)
-	d.Set("client_redirect_uris", auth.ClientRedirectURIs)
-	d.Set("scopes", auth.Scopes)
-	d.Set("org_id", auth.OrgID)
+	if err := d.Set("application_id", auth.ApplicationID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting application_id: %v", err))
+	}
+
+	if err := d.Set("expires_at", auth.ExpiresAt.Format(time.RFC3339)); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting expires_at: %v", err))
+	}
+
+	if err := d.Set("client_name", auth.ClientName); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting client_name: %v", err))
+	}
+
+	if err := d.Set("client_description", auth.ClientDescription); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting client_description: %v", err))
+	}
+
+	if err := d.Set("client_contact_email", auth.ClientContactEmail); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting client_contact_email: %v", err))
+	}
+
+	if err := d.Set("client_redirect_uris", auth.ClientRedirectURIs); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting client_redirect_uris: %v", err))
+	}
+
+	if err := d.Set("scopes", auth.Scopes); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting scopes: %v", err))
+	}
+
+	if err := d.Set("org_id", auth.OrgID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting org_id: %v", err))
+	}
 
 	if !auth.Created.IsZero() {
-		d.Set("created", auth.Created.Format(time.RFC3339))
+		if err := d.Set("created", auth.Created.Format(time.RFC3339)); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+		}
 	}
+
 	if !auth.Updated.IsZero() {
-		d.Set("updated", auth.Updated.Format(time.RFC3339))
+		if err := d.Set("updated", auth.Updated.Format(time.RFC3339)); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+		}
 	}
 
 	return diag.Diagnostics{}

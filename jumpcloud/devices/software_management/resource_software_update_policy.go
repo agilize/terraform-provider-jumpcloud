@@ -243,15 +243,41 @@ func resourceSoftwareUpdatePolicyRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	// Set the resource data
-	d.Set("name", policy.Name)
-	d.Set("description", policy.Description)
-	d.Set("os_family", policy.OSFamily)
-	d.Set("enabled", policy.Enabled)
-	d.Set("auto_approve", policy.AutoApprove)
-	d.Set("all_packages", policy.AllPackages)
-	d.Set("org_id", policy.OrgID)
-	d.Set("created", policy.Created)
-	d.Set("updated", policy.Updated)
+	if err := d.Set("name", policy.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
+	if err := d.Set("description", policy.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
+
+	if err := d.Set("os_family", policy.OSFamily); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting os_family: %v", err))
+	}
+
+	if err := d.Set("enabled", policy.Enabled); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting enabled: %v", err))
+	}
+
+	if err := d.Set("auto_approve", policy.AutoApprove); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting auto_approve: %v", err))
+	}
+
+	if err := d.Set("all_packages", policy.AllPackages); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting all_packages: %v", err))
+	}
+
+	if err := d.Set("org_id", policy.OrgID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting org_id: %v", err))
+	}
+
+	if err := d.Set("created", policy.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", policy.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
 
 	// Handle schedule
 	if policy.Schedule != nil {

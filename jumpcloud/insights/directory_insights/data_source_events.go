@@ -364,10 +364,21 @@ func dataSourceEventsRead(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	// Update state
-	d.Set("events", events)
-	d.Set("total_count", eventsResp.TotalCount)
-	d.Set("has_more", eventsResp.HasMore)
-	d.Set("next_offset", eventsResp.NextOffset)
+	if err := d.Set("events", events); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting events: %v", err))
+	}
+
+	if err := d.Set("total_count", eventsResp.TotalCount); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting total_count: %v", err))
+	}
+
+	if err := d.Set("has_more", eventsResp.HasMore); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting has_more: %v", err))
+	}
+
+	if err := d.Set("next_offset", eventsResp.NextOffset); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting next_offset: %v", err))
+	}
 
 	// Generate ID based on query parameters
 	queryID := fmt.Sprintf("%s_%s_%d", startTimeStr, endTimeStr, time.Now().Unix())

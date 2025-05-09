@@ -163,15 +163,34 @@ func resourceRoleBindingRead(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	// Definir valores no state
-	d.Set("admin_user_id", binding.AdminUserID)
-	d.Set("role_id", binding.RoleID)
-	d.Set("resource_id", binding.ResourceID)
-	d.Set("resource_type", binding.ResourceType)
-	d.Set("created", binding.Created)
-	d.Set("updated", binding.Updated)
+	if err := d.Set("admin_user_id", binding.AdminUserID); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir admin_user_id: %v", err))
+	}
+
+	if err := d.Set("role_id", binding.RoleID); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir role_id: %v", err))
+	}
+
+	if err := d.Set("resource_id", binding.ResourceID); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir resource_id: %v", err))
+	}
+
+	if err := d.Set("resource_type", binding.ResourceType); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir resource_type: %v", err))
+	}
+
+	if err := d.Set("created", binding.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir created: %v", err))
+	}
+
+	if err := d.Set("updated", binding.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir updated: %v", err))
+	}
 
 	if binding.OrgID != "" {
-		d.Set("org_id", binding.OrgID)
+		if err := d.Set("org_id", binding.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir org_id: %v", err))
+		}
 	}
 
 	return diags

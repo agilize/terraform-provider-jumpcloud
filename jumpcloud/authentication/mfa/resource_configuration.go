@@ -263,24 +263,67 @@ func resourceConfigurationRead(ctx context.Context, d *schema.ResourceData, meta
 
 	// Atualizar estado
 	d.SetId(config.ID)
-	d.Set("organization_id", config.OrgID)
-	d.Set("enabled", config.Enabled)
-	d.Set("exclusive_enabled", config.ExclusiveEnabled)
-	d.Set("system_mfa_required", config.SystemMFARequired)
-	d.Set("user_portal_mfa", config.UserPortalMFA)
-	d.Set("admin_console_mfa", config.AdminConsoleMFA)
-	d.Set("totp_enabled", config.TOTPEnabled)
-	d.Set("duo_enabled", config.DuoEnabled)
-	d.Set("push_enabled", config.PushEnabled)
-	d.Set("fido_enabled", config.FIDOEnabled)
-	d.Set("default_mfa_type", config.DefaultMFAType)
-	d.Set("duo_api_hostname", config.DuoAPIHostname)
+
+	if err := d.Set("organization_id", config.OrgID); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir organization_id: %v", err))
+	}
+
+	if err := d.Set("enabled", config.Enabled); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir enabled: %v", err))
+	}
+
+	if err := d.Set("exclusive_enabled", config.ExclusiveEnabled); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir exclusive_enabled: %v", err))
+	}
+
+	if err := d.Set("system_mfa_required", config.SystemMFARequired); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir system_mfa_required: %v", err))
+	}
+
+	if err := d.Set("user_portal_mfa", config.UserPortalMFA); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir user_portal_mfa: %v", err))
+	}
+
+	if err := d.Set("admin_console_mfa", config.AdminConsoleMFA); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir admin_console_mfa: %v", err))
+	}
+
+	if err := d.Set("totp_enabled", config.TOTPEnabled); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir totp_enabled: %v", err))
+	}
+
+	if err := d.Set("duo_enabled", config.DuoEnabled); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir duo_enabled: %v", err))
+	}
+
+	if err := d.Set("push_enabled", config.PushEnabled); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir push_enabled: %v", err))
+	}
+
+	if err := d.Set("fido_enabled", config.FIDOEnabled); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir fido_enabled: %v", err))
+	}
+
+	if err := d.Set("default_mfa_type", config.DefaultMFAType); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir default_mfa_type: %v", err))
+	}
+
+	if err := d.Set("duo_api_hostname", config.DuoAPIHostname); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir duo_api_hostname: %v", err))
+	}
+
 	// Não definimos as chaves sensíveis no estado
 	// d.Set("duo_secret_key", config.DuoSecretKey)
 	// d.Set("duo_application_key", config.DuoApplicationKey)
 	// d.Set("duo_integration_key", config.DuoIntegrationKey)
-	d.Set("created", config.Created)
-	d.Set("updated", config.Updated)
+
+	if err := d.Set("created", config.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir created: %v", err))
+	}
+
+	if err := d.Set("updated", config.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir updated: %v", err))
+	}
 
 	return diags
 }

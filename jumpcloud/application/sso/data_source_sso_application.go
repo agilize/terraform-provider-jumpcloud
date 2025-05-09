@@ -303,17 +303,49 @@ func dataSourceSSOApplicationRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	// Set the application properties in the data source
-	d.Set("name", app.Name)
-	d.Set("display_name", app.DisplayName)
-	d.Set("description", app.Description)
-	d.Set("type", app.Type)
-	d.Set("sso_url", app.SSOURL)
-	d.Set("logo_url", app.LogoURL)
-	d.Set("active", app.Active)
-	d.Set("beta_access", app.BetaAccess)
-	d.Set("require_mfa", app.RequireMFA)
-	d.Set("created", app.Created)
-	d.Set("updated", app.Updated)
+	if err := d.Set("name", app.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
+	if err := d.Set("display_name", app.DisplayName); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting display_name: %v", err))
+	}
+
+	if err := d.Set("description", app.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
+
+	if err := d.Set("type", app.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting type: %v", err))
+	}
+
+	if err := d.Set("sso_url", app.SSOURL); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting sso_url: %v", err))
+	}
+
+	if err := d.Set("logo_url", app.LogoURL); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting logo_url: %v", err))
+	}
+
+	if err := d.Set("active", app.Active); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting active: %v", err))
+	}
+
+	if err := d.Set("beta_access", app.BetaAccess); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting beta_access: %v", err))
+	}
+
+	if err := d.Set("require_mfa", app.RequireMFA); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting require_mfa: %v", err))
+	}
+
+	if err := d.Set("created", app.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", app.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
 
 	// Handle SAML specific fields
 	if app.Type == "saml" && app.SAML != nil {
@@ -358,7 +390,9 @@ func dataSourceSSOApplicationRead(ctx context.Context, d *schema.ResourceData, m
 			saml[0]["attribute_statements"] = attrStatements
 		}
 
-		d.Set("saml", saml)
+		if err := d.Set("saml", saml); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting saml: %v", err))
+		}
 	}
 
 	// Handle OIDC specific fields
@@ -377,7 +411,9 @@ func dataSourceSSOApplicationRead(ctx context.Context, d *schema.ResourceData, m
 				"scopes":            app.OIDC.Scopes,
 			},
 		}
-		d.Set("oidc", oidc)
+		if err := d.Set("oidc", oidc); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting oidc: %v", err))
+		}
 	}
 
 	return nil

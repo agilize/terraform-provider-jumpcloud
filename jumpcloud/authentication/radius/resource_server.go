@@ -214,18 +214,43 @@ func resourceServerRead(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 
 	// Set values in state
-	d.Set("name", radiusServer.Name)
+	if err := d.Set("name", radiusServer.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
 	// We don't set shared_secret in state to avoid exposing credentials
-	d.Set("network_source_ip", radiusServer.NetworkSourceIP)
-	d.Set("mfa_required", radiusServer.MfaRequired)
-	d.Set("user_password_expiration_action", radiusServer.UserPasswordExpirationAction)
-	d.Set("user_lockout_action", radiusServer.UserLockoutAction)
-	d.Set("user_attribute", radiusServer.UserAttribute)
-	d.Set("created", radiusServer.Created)
-	d.Set("updated", radiusServer.Updated)
+	if err := d.Set("network_source_ip", radiusServer.NetworkSourceIP); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting network_source_ip: %v", err))
+	}
+
+	if err := d.Set("mfa_required", radiusServer.MfaRequired); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting mfa_required: %v", err))
+	}
+
+	if err := d.Set("user_password_expiration_action", radiusServer.UserPasswordExpirationAction); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting user_password_expiration_action: %v", err))
+	}
+
+	if err := d.Set("user_lockout_action", radiusServer.UserLockoutAction); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting user_lockout_action: %v", err))
+	}
+
+	if err := d.Set("user_attribute", radiusServer.UserAttribute); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting user_attribute: %v", err))
+	}
+
+	if err := d.Set("created", radiusServer.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", radiusServer.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
 
 	if radiusServer.Targets != nil {
-		d.Set("targets", radiusServer.Targets)
+		if err := d.Set("targets", radiusServer.Targets); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting targets: %v", err))
+		}
 	}
 
 	return diags

@@ -272,7 +272,9 @@ func resourceIntegrationRead(ctx context.Context, d *schema.ResourceData, meta i
 		}
 
 		serverID = integration.ServerID
-		d.Set("server_id", serverID)
+		if err := d.Set("server_id", serverID); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting server_id: %v", err))
+		}
 	}
 
 	// Get orgId parameter if available
@@ -303,18 +305,53 @@ func resourceIntegrationRead(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	// Set values in state
-	d.Set("name", integration.Name)
-	d.Set("description", integration.Description)
-	d.Set("type", integration.Type)
-	d.Set("server_id", integration.ServerID)
-	d.Set("enabled", integration.Enabled)
-	d.Set("sync_schedule", integration.SyncSchedule)
-	d.Set("sync_interval", integration.SyncInterval)
-	d.Set("status", integration.Status)
-	d.Set("last_sync_time", integration.LastSyncTime)
-	d.Set("last_sync_status", integration.LastSyncStatus)
-	d.Set("created", integration.Created)
-	d.Set("updated", integration.Updated)
+	if err := d.Set("name", integration.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
+	if err := d.Set("description", integration.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
+
+	if err := d.Set("type", integration.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting type: %v", err))
+	}
+
+	if err := d.Set("server_id", integration.ServerID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting server_id: %v", err))
+	}
+
+	if err := d.Set("enabled", integration.Enabled); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting enabled: %v", err))
+	}
+
+	if err := d.Set("sync_schedule", integration.SyncSchedule); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting sync_schedule: %v", err))
+	}
+
+	if err := d.Set("sync_interval", integration.SyncInterval); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting sync_interval: %v", err))
+	}
+
+	if err := d.Set("status", integration.Status); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting status: %v", err))
+	}
+
+	if err := d.Set("last_sync_time", integration.LastSyncTime); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting last_sync_time: %v", err))
+	}
+
+	if err := d.Set("last_sync_status", integration.LastSyncStatus); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting last_sync_status: %v", err))
+	}
+
+	if err := d.Set("created", integration.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", integration.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
 
 	// Set mapping IDs
 	if integration.MappingIDs != nil {
@@ -329,12 +366,16 @@ func resourceIntegrationRead(ctx context.Context, d *schema.ResourceData, meta i
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error serializing settings: %v", err))
 		}
-		d.Set("settings", string(settingsJSON))
+		if err := d.Set("settings", string(settingsJSON)); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting settings: %v", err))
+		}
 	}
 
 	// Set OrgID if present
 	if integration.OrgID != "" {
-		d.Set("org_id", integration.OrgID)
+		if err := d.Set("org_id", integration.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting org_id: %v", err))
+		}
 	}
 
 	return diags

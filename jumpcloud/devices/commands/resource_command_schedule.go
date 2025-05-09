@@ -213,26 +213,58 @@ func resourceCommandScheduleRead(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	// Set values in state
-	d.Set("name", schedule.Name)
-	d.Set("description", schedule.Description)
-	d.Set("command_id", schedule.CommandID)
-	d.Set("enabled", schedule.Enabled)
-	d.Set("schedule", schedule.Schedule)
-	d.Set("schedule_type", schedule.ScheduleType)
-	d.Set("timezone", schedule.Timezone)
-	d.Set("created", schedule.Created)
-	d.Set("updated", schedule.Updated)
+	if err := d.Set("name", schedule.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
+	if err := d.Set("description", schedule.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
+
+	if err := d.Set("command_id", schedule.CommandID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting command_id: %v", err))
+	}
+
+	if err := d.Set("enabled", schedule.Enabled); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting enabled: %v", err))
+	}
+
+	if err := d.Set("schedule", schedule.Schedule); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting schedule: %v", err))
+	}
+
+	if err := d.Set("schedule_type", schedule.ScheduleType); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting schedule_type: %v", err))
+	}
+
+	if err := d.Set("timezone", schedule.Timezone); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting timezone: %v", err))
+	}
+
+	if err := d.Set("created", schedule.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", schedule.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
 
 	if schedule.OrgID != "" {
-		d.Set("org_id", schedule.OrgID)
+		if err := d.Set("org_id", schedule.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting org_id: %v", err))
+		}
 	}
 
 	if schedule.TargetSystems != nil {
-		d.Set("target_systems", schedule.TargetSystems)
+		if err := d.Set("target_systems", schedule.TargetSystems); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting target_systems: %v", err))
+		}
 	}
 
 	if schedule.TargetGroups != nil {
-		d.Set("target_groups", schedule.TargetGroups)
+		if err := d.Set("target_groups", schedule.TargetGroups); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting target_groups: %v", err))
+		}
 	}
 
 	return diags

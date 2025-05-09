@@ -245,22 +245,62 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 
 	// Definir valores no state
-	d.Set("name", policy.Name)
-	d.Set("description", policy.Description)
-	d.Set("type", policy.Type)
-	d.Set("status", policy.Status)
-	d.Set("settings", string(settingsJSON))
-	d.Set("priority", policy.Priority)
-	d.Set("target_resources", policy.TargetResources)
-	d.Set("effective_from", policy.EffectiveFrom)
-	d.Set("effective_until", policy.EffectiveUntil)
-	d.Set("apply_to_all_users", policy.ApplyToAllUsers)
-	d.Set("excluded_users", policy.ExcludedUsers)
-	d.Set("created", policy.Created)
-	d.Set("updated", policy.Updated)
+	if err := d.Set("name", policy.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir name: %v", err))
+	}
+
+	if err := d.Set("description", policy.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir description: %v", err))
+	}
+
+	if err := d.Set("type", policy.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir type: %v", err))
+	}
+
+	if err := d.Set("status", policy.Status); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir status: %v", err))
+	}
+
+	if err := d.Set("settings", string(settingsJSON)); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir settings: %v", err))
+	}
+
+	if err := d.Set("priority", policy.Priority); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir priority: %v", err))
+	}
+
+	if err := d.Set("target_resources", policy.TargetResources); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir target_resources: %v", err))
+	}
+
+	if err := d.Set("effective_from", policy.EffectiveFrom); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir effective_from: %v", err))
+	}
+
+	if err := d.Set("effective_until", policy.EffectiveUntil); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir effective_until: %v", err))
+	}
+
+	if err := d.Set("apply_to_all_users", policy.ApplyToAllUsers); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir apply_to_all_users: %v", err))
+	}
+
+	if err := d.Set("excluded_users", policy.ExcludedUsers); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir excluded_users: %v", err))
+	}
+
+	if err := d.Set("created", policy.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir created: %v", err))
+	}
+
+	if err := d.Set("updated", policy.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir updated: %v", err))
+	}
 
 	if policy.OrgID != "" {
-		d.Set("org_id", policy.OrgID)
+		if err := d.Set("org_id", policy.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir org_id: %v", err))
+		}
 	}
 
 	return diags

@@ -925,12 +925,22 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 
 	// Preserve os valores dos campos de recuperação de email e conta local
 	// que não são retornados corretamente pela API
-	d.Set("password_recovery_email", passwordRecoveryEmail)
-	d.Set("local_user_account", localUserAccount)
+	if err := d.Set("password_recovery_email", passwordRecoveryEmail); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting password_recovery_email: %v", err))
+	}
+
+	if err := d.Set("local_user_account", localUserAccount); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting local_user_account: %v", err))
+	}
 
 	// Preserve os valores dos campos de autoridade
-	d.Set("password_authority", d.Get("password_authority").(string))
-	d.Set("delegated_authority", d.Get("delegated_authority").(string))
+	if err := d.Set("password_authority", d.Get("password_authority").(string)); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting password_authority: %v", err))
+	}
+
+	if err := d.Set("delegated_authority", d.Get("delegated_authority").(string)); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting delegated_authority: %v", err))
+	}
 
 	// Read the user to set all the computed fields
 	return resourceUserRead(ctx, d, meta)
@@ -967,13 +977,34 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	}
 
 	// Set fields in resource data
-	d.Set("username", user.Username)
-	d.Set("email", user.Email)
-	d.Set("firstname", user.FirstName)
-	d.Set("lastname", user.LastName)
-	d.Set("middlename", user.MiddleName)
-	d.Set("description", user.Description)
-	d.Set("displayname", user.DisplayName)
+	if err := d.Set("username", user.Username); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting username: %v", err))
+	}
+
+	if err := d.Set("email", user.Email); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting email: %v", err))
+	}
+
+	if err := d.Set("firstname", user.FirstName); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting firstname: %v", err))
+	}
+
+	if err := d.Set("lastname", user.LastName); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting lastname: %v", err))
+	}
+
+	if err := d.Set("middlename", user.MiddleName); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting middlename: %v", err))
+	}
+
+	if err := d.Set("description", user.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
+
+	if err := d.Set("displayname", user.DisplayName); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting displayname: %v", err))
+	}
+
 	// Set all fields, using the configuration values for boolean fields
 	// This ensures we don't get into a loop with boolean fields
 
@@ -981,24 +1012,77 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	// This ensures we don't get into a loop with boolean fields
 
 	// User Information
-	d.Set("activated", user.Activated)
-	d.Set("account_locked", user.AccountLocked)
-	d.Set("alternate_email", user.AlternateEmail)
-	d.Set("company", user.Company)
-	d.Set("cost_center", user.CostCenter)
-	d.Set("department", user.Department)
-	d.Set("employee_identifier", user.EmployeeIdentifier)
-	d.Set("employee_type", user.EmployeeType)
-	d.Set("job_title", user.JobTitle)
-	d.Set("location", user.Location)
-	d.Set("unix_guid", user.UnixGUID)
-	d.Set("unix_uid", user.UnixUID)
-	d.Set("password_expired", user.PasswordExpired)
-	d.Set("totp_enabled", user.TOTPEnabled)
-	d.Set("state", user.State)
-	d.Set("created", user.Created)
-	d.Set("password_date", user.PasswordDate)
-	d.Set("password_expiration_date", user.PasswordExpirationDate)
+	if err := d.Set("activated", user.Activated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting activated: %v", err))
+	}
+
+	if err := d.Set("account_locked", user.AccountLocked); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting account_locked: %v", err))
+	}
+
+	if err := d.Set("alternate_email", user.AlternateEmail); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting alternate_email: %v", err))
+	}
+
+	if err := d.Set("company", user.Company); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting company: %v", err))
+	}
+
+	if err := d.Set("cost_center", user.CostCenter); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting cost_center: %v", err))
+	}
+
+	if err := d.Set("department", user.Department); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting department: %v", err))
+	}
+
+	if err := d.Set("employee_identifier", user.EmployeeIdentifier); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting employee_identifier: %v", err))
+	}
+
+	if err := d.Set("employee_type", user.EmployeeType); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting employee_type: %v", err))
+	}
+
+	if err := d.Set("job_title", user.JobTitle); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting job_title: %v", err))
+	}
+
+	if err := d.Set("location", user.Location); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting location: %v", err))
+	}
+
+	if err := d.Set("unix_guid", user.UnixGUID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting unix_guid: %v", err))
+	}
+
+	if err := d.Set("unix_uid", user.UnixUID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting unix_uid: %v", err))
+	}
+
+	if err := d.Set("password_expired", user.PasswordExpired); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting password_expired: %v", err))
+	}
+
+	if err := d.Set("totp_enabled", user.TOTPEnabled); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting totp_enabled: %v", err))
+	}
+
+	if err := d.Set("state", user.State); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting state: %v", err))
+	}
+
+	if err := d.Set("created", user.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("password_date", user.PasswordDate); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting password_date: %v", err))
+	}
+
+	if err := d.Set("password_expiration_date", user.PasswordExpirationDate); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting password_expiration_date: %v", err))
+	}
 
 	// Para campos que precisam ser lidos da API, mas que podem causar problemas de persistência
 	// Vamos usar uma abordagem mais simples: preservar os valores do estado atual
@@ -1050,44 +1134,64 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 		currentValue, exists := currentState[field]
 		if exists && currentValue != apiValue {
 			// Se o valor no estado atual for diferente do valor na API, usar o valor do estado atual
-			d.Set(field, currentValue)
+			if err := d.Set(field, currentValue); err != nil {
+				return diag.FromErr(fmt.Errorf("error setting %s: %v", field, err))
+			}
 		} else {
 			// Caso contrário, usar o valor da API
-			d.Set(field, apiValue)
+			if err := d.Set(field, apiValue); err != nil {
+				return diag.FromErr(fmt.Errorf("error setting %s: %v", field, err))
+			}
 		}
 	}
 
 	// For password_recovery_email and local_user_account, only set them if they're not already set
 	// This preserves the values we set in the update function
 	if _, ok := d.GetOk("password_recovery_email"); !ok {
-		d.Set("password_recovery_email", user.PasswordRecoveryEmail)
+		if err := d.Set("password_recovery_email", user.PasswordRecoveryEmail); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting password_recovery_email: %v", err))
+		}
 	}
 
 	if _, ok := d.GetOk("local_user_account"); !ok {
-		d.Set("local_user_account", user.LocalUserAccount)
+		if err := d.Set("local_user_account", user.LocalUserAccount); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting local_user_account: %v", err))
+		}
 	}
 
 	// Handle string fields that might be causing issues
 	// For delegated_authority
 	if v, ok := d.GetOk("delegated_authority"); ok {
-		d.Set("delegated_authority", v.(string))
+		if err := d.Set("delegated_authority", v.(string)); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting delegated_authority: %v", err))
+		}
 	} else {
-		d.Set("delegated_authority", user.DelegatedAuthority)
+		if err := d.Set("delegated_authority", user.DelegatedAuthority); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting delegated_authority: %v", err))
+		}
 	}
 
 	// For password_authority
 	if v, ok := d.GetOk("password_authority"); ok {
-		d.Set("password_authority", v.(string))
+		if err := d.Set("password_authority", v.(string)); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting password_authority: %v", err))
+		}
 	} else {
-		d.Set("password_authority", user.PasswordAuthority)
+		if err := d.Set("password_authority", user.PasswordAuthority); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting password_authority: %v", err))
+		}
 	}
 
 	// Set managed_apple_id from the API response
-	d.Set("managed_apple_id", user.ManagedAppleID)
+	if err := d.Set("managed_apple_id", user.ManagedAppleID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting managed_apple_id: %v", err))
+	}
 
 	// Set manager ID if present
 	if user.Manager != nil {
-		d.Set("manager_id", user.Manager.ID)
+		if err := d.Set("manager_id", user.Manager.ID); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting manager_id: %v", err))
+		}
 	}
 
 	// Set custom attributes if present
@@ -1113,7 +1217,9 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 				attrMap[attr.Name] = attr.Value
 			}
 		}
-		d.Set("attributes", attrMap)
+		if err := d.Set("attributes", attrMap); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting attributes: %v", err))
+		}
 	}
 
 	// Set addresses if present
@@ -1132,7 +1238,9 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 			}
 			addresses = append(addresses, addrMap)
 		}
-		d.Set("addresses", addresses)
+		if err := d.Set("addresses", addresses); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting addresses: %v", err))
+		}
 	}
 
 	// Set phone numbers if present
@@ -1166,7 +1274,9 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 			phones = append(phones, phoneMap)
 		}
-		d.Set("phone_numbers", phones)
+		if err := d.Set("phone_numbers", phones); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting phone_numbers: %v", err))
+		}
 	}
 
 	// Set SSH keys if present
@@ -1179,7 +1289,9 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 			}
 			keys = append(keys, keyMap)
 		}
-		d.Set("ssh_keys", keys)
+		if err := d.Set("ssh_keys", keys); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting ssh_keys: %v", err))
+		}
 	}
 
 	// Set MFA configuration if present
@@ -1191,7 +1303,9 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 				"configured":      user.MFA.Configured,
 			},
 		}
-		d.Set("mfa", mfaConfig)
+		if err := d.Set("mfa", mfaConfig); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting mfa: %v", err))
+		}
 	}
 
 	// Set security keys if present
@@ -1203,10 +1317,14 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 			}
 			keys = append(keys, keyMap)
 		}
-		d.Set("security_keys", keys)
+		if err := d.Set("security_keys", keys); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting security_keys: %v", err))
+		}
 	} else {
 		// Set an empty list to prevent "(known after apply)" in plans
-		d.Set("security_keys", []map[string]any{})
+		if err := d.Set("security_keys", []map[string]any{}); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting empty security_keys: %v", err))
+		}
 	}
 
 	return diags
@@ -1516,12 +1634,22 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 
 	// Preserve os valores dos campos de recuperação de email e conta local
 	// que não são retornados corretamente pela API
-	d.Set("password_recovery_email", passwordRecoveryEmail)
-	d.Set("local_user_account", localUserAccount)
+	if err := d.Set("password_recovery_email", passwordRecoveryEmail); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting password_recovery_email: %v", err))
+	}
+
+	if err := d.Set("local_user_account", localUserAccount); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting local_user_account: %v", err))
+	}
 
 	// Preserve os valores dos campos de autoridade
-	d.Set("password_authority", d.Get("password_authority").(string))
-	d.Set("delegated_authority", d.Get("delegated_authority").(string))
+	if err := d.Set("password_authority", d.Get("password_authority").(string)); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting password_authority: %v", err))
+	}
+
+	if err := d.Set("delegated_authority", d.Get("delegated_authority").(string)); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting delegated_authority: %v", err))
+	}
 
 	return resourceUserRead(ctx, d, meta)
 }

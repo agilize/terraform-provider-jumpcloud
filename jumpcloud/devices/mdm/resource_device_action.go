@@ -210,18 +210,36 @@ func resourceMDMDeviceActionRead(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	// Set values in state
-	d.Set("device_id", action.DeviceID)
-	d.Set("action_type", action.ActionType)
-	d.Set("status", action.Status)
-	d.Set("created", action.Created)
-	d.Set("updated", action.Updated)
+	if err := d.Set("device_id", action.DeviceID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting device_id: %v", err))
+	}
+
+	if err := d.Set("action_type", action.ActionType); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting action_type: %v", err))
+	}
+
+	if err := d.Set("status", action.Status); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting status: %v", err))
+	}
+
+	if err := d.Set("created", action.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", action.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
 
 	if action.OrgID != "" {
-		d.Set("org_id", action.OrgID)
+		if err := d.Set("org_id", action.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting org_id: %v", err))
+		}
 	}
 
 	if action.Reason != "" {
-		d.Set("reason", action.Reason)
+		if err := d.Set("reason", action.Reason); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting reason: %v", err))
+		}
 	}
 
 	return diags

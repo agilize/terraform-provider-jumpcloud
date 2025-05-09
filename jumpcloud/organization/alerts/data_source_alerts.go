@@ -351,7 +351,9 @@ func dataSourceAlertsRead(ctx context.Context, d *schema.ResourceData, meta inte
 		return diag.FromErr(fmt.Errorf("erro ao definir alerts: %v", err))
 	}
 
-	d.Set("total_count", alertsResponse.TotalCount)
+	if err := d.Set("total_count", alertsResponse.TotalCount); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir total_count: %v", err))
+	}
 
 	// Definir ID do data source (usando timestamp para garantir unicidade)
 	d.SetId(fmt.Sprintf("alerts_%d", time.Now().Unix()))

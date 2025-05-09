@@ -120,6 +120,7 @@ type JumpCloudClient interface {
 	GetOrgID() string
 }
 
+// nolint:unused
 func dataSourceAppCatalogCategories() *schema.Resource {
 	return &schema.Resource{
 		// ... existing code ...

@@ -191,7 +191,9 @@ func dataSourceSafesRead(ctx context.Context, d *schema.ResourceData, meta inter
 		return diag.FromErr(fmt.Errorf("error setting safes: %v", err))
 	}
 
-	d.Set("total", safesResp.TotalCount)
+	if err := d.Set("total", safesResp.TotalCount); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting total: %v", err))
+	}
 
 	// Generate unique ID for the data source
 	d.SetId(strconv.FormatInt(time.Now().Unix(), 10))

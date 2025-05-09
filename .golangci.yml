@@ -1,5 +1,0 @@
-# Configuration file for golangci-lint
-# See: https://golangci-lint.run/usage/configuration/
-
-run:
-  timeout: 5m

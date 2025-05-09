@@ -229,13 +229,33 @@ func resourceAlertConfigurationRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	// Definir valores no state
-	d.Set("name", alertConfig.Name)
-	d.Set("description", alertConfig.Description)
-	d.Set("type", alertConfig.Type)
-	d.Set("enabled", alertConfig.Enabled)
-	d.Set("severity", alertConfig.Severity)
-	d.Set("created", alertConfig.Created)
-	d.Set("updated", alertConfig.Updated)
+	if err := d.Set("name", alertConfig.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir name: %v", err))
+	}
+
+	if err := d.Set("description", alertConfig.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir description: %v", err))
+	}
+
+	if err := d.Set("type", alertConfig.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir type: %v", err))
+	}
+
+	if err := d.Set("enabled", alertConfig.Enabled); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir enabled: %v", err))
+	}
+
+	if err := d.Set("severity", alertConfig.Severity); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir severity: %v", err))
+	}
+
+	if err := d.Set("created", alertConfig.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir created: %v", err))
+	}
+
+	if err := d.Set("updated", alertConfig.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir updated: %v", err))
+	}
 
 	// Converter mapa de condições para JSON
 	if alertConfig.Conditions != nil {
@@ -243,19 +263,27 @@ func resourceAlertConfigurationRead(ctx context.Context, d *schema.ResourceData,
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("erro ao serializar condições: %v", err))
 		}
-		d.Set("conditions", string(conditionsJSON))
+		if err := d.Set("conditions", string(conditionsJSON)); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir conditions: %v", err))
+		}
 	}
 
 	if alertConfig.Triggers != nil {
-		d.Set("triggers", alertConfig.Triggers)
+		if err := d.Set("triggers", alertConfig.Triggers); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir triggers: %v", err))
+		}
 	}
 
 	if alertConfig.NotificationIDs != nil {
-		d.Set("notification_ids", alertConfig.NotificationIDs)
+		if err := d.Set("notification_ids", alertConfig.NotificationIDs); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir notification_ids: %v", err))
+		}
 	}
 
 	if alertConfig.OrgID != "" {
-		d.Set("org_id", alertConfig.OrgID)
+		if err := d.Set("org_id", alertConfig.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir org_id: %v", err))
+		}
 	}
 
 	return diags
