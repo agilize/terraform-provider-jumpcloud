@@ -240,19 +240,57 @@ func resourceSoftwarePackageRead(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	// Set the resource data
-	d.Set("name", pkg.Name)
-	d.Set("description", pkg.Description)
-	d.Set("version", pkg.Version)
-	d.Set("type", pkg.Type)
-	d.Set("url", pkg.URL)
-	d.Set("file_path", pkg.FilePath)
-	d.Set("file_size", pkg.FileSize)
-	d.Set("sha256", pkg.SHA256)
-	d.Set("md5", pkg.MD5)
-	d.Set("status", pkg.Status)
-	d.Set("org_id", pkg.OrgID)
-	d.Set("created", pkg.Created)
-	d.Set("updated", pkg.Updated)
+	if err := d.Set("name", pkg.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
+	if err := d.Set("description", pkg.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
+
+	if err := d.Set("version", pkg.Version); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting version: %v", err))
+	}
+
+	if err := d.Set("type", pkg.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting type: %v", err))
+	}
+
+	if err := d.Set("url", pkg.URL); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting url: %v", err))
+	}
+
+	if err := d.Set("file_path", pkg.FilePath); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting file_path: %v", err))
+	}
+
+	if err := d.Set("file_size", pkg.FileSize); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting file_size: %v", err))
+	}
+
+	if err := d.Set("sha256", pkg.SHA256); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting sha256: %v", err))
+	}
+
+	if err := d.Set("md5", pkg.MD5); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting md5: %v", err))
+	}
+
+	if err := d.Set("status", pkg.Status); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting status: %v", err))
+	}
+
+	if err := d.Set("org_id", pkg.OrgID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting org_id: %v", err))
+	}
+
+	if err := d.Set("created", pkg.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", pkg.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
 
 	// Handle maps
 	if pkg.Metadata != nil {

@@ -190,13 +190,26 @@ func dataSourceUserGroupRead(ctx context.Context, d *schema.ResourceData, meta i
 	d.SetId(group.ID)
 
 	// Set all the computed fields
-	d.Set("name", group.Name)
-	d.Set("description", group.Description)
-	d.Set("type", group.Type)
+	if err := d.Set("name", group.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
+	if err := d.Set("description", group.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
+
+	if err := d.Set("type", group.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting type: %v", err))
+	}
 
 	// Set dynamic group fields
-	d.Set("membership_method", group.MembershipMethod)
-	d.Set("member_suggestions_notify", group.MemberSuggestionsNotify)
+	if err := d.Set("membership_method", group.MembershipMethod); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting membership_method: %v", err))
+	}
+
+	if err := d.Set("member_suggestions_notify", group.MemberSuggestionsNotify); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting member_suggestions_notify: %v", err))
+	}
 
 	// Set member query if present
 	if group.MemberQuery != nil {
@@ -218,7 +231,9 @@ func dataSourceUserGroupRead(ctx context.Context, d *schema.ResourceData, meta i
 		for k, v := range group.Attributes {
 			attributes[k] = fmt.Sprintf("%v", v)
 		}
-		d.Set("attributes", attributes)
+		if err := d.Set("attributes", attributes); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting attributes: %v", err))
+		}
 	}
 
 	return diags

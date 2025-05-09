@@ -172,8 +172,13 @@ func dataSourceGroupRead(ctx context.Context, d *schema.ResourceData, meta inter
 			Created    time.Time `json:"created"`
 		}
 		if err := json.Unmarshal(metaResp, &metadata); err == nil {
-			d.Set("member_count", metadata.TotalCount)
-			d.Set("created", metadata.Created.Format(time.RFC3339))
+			if err := d.Set("member_count", metadata.TotalCount); err != nil {
+				return diag.FromErr(fmt.Errorf("error setting member_count: %v", err))
+			}
+
+			if err := d.Set("created", metadata.Created.Format(time.RFC3339)); err != nil {
+				return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+			}
 		}
 	}
 

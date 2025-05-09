@@ -210,26 +210,58 @@ func resourceMDMEnrollmentProfileRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	// Set values in state
-	d.Set("name", profile.Name)
-	d.Set("description", profile.Description)
-	d.Set("platform", profile.Platform)
-	d.Set("enrollment_method", profile.EnrollmentMethod)
-	d.Set("allow_byod", profile.AllowByod)
-	d.Set("require_passcode", profile.RequirePasscode)
-	d.Set("user_authentication", profile.UserAuthentication)
-	d.Set("created", profile.Created)
-	d.Set("updated", profile.Updated)
+	if err := d.Set("name", profile.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
+	if err := d.Set("description", profile.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
+
+	if err := d.Set("platform", profile.Platform); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting platform: %v", err))
+	}
+
+	if err := d.Set("enrollment_method", profile.EnrollmentMethod); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting enrollment_method: %v", err))
+	}
+
+	if err := d.Set("allow_byod", profile.AllowByod); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting allow_byod: %v", err))
+	}
+
+	if err := d.Set("require_passcode", profile.RequirePasscode); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting require_passcode: %v", err))
+	}
+
+	if err := d.Set("user_authentication", profile.UserAuthentication); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting user_authentication: %v", err))
+	}
+
+	if err := d.Set("created", profile.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", profile.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
 
 	if profile.OrgID != "" {
-		d.Set("org_id", profile.OrgID)
+		if err := d.Set("org_id", profile.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting org_id: %v", err))
+		}
 	}
 
 	if profile.GroupID != "" {
-		d.Set("group_id", profile.GroupID)
+		if err := d.Set("group_id", profile.GroupID); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting group_id: %v", err))
+		}
 	}
 
 	if len(profile.GroupIDs) > 0 {
-		d.Set("group_ids", profile.GroupIDs)
+		if err := d.Set("group_ids", profile.GroupIDs); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting group_ids: %v", err))
+		}
 	}
 
 	return diags

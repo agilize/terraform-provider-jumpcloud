@@ -527,20 +527,54 @@ func resourceSSOApplicationRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	// Definir valores no state
-	d.Set("name", application.Name)
-	d.Set("display_name", application.DisplayName)
-	d.Set("description", application.Description)
-	d.Set("type", application.Type)
-	d.Set("sso_url", application.SSOURL)
-	d.Set("logo_url", application.LogoURL)
-	d.Set("active", application.Active)
-	d.Set("beta_access", application.BetaAccess)
-	d.Set("require_mfa", application.RequireMFA)
-	d.Set("created", application.Created)
-	d.Set("updated", application.Updated)
+	if err := d.Set("name", application.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir name: %v", err))
+	}
+
+	if err := d.Set("display_name", application.DisplayName); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir display_name: %v", err))
+	}
+
+	if err := d.Set("description", application.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir description: %v", err))
+	}
+
+	if err := d.Set("type", application.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir type: %v", err))
+	}
+
+	if err := d.Set("sso_url", application.SSOURL); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir sso_url: %v", err))
+	}
+
+	if err := d.Set("logo_url", application.LogoURL); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir logo_url: %v", err))
+	}
+
+	if err := d.Set("active", application.Active); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir active: %v", err))
+	}
+
+	if err := d.Set("beta_access", application.BetaAccess); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir beta_access: %v", err))
+	}
+
+	if err := d.Set("require_mfa", application.RequireMFA); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir require_mfa: %v", err))
+	}
+
+	if err := d.Set("created", application.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir created: %v", err))
+	}
+
+	if err := d.Set("updated", application.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir updated: %v", err))
+	}
 
 	if application.OrgID != "" {
-		d.Set("org_id", application.OrgID)
+		if err := d.Set("org_id", application.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir org_id: %v", err))
+		}
 	}
 
 	// Configuração específica SAML
@@ -577,7 +611,9 @@ func resourceSSOApplicationRead(ctx context.Context, d *schema.ResourceData, met
 			samlConfig[0]["attribute_statements"] = attrStatements
 		}
 
-		d.Set("saml", samlConfig)
+		if err := d.Set("saml", samlConfig); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir saml: %v", err))
+		}
 	}
 
 	// Configuração específica OIDC
@@ -597,17 +633,23 @@ func resourceSSOApplicationRead(ctx context.Context, d *schema.ResourceData, met
 			},
 		}
 
-		d.Set("oidc", oidcConfig)
+		if err := d.Set("oidc", oidcConfig); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir oidc: %v", err))
+		}
 	}
 
 	// Obter associações de grupos
 	if application.GroupAssociations != nil {
-		d.Set("group_associations", application.GroupAssociations)
+		if err := d.Set("group_associations", application.GroupAssociations); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir group_associations: %v", err))
+		}
 	}
 
 	// Obter associações de usuários
 	if application.UserAssociations != nil {
-		d.Set("user_associations", application.UserAssociations)
+		if err := d.Set("user_associations", application.UserAssociations); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir user_associations: %v", err))
+		}
 	}
 
 	return diag.Diagnostics{}

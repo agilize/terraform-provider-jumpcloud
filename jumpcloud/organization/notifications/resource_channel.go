@@ -240,11 +240,25 @@ func resourceNotificationChannelRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	// Definir valores no state
-	d.Set("name", channel.Name)
-	d.Set("type", channel.Type)
-	d.Set("enabled", channel.Enabled)
-	d.Set("created", channel.Created)
-	d.Set("updated", channel.Updated)
+	if err := d.Set("name", channel.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir name: %v", err))
+	}
+
+	if err := d.Set("type", channel.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir type: %v", err))
+	}
+
+	if err := d.Set("enabled", channel.Enabled); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir enabled: %v", err))
+	}
+
+	if err := d.Set("created", channel.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir created: %v", err))
+	}
+
+	if err := d.Set("updated", channel.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir updated: %v", err))
+	}
 
 	// Converter configuration para JSON
 	if channel.Configuration != nil {
@@ -252,7 +266,9 @@ func resourceNotificationChannelRead(ctx context.Context, d *schema.ResourceData
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("erro ao serializar configuração: %v", err))
 		}
-		d.Set("configuration", string(configJSON))
+		if err := d.Set("configuration", string(configJSON)); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir configuration: %v", err))
+		}
 	}
 
 	// Converter throttling para JSON
@@ -261,22 +277,30 @@ func resourceNotificationChannelRead(ctx context.Context, d *schema.ResourceData
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("erro ao serializar throttling: %v", err))
 		}
-		d.Set("throttling", string(throttlingJSON))
+		if err := d.Set("throttling", string(throttlingJSON)); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir throttling: %v", err))
+		}
 	}
 
 	// Definir recipients
 	if channel.Recipients != nil {
-		d.Set("recipients", channel.Recipients)
+		if err := d.Set("recipients", channel.Recipients); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir recipients: %v", err))
+		}
 	}
 
 	// Definir alert_severity
 	if channel.AlertSeverity != nil {
-		d.Set("alert_severity", channel.AlertSeverity)
+		if err := d.Set("alert_severity", channel.AlertSeverity); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir alert_severity: %v", err))
+		}
 	}
 
 	// Definir org_id
 	if channel.OrgID != "" {
-		d.Set("org_id", channel.OrgID)
+		if err := d.Set("org_id", channel.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir org_id: %v", err))
+		}
 	}
 
 	return diags

@@ -144,18 +144,45 @@ func dataSourceServerRead(ctx context.Context, d *schema.ResourceData, meta inte
 // setRadiusServerAttributes configura os atributos do data source com os dados do servidor RADIUS
 func setRadiusServerAttributes(d *schema.ResourceData, server RadiusServer) diag.Diagnostics {
 	d.SetId(server.ID)
-	d.Set("name", server.Name)
+
+	// Verificar erros em todas as chamadas d.Set
+	if err := d.Set("name", server.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
 	// Não incluímos shared_secret por segurança
-	d.Set("network_source_ip", server.NetworkSourceIP)
-	d.Set("mfa_required", server.MfaRequired)
-	d.Set("user_password_expiration_action", server.UserPasswordExpirationAction)
-	d.Set("user_lockout_action", server.UserLockoutAction)
-	d.Set("user_attribute", server.UserAttribute)
-	d.Set("created", server.Created)
-	d.Set("updated", server.Updated)
+	if err := d.Set("network_source_ip", server.NetworkSourceIP); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting network_source_ip: %v", err))
+	}
+
+	if err := d.Set("mfa_required", server.MfaRequired); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting mfa_required: %v", err))
+	}
+
+	if err := d.Set("user_password_expiration_action", server.UserPasswordExpirationAction); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting user_password_expiration_action: %v", err))
+	}
+
+	if err := d.Set("user_lockout_action", server.UserLockoutAction); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting user_lockout_action: %v", err))
+	}
+
+	if err := d.Set("user_attribute", server.UserAttribute); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting user_attribute: %v", err))
+	}
+
+	if err := d.Set("created", server.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", server.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
 
 	if server.Targets != nil {
-		d.Set("targets", server.Targets)
+		if err := d.Set("targets", server.Targets); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting targets: %v", err))
+		}
 	}
 
 	return diag.Diagnostics{}

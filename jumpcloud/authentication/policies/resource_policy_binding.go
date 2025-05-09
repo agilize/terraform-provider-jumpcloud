@@ -165,16 +165,38 @@ func resourcePolicyBindingRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	// Definir valores no state
-	d.Set("policy_id", binding.PolicyID)
-	d.Set("target_id", binding.TargetID)
-	d.Set("target_type", binding.TargetType)
-	d.Set("priority", binding.Priority)
-	d.Set("excluded_targets", binding.ExcludedTargets)
-	d.Set("created", binding.Created)
-	d.Set("updated", binding.Updated)
+	if err := d.Set("policy_id", binding.PolicyID); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir policy_id: %v", err))
+	}
+
+	if err := d.Set("target_id", binding.TargetID); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir target_id: %v", err))
+	}
+
+	if err := d.Set("target_type", binding.TargetType); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir target_type: %v", err))
+	}
+
+	if err := d.Set("priority", binding.Priority); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir priority: %v", err))
+	}
+
+	if err := d.Set("excluded_targets", binding.ExcludedTargets); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir excluded_targets: %v", err))
+	}
+
+	if err := d.Set("created", binding.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir created: %v", err))
+	}
+
+	if err := d.Set("updated", binding.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir updated: %v", err))
+	}
 
 	if binding.OrgID != "" {
-		d.Set("org_id", binding.OrgID)
+		if err := d.Set("org_id", binding.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir org_id: %v", err))
+		}
 	}
 
 	return diags

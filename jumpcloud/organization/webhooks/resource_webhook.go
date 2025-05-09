@@ -219,23 +219,40 @@ func resourceWebhookRead(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	// Set resource data
-	d.Set("name", webhook.Name)
-	d.Set("url", webhook.URL)
-	d.Set("enabled", webhook.Enabled)
-	d.Set("description", webhook.Description)
+	if err := d.Set("name", webhook.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
+	if err := d.Set("url", webhook.URL); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting url: %v", err))
+	}
+
+	if err := d.Set("enabled", webhook.Enabled); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting enabled: %v", err))
+	}
+
+	if err := d.Set("description", webhook.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
 
 	// Set event_types
 	if webhook.EventTypes != nil {
-		d.Set("event_types", webhook.EventTypes)
+		if err := d.Set("event_types", webhook.EventTypes); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting event_types: %v", err))
+		}
 	}
 
 	// Set timestamps
 	if !webhook.Created.IsZero() {
-		d.Set("created", webhook.Created.Format(time.RFC3339))
+		if err := d.Set("created", webhook.Created.Format(time.RFC3339)); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+		}
 	}
 
 	if !webhook.Updated.IsZero() {
-		d.Set("updated", webhook.Updated.Format(time.RFC3339))
+		if err := d.Set("updated", webhook.Updated.Format(time.RFC3339)); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+		}
 	}
 
 	return diags

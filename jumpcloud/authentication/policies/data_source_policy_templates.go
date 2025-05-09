@@ -186,7 +186,9 @@ func dataSourcePolicyTemplatesRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	d.Set("total_count", templatesResp.TotalCount)
+	if err := d.Set("total_count", templatesResp.TotalCount); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir total_count: %v", err))
+	}
 
 	// Preparar resultados
 	templates := make([]map[string]interface{}, 0, len(templatesResp.Results))

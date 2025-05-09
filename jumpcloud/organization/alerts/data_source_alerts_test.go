@@ -79,12 +79,14 @@ func TestAccDataSourceAlerts_filtered(t *testing.T) {
 }
 
 // Test configurations
+// nolint:unused
 func testAccJumpCloudDataSourceAlertsConfig_basic() string {
 	return `
 data "jumpcloud_alerts" "all" {}
 `
 }
 
+// nolint:unused
 func testAccJumpCloudDataSourceAlertsConfig_filtered() string {
 	return `
 data "jumpcloud_alerts" "filtered" {

@@ -106,6 +106,17 @@ func TestResourceUserSchema(t *testing.T) {
 		t.Error("Expected password to be sensitive")
 	}
 
+	// Test local_user_account field
+	if s.Schema["local_user_account"] == nil {
+		t.Error("Expected local_user_account in schema, but it does not exist")
+	}
+	if s.Schema["local_user_account"].Type != schema.TypeString {
+		t.Error("Expected local_user_account to be of type string")
+	}
+	if s.Schema["local_user_account"].Required {
+		t.Error("Expected local_user_account to be optional")
+	}
+
 	// Test computed fields
 	if s.Schema["id"] == nil {
 		t.Error("Expected id in schema, but it does not exist")
@@ -247,12 +258,60 @@ func TestAccResourceUser_attributes(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckJumpCloudUserExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "username", "testuser_attrs"),
-					resource.TestCheckResourceAttr(resourceName, "email", "testuser.attrs@example.com"),
+					resource.TestCheckResourceAttr(resourceName, "email", "testuser_attrs@example.com"),
 					resource.TestCheckResourceAttr(resourceName, "firstname", "Test"),
 					resource.TestCheckResourceAttr(resourceName, "lastname", "User"),
+					resource.TestCheckResourceAttr(resourceName, "attributes.department", "Engineering"),
+					resource.TestCheckResourceAttr(resourceName, "attributes.location", "Remote"),
+					resource.TestCheckResourceAttr(resourceName, "attributes.title", "Developer"),
+				),
+			},
+		},
+	})
+}
+
+// Test for all console fields
+func TestAccResourceUser_consoleFields(t *testing.T) {
+	resourceName := "jumpcloud_user.test_console"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { jctest.TestAccPreCheck(t) },
+		ProviderFactories: jctest.GetProviderFactories(),
+		CheckDestroy:      testAccCheckJumpCloudUserDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccJumpCloudUserConfig_consoleFields(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckJumpCloudUserExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "username", "testuser_console"),
+					resource.TestCheckResourceAttr(resourceName, "email", "testuser_console@example.com"),
+					resource.TestCheckResourceAttr(resourceName, "firstname", "Console"),
+					resource.TestCheckResourceAttr(resourceName, "lastname", "Test"),
+					resource.TestCheckResourceAttr(resourceName, "middlename", "User"),
+					resource.TestCheckResourceAttr(resourceName, "displayname", "Console U. Test"),
+					resource.TestCheckResourceAttr(resourceName, "description", "User with console fields"),
+					resource.TestCheckResourceAttr(resourceName, "local_user_account", "testuser-local"),
+					resource.TestCheckResourceAttr(resourceName, "managed_apple_id", "console@example.appleid.com"),
+					resource.TestCheckResourceAttr(resourceName, "alternate_email", "console.alt@example.com"),
+					resource.TestCheckResourceAttr(resourceName, "password_recovery_email", "recovery@example.com"),
+					resource.TestCheckResourceAttr(resourceName, "state", "STAGED"),
+					resource.TestCheckResourceAttr(resourceName, "bypass_managed_device_lockout", "true"),
+					resource.TestCheckResourceAttr(resourceName, "mfa_enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "sudo", "true"),
+					resource.TestCheckResourceAttr(resourceName, "global_passwordless_sudo", "true"),
+					resource.TestCheckResourceAttr(resourceName, "ldap_binding_user", "true"),
+					resource.TestCheckResourceAttr(resourceName, "enforce_uid_gid_consistency", "true"),
+					resource.TestCheckResourceAttr(resourceName, "unix_uid", "5053"),
+					resource.TestCheckResourceAttr(resourceName, "unix_guid", "5053"),
+					resource.TestCheckResourceAttr(resourceName, "employee_identifier", "EMP-001"),
+					resource.TestCheckResourceAttr(resourceName, "job_title", "Senior Developer"),
+					resource.TestCheckResourceAttr(resourceName, "employee_type", "Full-time"),
+					resource.TestCheckResourceAttr(resourceName, "company", "Example Corp"),
 					resource.TestCheckResourceAttr(resourceName, "department", "Engineering"),
-					resource.TestCheckResourceAttr(resourceName, "location", "Remote"),
-					resource.TestCheckResourceAttr(resourceName, "title", "Senior Developer"),
+					resource.TestCheckResourceAttr(resourceName, "cost_center", "IT-123"),
+					resource.TestCheckResourceAttr(resourceName, "location", "San Francisco HQ"),
+					resource.TestCheckResourceAttr(resourceName, "attributes.team", "platform"),
+					resource.TestCheckResourceAttr(resourceName, "attributes.squad", "platform"),
 				),
 			},
 		},
@@ -324,11 +383,70 @@ resource "jumpcloud_user" "test_attrs" {
   firstname  = "Test"
   lastname   = "User"
   password   = "P@ssw0rd123!"
-  
+
   attributes = {
     department = "Engineering"
     location   = "Remote"
     title      = "Developer"
+  }
+}
+`
+}
+
+// Definindo as provider factories
+
+func testAccJumpCloudUserConfig_consoleFields() string {
+	return `
+resource "jumpcloud_user" "test_console" {
+  # User Information
+  firstname    = "Console"
+  middlename   = "User"
+  lastname     = "Test"
+  username     = "testuser_console"
+  local_user_account = "testuser-local"
+  displayname  = "Console U. Test"
+  managed_apple_id = "console@example.appleid.com"
+  email        = "testuser_console@example.com"
+  alternate_email = "console.alt@example.com"
+  description  = "User with console fields"
+  password     = "P@ssw0rd123!"
+
+  # State
+  state = "STAGED"
+
+  # User Security Settings and Permissions
+  password_authority = "None"
+  delegated_authority = "None"
+  password_recovery_email = "recovery@example.com"
+  password_never_expires = false
+
+  # Account lockout threshold for devices
+  bypass_managed_device_lockout = true
+
+  # Multi-factor Authentication Settings
+  mfa_enabled = true
+
+  # Permission Settings
+  sudo = true
+  global_passwordless_sudo = true
+  ldap_binding_user = true
+  enforce_uid_gid_consistency = true
+  unix_uid = 5053
+  unix_guid = 5053
+
+  # Employment Information
+  employee_identifier = "EMP-001"
+  job_title = "Senior Developer"
+  employee_type = "Full-time"
+  company = "Example Corp"
+  department = "Engineering"
+  cost_center = "IT-123"
+  location = "San Francisco HQ"
+
+  # Custom Attributes
+  attributes = {
+    team = "platform"
+    squad = "platform"
   }
 }
 `

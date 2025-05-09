@@ -180,15 +180,42 @@ func dataSourceMFAStatsRead(ctx context.Context, d *schema.ResourceData, meta in
 
 	// Update state
 	d.SetId(time.Now().Format(time.RFC3339)) // Unique ID for the data source
-	d.Set("total_users", stats.TotalUsers)
-	d.Set("mfa_enabled_users", stats.MFAEnabledUsers)
-	d.Set("users_with_mfa", stats.UsersWithMFA)
-	d.Set("mfa_enrollment_rate", stats.MFAEnrollmentRate)
-	d.Set("method_stats", methodStats)
-	d.Set("authentication_attempts", stats.AuthenticationAttempts)
-	d.Set("successful_authentications", stats.SuccessfulAuthentications)
-	d.Set("failed_authentications", stats.FailedAuthentications)
-	d.Set("authentication_success_rate", stats.AuthenticationSuccessRate)
+
+	if err := d.Set("total_users", stats.TotalUsers); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir total_users: %v", err))
+	}
+
+	if err := d.Set("mfa_enabled_users", stats.MFAEnabledUsers); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir mfa_enabled_users: %v", err))
+	}
+
+	if err := d.Set("users_with_mfa", stats.UsersWithMFA); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir users_with_mfa: %v", err))
+	}
+
+	if err := d.Set("mfa_enrollment_rate", stats.MFAEnrollmentRate); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir mfa_enrollment_rate: %v", err))
+	}
+
+	if err := d.Set("method_stats", methodStats); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir method_stats: %v", err))
+	}
+
+	if err := d.Set("authentication_attempts", stats.AuthenticationAttempts); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir authentication_attempts: %v", err))
+	}
+
+	if err := d.Set("successful_authentications", stats.SuccessfulAuthentications); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir successful_authentications: %v", err))
+	}
+
+	if err := d.Set("failed_authentications", stats.FailedAuthentications); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir failed_authentications: %v", err))
+	}
+
+	if err := d.Set("authentication_success_rate", stats.AuthenticationSuccessRate); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir authentication_success_rate: %v", err))
+	}
 
 	return diag.Diagnostics{}
 }

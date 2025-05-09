@@ -98,17 +98,14 @@ resource "jumpcloud_user" "complete_example" {
 
   # Authentication & security settings
   mfa_enabled                    = true
-  enable_user_portal_multifactor = true
   password_never_expires         = false
   ldap_binding_user              = false
   passwordless_sudo              = false
   global_passwordless_sudo       = false
   sudo                           = false
-  public_key                     = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC..."
   allow_public_key               = true
 
   # System settings
-  enable_managed_uid           = false
   enforce_uid_gid_consistency  = false
   unix_uid                     = 1001
   unix_guid                    = 1001
@@ -118,8 +115,8 @@ resource "jumpcloud_user" "complete_example" {
   managed_apple_id             = "jdoe@example.appleid.com"
 
   # Account security
-  disable_device_max_login_attempts = false
   bypass_managed_device_lockout     = true
+  local_user_account               = "jdoe-local"  # Local username for this user
 
   # Authority settings
   delegated_authority          = "exampleauthority"
@@ -191,6 +188,101 @@ resource "jumpcloud_user" "secure_example" {
 }
 ```
 
+### Example with All Console Fields
+
+This example demonstrates all the fields that can be set in the JumpCloud console:
+
+```hcl
+resource "jumpcloud_user" "console_example" {
+  # User Information
+  firstname    = "John"
+  middlename   = "Robert"
+  lastname     = "Doe"
+  username     = "jdoe2"
+  local_user_account = "jdoe-local"
+  displayname  = "John R. Doe"
+  managed_apple_id = "jdoe@example.appleid.com"
+  email        = "john2@agilize.com"
+  alternate_email = "john.alt@agilize.com"
+  description  = "Senior Developer in Platform Team"
+
+  # State
+  state = "STAGED"
+
+  # User Security Settings and Permissions
+  password_authority = "None"
+  delegated_authority = "None"
+  password_recovery_email = "recovery@agilize.com"
+  password_never_expires = false
+
+  # Account lockout threshold for devices
+  bypass_managed_device_lockout = true
+
+  # Multi-factor Authentication Settings
+  mfa_enabled = true
+
+  # Permission Settings
+  sudo = true
+  global_passwordless_sudo = true
+  ldap_binding_user = true
+  enforce_uid_gid_consistency = true
+  unix_uid = 5053
+  unix_guid = 5053
+
+  # Employment Information
+  employee_identifier = "EMP-001"
+  job_title = "Senior Developer"
+  employee_type = "Full-time"
+  company = "Example Corp"
+  department = "Engineering"
+  cost_center = "IT-123"
+  manager_id = "5f1234567890abcdef123456" # ID of the manager user in JumpCloud
+  location = "San Francisco HQ"
+
+  # Custom Attributes
+  attributes = {
+    team = "platform"
+    squad = "platform"
+  }
+
+  # SSH Keys
+  ssh_keys = [
+    {
+      name = "work-laptop"
+      public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC..."
+    },
+    {
+      name = "personal-laptop"
+      public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC..."
+    }
+  ]
+
+  # Phone Numbers
+  phone_numbers = [
+    {
+      type = "work"
+      number = "+1 (555) 123-4567"
+    },
+    {
+      type = "mobile"
+      number = "+1 (555) 987-6543"
+    }
+  ]
+
+  # Addresses
+  addresses = [
+    {
+      type = "work"
+      street_address = "123 Main St"
+      locality = "San Francisco"
+      region = "CA"
+      postal_code = "94105"
+      country = "USA"
+    }
+  ]
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -214,26 +306,26 @@ The following arguments are supported:
 * `employee_type` - (Optional) The type of employee (e.g., full-time, contractor).
 * `job_title` - (Optional) The job title of the user.
 * `location` - (Optional) The location of the user.
-* `enable_managed_uid` - (Optional) Whether to enable managed UID for the user. Defaults to `false`.
-* `enable_user_portal_multifactor` - (Optional) Whether to enable multifactor authentication for the user portal. Defaults to `false`.
-* `externally_managed` - (Optional) Whether the user is externally managed. Defaults to `false`.
+* `enable_managed_uid` - (Optional, Deprecated) Whether to enable managed UID for the user. Defaults to `false`. This field is deprecated and will be removed in a future version.
+* `enable_user_portal_multifactor` - (Optional, Deprecated) Whether to enable multifactor authentication for the user portal. Defaults to `false`. Use `mfa_enabled` instead.
+* `externally_managed` - (Optional, Deprecated) Whether the user is externally managed. Defaults to `false`. Use `password_authority` instead.
 * `ldap_binding_user` - (Optional) Whether the user is an LDAP binding user. Defaults to `false`.
 * `passwordless_sudo` - (Optional) Whether to enable passwordless sudo for the user. Defaults to `false`.
 * `global_passwordless_sudo` - (Optional) Whether to enable global passwordless sudo for the user. Defaults to `false`.
-* `public_key` - (Optional) The public SSH key for the user.
-* `allow_public_key` - (Optional) Whether to allow public key authentication for the user. Defaults to `false`.
+* `allow_public_key` - (Optional) Whether to allow public key authentication for the user. Defaults to `true`.
 * `samba_service_user` - (Optional) Whether the user is a Samba service user. Defaults to `false`.
 * `sudo` - (Optional) Whether to grant sudo access to the user. Defaults to `false`.
 * `suspended` - (Optional) Whether the user is suspended. Defaults to `false`.
 * `unix_uid` - (Optional) The Unix UID for the user. Must be an integer.
 * `unix_guid` - (Optional) The Unix GUID for the user. Must be an integer.
-* `disable_device_max_login_attempts` - (Optional) Whether to disable maximum login attempts for the user's devices. Defaults to `false`.
+* `disable_device_max_login_attempts` - (Optional, Deprecated) Whether to disable maximum login attempts for the user's devices. Defaults to `false`. Use `bypass_managed_device_lockout` instead.
 * `password_recovery_email` - (Optional) The email address to use for password recovery.
 * `enforce_uid_gid_consistency` - (Optional) Whether to enforce UID/GID consistency. Defaults to `false`.
 * `delegated_authority` - (Optional) The delegated authority for the user.
 * `password_authority` - (Optional) The password authority for the user.
 * `managed_apple_id` - (Optional) The managed Apple ID for the user.
 * `bypass_managed_device_lockout` - (Optional) Whether to bypass managed device lockout for the user. Defaults to `false`.
+* `local_user_account` - (Optional) Local username for this user.
 * `manager_id` - (Optional) The ID of the user's manager in JumpCloud.
 
 ## Attributes Reference

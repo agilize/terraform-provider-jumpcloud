@@ -88,13 +88,26 @@ func dataSourceSettingsRead(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	// Definir atributos no estado
-	d.Set("system_insights_enrolled", mfaSettings.SystemInsightsEnrolled)
-	d.Set("exclusion_window_days", mfaSettings.ExclusionWindowDays)
-	d.Set("organization_id", mfaSettings.OrganizationID)
-	d.Set("updated", mfaSettings.Updated)
+	if err := d.Set("system_insights_enrolled", mfaSettings.SystemInsightsEnrolled); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir system_insights_enrolled: %v", err))
+	}
+
+	if err := d.Set("exclusion_window_days", mfaSettings.ExclusionWindowDays); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir exclusion_window_days: %v", err))
+	}
+
+	if err := d.Set("organization_id", mfaSettings.OrganizationID); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir organization_id: %v", err))
+	}
+
+	if err := d.Set("updated", mfaSettings.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir updated: %v", err))
+	}
 
 	if mfaSettings.EnabledMethods != nil {
-		d.Set("enabled_methods", mfaSettings.EnabledMethods)
+		if err := d.Set("enabled_methods", mfaSettings.EnabledMethods); err != nil {
+			return diag.FromErr(fmt.Errorf("erro ao definir enabled_methods: %v", err))
+		}
 	}
 
 	return diags

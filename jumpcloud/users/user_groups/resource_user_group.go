@@ -383,13 +383,26 @@ func resourceUserGroupRead(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	// Set fields in terraform state
-	d.Set("name", group.Name)
-	d.Set("description", group.Description)
-	d.Set("type", group.Type)
+	if err := d.Set("name", group.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
+	if err := d.Set("description", group.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
+
+	if err := d.Set("type", group.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting type: %v", err))
+	}
 
 	// Set dynamic group fields
-	d.Set("membership_method", group.MembershipMethod)
-	d.Set("member_suggestions_notify", group.MemberSuggestionsNotify)
+	if err := d.Set("membership_method", group.MembershipMethod); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting membership_method: %v", err))
+	}
+
+	if err := d.Set("member_suggestions_notify", group.MemberSuggestionsNotify); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting member_suggestions_notify: %v", err))
+	}
 
 	// Set member query if present
 	if group.MemberQuery != nil {
@@ -436,11 +449,15 @@ func resourceUserGroupRead(ctx context.Context, d *schema.ResourceData, meta int
 
 		// Only set attributes if we have any (avoid setting empty map)
 		if len(attributes) > 0 {
-			d.Set("attributes", attributes)
+			if err := d.Set("attributes", attributes); err != nil {
+				return diag.FromErr(fmt.Errorf("error setting attributes: %v", err))
+			}
 		} else if len(oldAttrs) > 0 {
 			// If we had attributes before but now they're all filtered out,
 			// keep the original attributes to avoid unnecessary changes
-			d.Set("attributes", oldAttrs)
+			if err := d.Set("attributes", oldAttrs); err != nil {
+				return diag.FromErr(fmt.Errorf("error setting attributes: %v", err))
+			}
 		}
 	}
 

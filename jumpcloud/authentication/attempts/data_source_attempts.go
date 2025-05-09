@@ -382,10 +382,22 @@ func dataSourceAttemptsRead(ctx context.Context, d *schema.ResourceData, meta in
 
 	// Update state
 	d.SetId(time.Now().Format(time.RFC3339)) // Unique ID for the data source
-	d.Set("attempts", attempts)
-	d.Set("total_count", attemptsResp.TotalCount)
-	d.Set("has_more", attemptsResp.HasMore)
-	d.Set("next_offset", attemptsResp.NextOffset)
+
+	if err := d.Set("attempts", attempts); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting attempts: %v", err))
+	}
+
+	if err := d.Set("total_count", attemptsResp.TotalCount); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting total_count: %v", err))
+	}
+
+	if err := d.Set("has_more", attemptsResp.HasMore); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting has_more: %v", err))
+	}
+
+	if err := d.Set("next_offset", attemptsResp.NextOffset); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting next_offset: %v", err))
+	}
 
 	return diag.Diagnostics{}
 }

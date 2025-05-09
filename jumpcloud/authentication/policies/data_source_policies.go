@@ -186,7 +186,9 @@ func dataSourcePoliciesRead(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	d.Set("total_count", policiesResp.TotalCount)
+	if err := d.Set("total_count", policiesResp.TotalCount); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir total_count: %v", err))
+	}
 
 	// Preparar resultados
 	policies := make([]map[string]interface{}, 0, len(policiesResp.Results))

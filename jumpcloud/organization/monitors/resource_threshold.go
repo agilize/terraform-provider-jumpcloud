@@ -238,23 +238,56 @@ func resourceMonitoringThresholdRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	// Set values in state
-	d.Set("name", threshold.Name)
-	d.Set("description", threshold.Description)
-	d.Set("metric_type", threshold.MetricType)
-	d.Set("resource_type", threshold.ResourceType)
-	d.Set("operator", threshold.Operator)
-	d.Set("threshold", threshold.Threshold)
-	d.Set("duration", threshold.Duration)
-	d.Set("severity", threshold.Severity)
-	d.Set("created", threshold.Created)
-	d.Set("updated", threshold.Updated)
+	if err := d.Set("name", threshold.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
+	if err := d.Set("description", threshold.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
+
+	if err := d.Set("metric_type", threshold.MetricType); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting metric_type: %v", err))
+	}
+
+	if err := d.Set("resource_type", threshold.ResourceType); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting resource_type: %v", err))
+	}
+
+	if err := d.Set("operator", threshold.Operator); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting operator: %v", err))
+	}
+
+	if err := d.Set("threshold", threshold.Threshold); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting threshold: %v", err))
+	}
+
+	if err := d.Set("duration", threshold.Duration); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting duration: %v", err))
+	}
+
+	if err := d.Set("severity", threshold.Severity); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting severity: %v", err))
+	}
+
+	if err := d.Set("created", threshold.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", threshold.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
 
 	if threshold.OrgID != "" {
-		d.Set("org_id", threshold.OrgID)
+		if err := d.Set("org_id", threshold.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting org_id: %v", err))
+		}
 	}
 
 	if len(threshold.Tags) > 0 {
-		d.Set("tags", threshold.Tags)
+		if err := d.Set("tags", threshold.Tags); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting tags: %v", err))
+		}
 	}
 
 	// Convert actions map to JSON string
@@ -263,7 +296,9 @@ func resourceMonitoringThresholdRead(ctx context.Context, d *schema.ResourceData
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error serializing actions to JSON: %v", err))
 		}
-		d.Set("actions", string(actionsJSON))
+		if err := d.Set("actions", string(actionsJSON)); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting actions: %v", err))
+		}
 	}
 
 	return diags

@@ -277,14 +277,18 @@ func dataSourceMDMStatsRead(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	// Set convenience fields
-	d.Set("total_devices", stats.DeviceStats.TotalDevices)
+	if err := d.Set("total_devices", stats.DeviceStats.TotalDevices); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting total_devices in state: %v", err))
+	}
 
 	// Calculate compliance percentage
 	compliancePercentage := 0.0
 	if stats.DeviceStats.TotalDevices > 0 {
 		compliancePercentage = float64(stats.ComplianceStats.CompliantDevices) / float64(stats.DeviceStats.TotalDevices) * 100
 	}
-	d.Set("compliance_percentage", compliancePercentage)
+	if err := d.Set("compliance_percentage", compliancePercentage); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting compliance_percentage in state: %v", err))
+	}
 
 	// Set a unique ID for this data source
 	d.SetId(time.Now().Format(time.RFC3339))

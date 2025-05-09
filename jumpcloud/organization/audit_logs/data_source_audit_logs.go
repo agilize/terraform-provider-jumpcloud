@@ -247,7 +247,9 @@ func dataSourceAuditLogsRead(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(fmt.Errorf("erro ao deserializar resposta: %v", err))
 	}
 
-	d.Set("total_count", auditLogsResp.TotalCount)
+	if err := d.Set("total_count", auditLogsResp.TotalCount); err != nil {
+		return diag.FromErr(fmt.Errorf("erro ao definir total_count: %v", err))
+	}
 
 	// Preparar resultados
 	logs := make([]map[string]interface{}, 0, len(auditLogsResp.Results))

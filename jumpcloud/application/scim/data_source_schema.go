@@ -306,17 +306,39 @@ func dataSourceSchemaRead(ctx context.Context, d *schema.ResourceData, meta inte
 func setSchemaValues(d *schema.ResourceData, schema ScimSchema) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	d.Set("name", schema.Name)
-	d.Set("description", schema.Description)
-	d.Set("uri", schema.URI)
-	d.Set("type", schema.Type)
-	d.Set("standard", schema.Standard)
-	d.Set("created", schema.Created)
-	d.Set("updated", schema.Updated)
+	if err := d.Set("name", schema.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
+	if err := d.Set("description", schema.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
+
+	if err := d.Set("uri", schema.URI); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting uri: %v", err))
+	}
+
+	if err := d.Set("type", schema.Type); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting type: %v", err))
+	}
+
+	if err := d.Set("standard", schema.Standard); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting standard: %v", err))
+	}
+
+	if err := d.Set("created", schema.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", schema.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
 
 	// Set org_id if present
 	if schema.OrgID != "" {
-		d.Set("org_id", schema.OrgID)
+		if err := d.Set("org_id", schema.OrgID); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting org_id: %v", err))
+		}
 	}
 
 	// Set attributes

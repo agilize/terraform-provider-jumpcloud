@@ -12,6 +12,7 @@ func TestAccResourceAdminRoleBinding_basic(t *testing.T) {
 }
 
 // Test configurations
+// nolint:unused
 func testAccResourceAdminRoleBindingConfig_basic(email, roleName string) string {
 	return fmt.Sprintf(`
 resource "jumpcloud_admin_user" "test" {

@@ -11,6 +11,7 @@ import (
 )
 
 // providerFactories is a map of provider factory functions for testing
+// nolint:unused
 var providerFactoriesMembership = map[string]func() (*schema.Provider, error){
 	"jumpcloud": func() (*schema.Provider, error) {
 		return jctest.TestAccProviders["jumpcloud"], nil

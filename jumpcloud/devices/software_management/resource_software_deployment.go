@@ -228,16 +228,45 @@ func resourceSoftwareDeploymentRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	// Set the resource data
-	d.Set("name", deployment.Name)
-	d.Set("description", deployment.Description)
-	d.Set("package_id", deployment.PackageID)
-	d.Set("target_type", deployment.TargetType)
-	d.Set("status", deployment.Status)
-	d.Set("start_time", deployment.StartTime)
-	d.Set("end_time", deployment.EndTime)
-	d.Set("org_id", deployment.OrgID)
-	d.Set("created", deployment.Created)
-	d.Set("updated", deployment.Updated)
+	if err := d.Set("name", deployment.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %v", err))
+	}
+
+	if err := d.Set("description", deployment.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting description: %v", err))
+	}
+
+	if err := d.Set("package_id", deployment.PackageID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting package_id: %v", err))
+	}
+
+	if err := d.Set("target_type", deployment.TargetType); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting target_type: %v", err))
+	}
+
+	if err := d.Set("status", deployment.Status); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting status: %v", err))
+	}
+
+	if err := d.Set("start_time", deployment.StartTime); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting start_time: %v", err))
+	}
+
+	if err := d.Set("end_time", deployment.EndTime); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting end_time: %v", err))
+	}
+
+	if err := d.Set("org_id", deployment.OrgID); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting org_id: %v", err))
+	}
+
+	if err := d.Set("created", deployment.Created); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
+	}
+
+	if err := d.Set("updated", deployment.Updated); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting updated: %v", err))
+	}
 
 	// Handle target_ids
 	if deployment.TargetIDs != nil {

@@ -102,12 +102,16 @@ resource "jumpcloud_scim_server" "test" {
 }
 
 // Test setup variables and functions
+// nolint:unused
 var testAccProviders map[string]*schema.Provider
+
+// nolint:unused
 var testAccProvider *schema.Provider
 
 // testAccPreCheck is the canonical implementation for SCIM tests
 // Definindo as provider factories
 
+// nolint:unused
 func testAccPreCheck(t *testing.T) {
 	// Add any necessary setup logic here, such as checking for required environment variables
 	// This is called before each test runs

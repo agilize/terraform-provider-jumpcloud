@@ -155,7 +155,12 @@ func (c *Client) DoRequestWithContext(ctx context.Context, method, path string, 
 	if err != nil {
 		return nil, fmt.Errorf("error making request: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			// Log the error but don't return it since we might already have a more important error
+			fmt.Printf("WARNING: Error closing response body: %v\n", closeErr)
+		}
+	}()
 
 	// Read response body
 	respBody, err := io.ReadAll(resp.Body)
