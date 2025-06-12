@@ -9,6 +9,19 @@ type UserGroupFilter struct {
 
 // UserGroupQuery represents a query for dynamic user groups
 type UserGroupQuery struct {
+	QueryType     string                 `json:"queryType"`
+	Filters       []UserGroupFilter      `json:"filters,omitempty"`
+	SearchFilters map[string]interface{} `json:"searchFilters,omitempty"`
+}
+
+// UserGroupSearchQuery represents a search query for dynamic user groups (without filters field)
+type UserGroupSearchQuery struct {
+	QueryType     string `json:"queryType"`
+	SearchFilters string `json:"searchFilters"`
+}
+
+// UserGroupFilterQuery represents a filter query for dynamic user groups (without searchFilters field)
+type UserGroupFilterQuery struct {
 	QueryType string            `json:"queryType"`
 	Filters   []UserGroupFilter `json:"filters"`
 }
@@ -28,7 +41,7 @@ type UserGroup struct {
 	Email                   string                 `json:"email,omitempty"`
 	Attributes              map[string]interface{} `json:"attributes,omitempty"`
 	MembershipMethod        string                 `json:"membershipMethod,omitempty"`
-	MemberQuery             *UserGroupQuery        `json:"memberQuery,omitempty"`
+	MemberQuery             interface{}            `json:"memberQuery,omitempty"`
 	MemberQueryExemptions   []UserGroupExemption   `json:"memberQueryExemptions,omitempty"`
 	MemberSuggestionsNotify bool                   `json:"memberSuggestionsNotify,omitempty"`
 	Created                 string                 `json:"created,omitempty"`
