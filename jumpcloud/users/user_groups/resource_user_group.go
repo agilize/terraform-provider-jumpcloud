@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -19,6 +20,69 @@ import (
 func sanitizeAttributeName(name string) string {
 	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
 	return reg.ReplaceAllString(name, "")
+}
+
+// convertFieldForAPI converts field names for API usage, automatically detecting custom attributes
+func convertFieldForAPI(field string) string {
+	// Define standard JumpCloud user fields and their API mappings
+	standardFields := map[string]string{
+		"company":      "company",
+		"costCenter":   "costCenter",
+		"department":   "department",
+		"description":  "description",
+		"employeeType": "employeeType",
+		"jobTitle":     "jobTitle",
+		"location":     "location",
+		"userState":    "state", // userState maps to state in API
+		"state":        "state", // state is the correct API field
+	}
+
+	// If field already has attributes. prefix, handle it
+	if strings.HasPrefix(field, "attributes.") {
+		// Convert "attributes.area" to "attributes[name=area].value"
+		attrName := strings.TrimPrefix(field, "attributes.")
+		return fmt.Sprintf("attributes[name=%s].value", attrName)
+	}
+
+	// If it's a standard field, return the mapped API field
+	if apiField, exists := standardFields[field]; exists {
+		return apiField
+	}
+
+	// Otherwise, treat as custom attribute
+	return fmt.Sprintf("attributes[name=%s].value", field)
+}
+
+// convertFieldFromAPI converts field names from API format back to Terraform format
+func convertFieldFromAPI(field string) string {
+	// Define reverse mapping from API fields to Terraform fields
+	apiToTerraform := map[string]string{
+		"company":      "company",
+		"costCenter":   "costCenter",
+		"department":   "department",
+		"description":  "description",
+		"employeeType": "employeeType",
+		"jobTitle":     "jobTitle",
+		"location":     "location",
+		"state":        "state", // Keep as state (not userState)
+	}
+
+	// If it's a standard field, return the Terraform field name
+	if terraformField, exists := apiToTerraform[field]; exists {
+		return terraformField
+	}
+
+	// Convert "attributes[name=area].value" back to just "area"
+	if strings.Contains(field, "attributes[name=") && strings.HasSuffix(field, "].value") {
+		start := strings.Index(field, "attributes[name=") + len("attributes[name=")
+		end := strings.Index(field, "].value")
+		if start < end {
+			attrName := field[start:end]
+			return attrName // Return just the attribute name, not "attributes.area"
+		}
+	}
+
+	return field
 }
 
 // ResourceUserGroup returns the resource for JumpCloud user groups
@@ -86,18 +150,39 @@ func ResourceUserGroup() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Default:     "FilterQuery",
-							Description: "Type of query. Currently only FilterQuery is supported",
+							Description: "Type of query. Valid values are 'FilterQuery' (for standard fields) and 'Search' (for custom attributes)",
+							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+								v := val.(string)
+								valid := map[string]bool{
+									"FilterQuery": true,
+									"Search":      true,
+								}
+								if !valid[v] {
+									errs = append(errs, fmt.Errorf("%q must be either 'FilterQuery' or 'Search', got: %s", key, v))
+								}
+								return
+							},
 						},
 						"filter": {
-							Type:        schema.TypeList,
+							Type:        schema.TypeSet,
 							Required:    true,
 							Description: "Filters for the query",
+							Set: func(v interface{}) int {
+								// Create a hash based on field, operator, and value
+								// This ensures that filters with the same content are treated as identical
+								// regardless of their order in the list
+								m := v.(map[string]interface{})
+								field := m["field"].(string)
+								operator := m["operator"].(string)
+								value := m["value"].(string)
+								return schema.HashString(fmt.Sprintf("%s:%s:%s", field, operator, value))
+							},
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"field": {
 										Type:        schema.TypeString,
 										Required:    true,
-										Description: "Field to filter on. Valid fields include: company, costCenter, department, description, employeeType, jobTitle, location, userState",
+										Description: "Field to filter on. Standard fields: company, costCenter, department, description, employeeType, jobTitle, location, userState. Custom attributes: use the attribute name directly (e.g., 'area', 'tribe'). The provider automatically detects if it's a custom attribute.",
 									},
 									"operator": {
 										Type:        schema.TypeString,
@@ -406,7 +491,9 @@ func resourceUserGroupRead(ctx context.Context, d *schema.ResourceData, meta int
 
 	// Set member query if present
 	if group.MemberQuery != nil {
-		if err := d.Set("member_query", flattenMemberQuery(group.MemberQuery)); err != nil {
+		flattened := flattenMemberQuery(group.MemberQuery)
+		fmt.Printf("DEBUG: Setting member_query to: %+v\n", flattened)
+		if err := d.Set("member_query", flattened); err != nil {
 			return diag.FromErr(fmt.Errorf("error setting member_query: %v", err))
 		}
 	}
@@ -561,30 +648,101 @@ func resourceUserGroupDelete(ctx context.Context, d *schema.ResourceData, meta i
 // Helper functions for dynamic groups
 
 // expandMemberQuery converts the Terraform schema representation of a member query to the API format
-func expandMemberQuery(input []interface{}) (*common.UserGroupQuery, error) {
+func expandMemberQuery(input []interface{}) (interface{}, error) {
 	if len(input) == 0 || input[0] == nil {
 		return nil, nil
 	}
 
 	queryMap := input[0].(map[string]interface{})
-	query := &common.UserGroupQuery{
-		QueryType: queryMap["query_type"].(string),
+	queryType := queryMap["query_type"].(string)
+
+	// Handle both TypeSet and TypeList for backward compatibility
+	var filters []interface{}
+	if filterSet, ok := queryMap["filter"].(*schema.Set); ok {
+		filters = filterSet.List()
+	} else if filterList, ok := queryMap["filter"].([]interface{}); ok {
+		filters = filterList
 	}
 
-	if filters, ok := queryMap["filter"].([]interface{}); ok && len(filters) > 0 {
-		query.Filters = make([]common.UserGroupFilter, 0, len(filters))
-		for _, f := range filters {
-			filterMap := f.(map[string]interface{})
-			filter := common.UserGroupFilter{
-				Field:    filterMap["field"].(string),
-				Operator: filterMap["operator"].(string),
-				Value:    filterMap["value"].(string),
+	if len(filters) > 0 {
+		switch queryType {
+		case "FilterQuery":
+			// Use FilterQuery specific type
+			query := &common.UserGroupFilterQuery{
+				QueryType: queryType,
+				Filters:   make([]common.UserGroupFilter, 0, len(filters)),
 			}
-			query.Filters = append(query.Filters, filter)
+
+			for _, f := range filters {
+				filterMap := f.(map[string]interface{})
+				filter := common.UserGroupFilter{
+					Field:    filterMap["field"].(string),
+					Operator: filterMap["operator"].(string),
+					Value:    filterMap["value"].(string),
+				}
+				query.Filters = append(query.Filters, filter)
+			}
+
+			return query, nil
+		case "Search":
+			// Convert filters to searchFilters format for Search query
+			var searchFilters []string
+			for _, f := range filters {
+				filterMap := f.(map[string]interface{})
+				field := filterMap["field"].(string)
+				operator := filterMap["operator"].(string)
+				value := filterMap["value"].(string)
+
+				// Auto-detect if field is a custom attribute
+				field = convertFieldForAPI(field)
+
+				// Convert operator format and handle special cases
+				if operator == "in" {
+					// For 'in' operator, split values and create separate filters with $eq
+					values := strings.Split(value, "|")
+					for _, val := range values {
+						val = strings.TrimSpace(val)
+						if val != "" {
+							searchFilter := fmt.Sprintf("%s:$eq:%s", field, val)
+							searchFilters = append(searchFilters, searchFilter)
+						}
+					}
+				} else {
+					var searchOp string
+					switch operator {
+					case "eq":
+						searchOp = "$eq"
+					case "ne":
+						searchOp = "$ne"
+					default:
+						searchOp = "$eq" // default to equals
+					}
+
+					searchFilter := fmt.Sprintf("%s:%s:%s", field, searchOp, value)
+					searchFilters = append(searchFilters, searchFilter)
+				}
+			}
+
+			// Create SearchQuery specific type
+			if len(searchFilters) > 0 {
+				// Create searchFilters as JSON string (as expected by JumpCloud API)
+				searchFiltersObj := map[string]interface{}{
+					"filter": searchFilters,
+				}
+				searchFiltersJSON, _ := json.Marshal(searchFiltersObj)
+
+				query := &common.UserGroupSearchQuery{
+					QueryType:     queryType,
+					SearchFilters: string(searchFiltersJSON), // Send as string, not object
+				}
+
+				return query, nil
+			}
 		}
 	}
 
-	return query, nil
+	// Return basic query if no filters
+	return &common.UserGroupQuery{QueryType: queryType}, nil
 }
 
 // expandMemberQueryExemptions converts the Terraform schema representation of member query exemptions to the API format
@@ -607,25 +765,206 @@ func expandMemberQueryExemptions(input []interface{}) ([]common.UserGroupExempti
 }
 
 // flattenMemberQuery converts the API representation of a member query to the Terraform schema format
-func flattenMemberQuery(query *common.UserGroupQuery) []interface{} {
+func flattenMemberQuery(query interface{}) []interface{} {
 	if query == nil {
 		return []interface{}{}
 	}
 
 	result := make(map[string]interface{})
-	result["query_type"] = query.QueryType
+	var filters []interface{}
 
-	filters := make([]interface{}, 0, len(query.Filters))
-	for _, filter := range query.Filters {
-		filterMap := make(map[string]interface{})
-		filterMap["field"] = filter.Field
-		filterMap["operator"] = filter.Operator
-		filterMap["value"] = filter.Value
-		filters = append(filters, filterMap)
+	switch q := query.(type) {
+	case *common.UserGroupFilterQuery:
+		result["query_type"] = q.QueryType
+		if len(q.Filters) > 0 {
+			// Sort filters by field name for consistent ordering
+			sortedFilters := make([]common.UserGroupFilter, len(q.Filters))
+			copy(sortedFilters, q.Filters)
+			sort.Slice(sortedFilters, func(i, j int) bool {
+				return sortedFilters[i].Field < sortedFilters[j].Field
+			})
+
+			filters = make([]interface{}, 0, len(sortedFilters))
+			for _, filter := range sortedFilters {
+				filterMap := make(map[string]interface{})
+				filterMap["field"] = filter.Field
+				filterMap["operator"] = filter.Operator
+				filterMap["value"] = filter.Value
+				filters = append(filters, filterMap)
+			}
+		}
+	case *common.UserGroupSearchQuery:
+		result["query_type"] = q.QueryType
+		if q.SearchFilters != "" {
+			filters = parseSearchFilters(q.SearchFilters)
+		}
+	case *common.UserGroupQuery:
+		result["query_type"] = q.QueryType
+		if q.QueryType == "FilterQuery" && len(q.Filters) > 0 {
+			filters = make([]interface{}, 0, len(q.Filters))
+			for _, filter := range q.Filters {
+				filterMap := make(map[string]interface{})
+				filterMap["field"] = filter.Field
+				filterMap["operator"] = filter.Operator
+				filterMap["value"] = filter.Value
+				filters = append(filters, filterMap)
+			}
+		} else if q.QueryType == "Search" && q.SearchFilters != nil {
+			filters = parseSearchFiltersFromObject(q.SearchFilters)
+		}
+	case map[string]interface{}:
+		// Handle the case when JSON is deserialized as generic map
+		if queryType, ok := q["queryType"].(string); ok {
+			result["query_type"] = queryType
+
+			switch queryType {
+			case "FilterQuery":
+				if filtersArray, ok := q["filters"].([]interface{}); ok {
+					// Create a temporary slice to sort filters
+					var tempFilters []map[string]interface{}
+					for _, f := range filtersArray {
+						if filterMap, ok := f.(map[string]interface{}); ok {
+							newFilter := make(map[string]interface{})
+							if field, ok := filterMap["field"].(string); ok {
+								newFilter["field"] = field
+							}
+							if operator, ok := filterMap["operator"].(string); ok {
+								newFilter["operator"] = operator
+							}
+							if value, ok := filterMap["value"].(string); ok {
+								newFilter["value"] = value
+							}
+							tempFilters = append(tempFilters, newFilter)
+						}
+					}
+
+					// Sort filters by field name for consistent ordering
+					sort.Slice(tempFilters, func(i, j int) bool {
+						return tempFilters[i]["field"].(string) < tempFilters[j]["field"].(string)
+					})
+
+					// Convert to interface{} slice
+					filters = make([]interface{}, 0, len(tempFilters))
+					for _, filter := range tempFilters {
+						filters = append(filters, filter)
+					}
+				}
+			case "Search":
+				if searchFilters, ok := q["searchFilters"].(string); ok {
+					filters = parseSearchFilters(searchFilters)
+				}
+			}
+		}
+	default:
+		return []interface{}{}
 	}
-	result["filter"] = filters
 
+	result["filter"] = filters
 	return []interface{}{result}
+}
+
+// parseSearchFilters converts searchFilters JSON string back to filter array format
+func parseSearchFilters(searchFilters string) []interface{} {
+	var filters []interface{}
+
+	// Parse the JSON string to extract filters
+	// Example: {"filter":["company:$eq:Agilize","department:$eq:Administration","state:$eq:ACTIVATED","attributes[name=area].value:$eq:asd"]}
+
+	var searchFiltersObj map[string]interface{}
+	if err := json.Unmarshal([]byte(searchFilters), &searchFiltersObj); err != nil {
+		return filters
+	}
+
+	if filterArray, ok := searchFiltersObj["filter"].([]interface{}); ok {
+		// Group filters by field to handle multiple values (like jobTitle)
+		fieldGroups := make(map[string][]string)
+
+		for _, filterItem := range filterArray {
+			if filterStr, ok := filterItem.(string); ok {
+				parts := strings.Split(filterStr, ":")
+				if len(parts) >= 3 {
+					field := parts[0]
+					value := strings.Join(parts[2:], ":") // In case value contains colons
+
+					// Convert back from API format
+					field = convertFieldFromAPI(field)
+
+					// Group values by field
+					if _, exists := fieldGroups[field]; !exists {
+						fieldGroups[field] = []string{}
+					}
+					fieldGroups[field] = append(fieldGroups[field], value)
+				}
+			}
+		}
+
+		// Convert grouped filters back to Terraform format
+		// Sort fields to ensure consistent ordering
+		var sortedFields []string
+		for field := range fieldGroups {
+			sortedFields = append(sortedFields, field)
+		}
+		sort.Strings(sortedFields)
+
+		for _, field := range sortedFields {
+			values := fieldGroups[field]
+			filterMap := make(map[string]interface{})
+			filterMap["field"] = field
+
+			if len(values) > 1 {
+				// Multiple values = "in" operator
+				filterMap["operator"] = "in"
+				filterMap["value"] = strings.Join(values, "|")
+			} else {
+				// Single value = "eq" operator
+				filterMap["operator"] = "eq"
+				filterMap["value"] = values[0]
+			}
+
+			filters = append(filters, filterMap)
+		}
+	}
+
+	return filters
+}
+
+// parseSearchFiltersFromObject converts searchFilters object back to filter array format
+func parseSearchFiltersFromObject(searchFilters map[string]interface{}) []interface{} {
+	var filters []interface{}
+
+	if filterArray, ok := searchFilters["filter"].([]interface{}); ok {
+		for _, filterItem := range filterArray {
+			if filterStr, ok := filterItem.(string); ok {
+				parts := strings.Split(filterStr, ":")
+				if len(parts) >= 3 {
+					field := parts[0]
+					operator := parts[1]
+					value := strings.Join(parts[2:], ":") // In case value contains colons
+
+					// Convert back from API format
+					field = convertFieldFromAPI(field)
+
+					// Convert operator format
+					switch operator {
+					case "$eq":
+						operator = "eq"
+					case "$ne":
+						operator = "ne"
+					case "$in":
+						operator = "in"
+					}
+
+					filterMap := make(map[string]interface{})
+					filterMap["field"] = field
+					filterMap["operator"] = operator
+					filterMap["value"] = value
+					filters = append(filters, filterMap)
+				}
+			}
+		}
+	}
+
+	return filters
 }
 
 // flattenMemberQueryExemptions converts the API representation of member query exemptions to the Terraform schema format
