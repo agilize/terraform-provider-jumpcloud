@@ -90,7 +90,7 @@ resource "jumpcloud_user_group" "engineering_dept" {
 }
 ```
 
-### Dynamic Group with Multiple Filters
+### Dynamic Group with Multiple Filters (FilterQuery)
 
 ```hcl
 resource "jumpcloud_user_group" "senior_engineers" {
@@ -113,6 +113,212 @@ resource "jumpcloud_user_group" "senior_engineers" {
       operator = "in"
       value    = "Senior Engineer|Lead Engineer|Principal Engineer"
     }
+
+    filter {
+      field    = "state"
+      operator = "eq"
+      value    = "ACTIVATED"
+    }
+  }
+}
+```
+
+### Dynamic Group with Custom Attributes (Search Query)
+
+```hcl
+resource "jumpcloud_user_group" "senior_engineers_advanced" {
+  name        = "senior-engineers-advanced"
+  description = "Senior engineers with custom attributes"
+
+  membership_method = "DYNAMIC_AUTOMATED"
+
+  member_query {
+    query_type = "Search"
+
+    filter {
+      field    = "department"
+      operator = "eq"
+      value    = "Engineering"
+    }
+
+    filter {
+      field    = "jobTitle"
+      operator = "in"
+      value    = "Senior Engineer|Lead Engineer|Principal Engineer"
+    }
+
+    # Custom attribute - automatically converted to attributes[name=level].value
+    filter {
+      field    = "level"
+      operator = "eq"
+      value    = "senior"
+    }
+
+    # Custom attribute - automatically converted to attributes[name=team].value
+    filter {
+      field    = "team"
+      operator = "eq"
+      value    = "backend"
+    }
+
+    filter {
+      field    = "state"
+      operator = "eq"
+      value    = "ACTIVATED"
+    }
+  }
+
+  attributes = {
+    department = "Engineering"
+    level      = "senior"
+    team       = "backend"
+  }
+}
+```
+
+## Dynamic Group Query Types
+
+JumpCloud supports two types of dynamic group queries:
+
+### FilterQuery (Default)
+Use `query_type = "FilterQuery"` for filtering by standard JumpCloud user fields:
+- `company` - Company name
+- `costCenter` - Cost center
+- `department` - Department name
+- `description` - User description
+- `employeeType` - Employee type
+- `jobTitle` - Job title
+- `location` - Location
+- `state` - User state (ACTIVATED, STAGED, SUSPENDED)
+
+### Search Query
+Use `query_type = "Search"` for advanced filtering including custom attributes:
+- All standard fields (same as FilterQuery)
+- Custom attributes using just the attribute name
+- Example: `area`, `tribe`, `team`, `level` (the provider automatically detects custom attributes)
+
+**Key Features:**
+- **Auto-detection**: The provider automatically detects custom attributes and converts them to the correct API format (`attributes[name=fieldname].value`)
+- **Multiple values**: Use the `in` operator with pipe-separated values (e.g., `"Senior Engineer|Lead Engineer|Principal Engineer"`)
+- **Case-sensitive**: Custom attribute names are case-sensitive and must exist on the users you want to filter
+
+**Important:** When using custom attributes, they must exist on the users you want to filter. The attribute names are case-sensitive.
+
+### Alternative Solution for Custom Attributes
+
+If you need to filter by custom attributes, consider these approaches:
+
+1. **Map to supported fields**: Use `department`, `location`, or `description` fields to store your custom values
+2. **Use static groups**: Create static groups and manage membership manually
+3. **Combine approaches**: Use dynamic filters for standard fields and static membership for custom criteria
+
+Example using supported fields instead of custom attributes:
+
+```hcl
+resource "jumpcloud_user_group" "business_tribe_example" {
+  name        = "agz-ops-cli-business"
+  description = "Business tribe members in Operations department"
+
+  membership_method = "DYNAMIC_AUTOMATED"
+
+  member_query {
+    query_type = "FilterQuery"
+
+    # Use 'company' field instead of custom 'company' attribute
+    filter {
+      field    = "company"
+      operator = "eq"
+      value    = "Agilize"
+    }
+
+    # Use 'department' field instead of custom 'department' attribute
+    filter {
+      field    = "department"
+      operator = "eq"
+      value    = "Operations"
+    }
+
+    # Use 'location' field to represent 'area'
+    filter {
+      field    = "location"
+      operator = "eq"
+      value    = "Clients"
+    }
+
+    # Use 'description' field to represent 'tribe'
+    filter {
+      field    = "description"
+      operator = "eq"
+      value    = "Business Tribe Member"
+    }
+
+    filter {
+      field    = "state"
+      operator = "eq"
+      value    = "ACTIVATED"
+    }
+  }
+
+  # You can still use custom attributes for group metadata
+  attributes = {
+    area       = "Clients"
+    company    = "Agilize"
+    department = "Operations"
+    group_type = "functional"
+    tribe      = "Business"
+  }
+}
+```
+
+### Dynamic Group with Custom Attributes (Search Query)
+
+```hcl
+resource "jumpcloud_user_group" "custom_attributes_example" {
+  name        = "agz-ops-cli-business"
+  description = "Business tribe members using custom attributes"
+
+  membership_method = "DYNAMIC_AUTOMATED"
+
+  member_query {
+    query_type = "Search"
+
+    filter {
+      field    = "company"
+      operator = "eq"
+      value    = "Agilize"
+    }
+
+    filter {
+      field    = "department"
+      operator = "eq"
+      value    = "Operations"
+    }
+
+    filter {
+      field    = "area"
+      operator = "eq"
+      value    = "Clients"
+    }
+
+    filter {
+      field    = "tribe"
+      operator = "eq"
+      value    = "Business"
+    }
+
+    filter {
+      field    = "state"
+      operator = "eq"
+      value    = "ACTIVATED"
+    }
+  }
+
+  attributes = {
+    area       = "Clients"
+    company    = "Agilize"
+    department = "Operations"
+    group_type = "functional"
+    tribe      = "Business"
   }
 }
 ```
@@ -222,11 +428,11 @@ The following arguments are supported:
   * `posixGroups` - (Optional) An array containing a single object with a `name` property to create a Linux group for this user group.
 * `membership_method` - (Optional) Method for determining group membership. Valid values are `STATIC`, `DYNAMIC_REVIEW_REQUIRED`, or `DYNAMIC_AUTOMATED`. Default is `STATIC`.
 * `member_query` - (Optional) Query for determining dynamic group membership. Required when `membership_method` is `DYNAMIC_REVIEW_REQUIRED` or `DYNAMIC_AUTOMATED`.
-  * `query_type` - (Required) Type of query. Currently only `FilterQuery` is supported.
+  * `query_type` - (Required) Type of query. Valid values are `FilterQuery` (for standard fields) and `Search` (for custom attributes and advanced filtering).
   * `filter` - (Required) One or more filters for the query.
-    * `field` - (Required) Field to filter on. Valid fields include: `company`, `costCenter`, `department`, `description`, `employeeType`, `jobTitle`, `location`, `userState`.
+    * `field` - (Required) Field to filter on. For `FilterQuery`: `company`, `costCenter`, `department`, `description`, `employeeType`, `jobTitle`, `location`, `state`. For `Search`: all FilterQuery fields plus any custom attribute names (e.g., `area`, `tribe`, `level`).
     * `operator` - (Required) Operator for the filter. Valid operators include: `eq` (equals), `ne` (not equals), `in` (in list), `gt` (greater than), `ge` (greater than or equal), `lt` (less than), `le` (less than or equal).
-    * `value` - (Required) Value for the filter. For `in` operator, use pipe-delimited values (e.g., `value1|value2|value3`).
+    * `value` - (Required) Value for the filter. For `in` operator, use pipe-delimited values (e.g., `"Senior Engineer|Lead Engineer|Principal Engineer"`).
 * `member_query_exemptions` - (Optional) Users exempted from the dynamic group query.
   * `id` - (Required) ID of the user to exempt.
   * `type` - (Required) Type of the exemption. Currently only `USER` is supported.

@@ -105,7 +105,7 @@ In addition to all the arguments above, the following attributes are exported:
 * `attributes` - A map of the attributes associated with the user group.
 * `membership_method` - Method for determining group membership. Values can be `STATIC`, `DYNAMIC_REVIEW_REQUIRED`, or `DYNAMIC_AUTOMATED`.
 * `member_query` - Query for determining dynamic group membership.
-  * `query_type` - Type of query (e.g., `FilterQuery`).
+  * `query_type` - Type of query (`FilterQuery` for standard fields, `Search` for custom attributes).
   * `filter` - Filters for the query.
     * `field` - Field to filter on.
     * `operator` - Operator for the filter.
