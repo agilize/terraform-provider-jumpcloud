@@ -46,6 +46,51 @@ resource "jumpcloud_user" "example" {
 }
 ```
 
+### User with STAGED State and Scheduled Activation
+
+This example shows how to create a user in STAGED state with scheduled activation:
+
+```hcl
+resource "jumpcloud_user" "staged_user" {
+  username = "staged.user"
+  email    = "staged.user@example.com"
+  password = "SecurePassword123!"
+
+  firstname = "Staged"
+  lastname  = "User"
+
+  # Create user in STAGED state
+  state = "STAGED"
+
+  # Schedule activation for a future date
+  activation_scheduled      = true
+  scheduled_activation_date = "2024-01-15T09:00:00Z"
+}
+```
+
+### Importing Existing Users
+
+You can import users that were created manually in the JumpCloud console:
+
+```bash
+# Import using the JumpCloud user ID
+terraform import jumpcloud_user.existing_user 507f1f77bcf86cd799439011
+```
+
+After importing, you can manage the user through Terraform:
+
+```hcl
+resource "jumpcloud_user" "existing_user" {
+  # Configuration will be populated from the imported user
+  username = "imported.user"
+  email    = "imported.user@example.com"
+
+  # You can now manage this user through Terraform
+  firstname = "Imported"
+  lastname  = "User"
+}
+```
+
 ### User with Custom Attributes and MFA Enabled
 
 ```hcl
@@ -316,6 +361,9 @@ The following arguments are supported:
 * `samba_service_user` - (Optional) Whether the user is a Samba service user. Defaults to `false`.
 * `sudo` - (Optional) Whether to grant sudo access to the user. Defaults to `false`.
 * `suspended` - (Optional) Whether the user is suspended. Defaults to `false`.
+* `state` - (Optional) The state of the user. Valid values are `ACTIVATED`, `STAGED`, `DISABLED`. Defaults to `ACTIVATED`.
+* `activation_scheduled` - (Optional) Whether user activation is scheduled for a future date. Defaults to `false`.
+* `scheduled_activation_date` - (Optional) Date when user should be automatically activated (ISO 8601 format). Only used when `activation_scheduled` is `true`.
 * `unix_uid` - (Optional) The Unix UID for the user. Must be an integer.
 * `unix_guid` - (Optional) The Unix GUID for the user. Must be an integer.
 * `disable_device_max_login_attempts` - (Optional, Deprecated) Whether to disable maximum login attempts for the user's devices. Defaults to `false`. Use `bypass_managed_device_lockout` instead.
@@ -337,13 +385,42 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Users can be imported using the ID, e.g.,
+Users can be imported using their JumpCloud user ID. This allows you to bring existing JumpCloud users (created manually in the console or through other means) under Terraform management.
 
 ```bash
 $ terraform import jumpcloud_user.example 5f0c1b2c3d4e5f6g7h8i9j0k
 ```
 
-This allows you to bring existing JumpCloud users under Terraform management.
+### Finding User IDs
+
+You can find the user ID in several ways:
+
+1. **JumpCloud Console**: Navigate to the user's profile page - the ID is in the URL
+2. **JumpCloud API**: Use the `/api/systemusers` endpoint to list users and their IDs
+3. **CLI Tools**: Use JumpCloud's CLI tools or API clients
+
+### Import Process
+
+When importing a user:
+
+1. The import process will read all current user attributes from JumpCloud
+2. All fields (including state, activation settings, custom attributes, etc.) will be populated
+3. After import, you can modify the Terraform configuration to manage the user going forward
+4. The user's current state (ACTIVATED, STAGED, etc.) will be preserved
+
+### Example Import Workflow
+
+```bash
+# 1. Import the existing user
+terraform import jumpcloud_user.john_doe 507f1f77bcf86cd799439011
+
+# 2. Run terraform plan to see the current state
+terraform plan
+
+# 3. Update your .tf file to match the imported state or make desired changes
+# 4. Apply any changes
+terraform apply
+```
 
 ## State Management Considerations
 

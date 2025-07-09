@@ -451,3 +451,72 @@ resource "jumpcloud_user" "test_console" {
 }
 `
 }
+
+// TestAccResourceUserImport tests the import functionality
+func TestAccResourceUserImport(t *testing.T) {
+	resourceName := "jumpcloud_user.test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { jctest.TestAccPreCheck(t) },
+		ProviderFactories: jctest.GetProviderFactories(),
+		CheckDestroy:      testAccCheckJumpCloudUserDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccJumpCloudUserConfig_basic(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckJumpCloudUserExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "username", "testuser"),
+					resource.TestCheckResourceAttr(resourceName, "email", "testuser@example.com"),
+				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"password"}, // Password is not returned by API
+			},
+		},
+	})
+}
+
+// TestAccResourceUserStagedState tests creating users in STAGED state with scheduled activation
+func TestAccResourceUserStagedState(t *testing.T) {
+	resourceName := "jumpcloud_user.test_staged"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { jctest.TestAccPreCheck(t) },
+		ProviderFactories: jctest.GetProviderFactories(),
+		CheckDestroy:      testAccCheckJumpCloudUserDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccJumpCloudUserConfig_staged(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckJumpCloudUserExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "username", "testuser_staged"),
+					resource.TestCheckResourceAttr(resourceName, "email", "testuser_staged@example.com"),
+					resource.TestCheckResourceAttr(resourceName, "state", "STAGED"),
+					resource.TestCheckResourceAttr(resourceName, "activation_scheduled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "scheduled_activation_date", "2024-12-31T23:59:59Z"),
+				),
+			},
+		},
+	})
+}
+
+// testAccJumpCloudUserConfig_staged returns a configuration for a user in STAGED state with scheduled activation
+func testAccJumpCloudUserConfig_staged() string {
+	return `
+resource "jumpcloud_user" "test_staged" {
+  username = "testuser_staged"
+  email    = "testuser_staged@example.com"
+  password = "TempPassword123!"
+
+  firstname = "Test"
+  lastname  = "Staged"
+
+  state                     = "STAGED"
+  activation_scheduled      = true
+  scheduled_activation_date = "2024-12-31T23:59:59Z"
+}
+`
+}
