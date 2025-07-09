@@ -14,21 +14,20 @@ import (
 func TestResourceConditionalAccessRule(t *testing.T) {
 	r := ResourceConditionalAccessRule()
 	// Use standard Go testing instead of assert
-	if r == nil {
-		t.Fatal("Expected non-nil resource")
+
+	// Check resource and schema are not nil
+	if r == nil || r.Schema == nil {
+		t.Fatal("Expected non-nil resource and schema")
 	}
-	if r.Schema["name"] == nil {
-		t.Fatal("Expected non-nil name schema")
+
+	// Check required schema fields
+	requiredFields := []string{"name", "policy_id", "conditions", "action"}
+	for _, field := range requiredFields {
+		if r.Schema[field] == nil {
+			t.Fatalf("Expected non-nil %s schema", field)
+		}
 	}
-	if r.Schema["policy_id"] == nil {
-		t.Fatal("Expected non-nil policy_id schema")
-	}
-	if r.Schema["conditions"] == nil {
-		t.Fatal("Expected non-nil conditions schema")
-	}
-	if r.Schema["action"] == nil {
-		t.Fatal("Expected non-nil action schema")
-	}
+	// Check required context functions
 	if r.CreateContext == nil {
 		t.Fatal("Expected non-nil CreateContext")
 	}

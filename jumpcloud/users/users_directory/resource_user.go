@@ -237,6 +237,8 @@ type User struct {
 	PasswordlessSudo            bool            `json:"passwordless_sudo,omitempty"`
 	SambaServiceUser            bool            `json:"samba_service_user,omitempty"`
 	State                       string          `json:"state,omitempty"`
+	ActivationScheduled         bool            `json:"activation_scheduled,omitempty"`
+	ScheduledActivationDate     string          `json:"scheduled_activation_date,omitempty"`
 	Sudo                        bool            `json:"sudo,omitempty"`
 	Suspended                   bool            `json:"suspended,omitempty"`
 	SystemUsername              string          `json:"systemUsername,omitempty"`
@@ -280,6 +282,9 @@ func ResourceUser() *schema.Resource {
 		ReadContext:   resourceUserRead,
 		UpdateContext: resourceUserUpdate,
 		DeleteContext: resourceUserDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: resourceUserImport,
+		},
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:     schema.TypeString,
@@ -560,9 +565,21 @@ func ResourceUser() *schema.Resource {
 				},
 			},
 			"state": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "User state (ACTIVATED, STAGED, DISABLED, etc.)",
+			},
+			"activation_scheduled": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Whether user activation is scheduled for a future date",
+			},
+			"scheduled_activation_date": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Date when user should be automatically activated (ISO 8601 format)",
 			},
 			"totp_enabled": {
 				Type:     schema.TypeBool,
@@ -679,6 +696,10 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 		// Usar enable_global_admin_sudo se estiver definido, caso contrário usar sudo para compatibilidade
 		Sudo:      getFirstDefinedBool(d, []string{"enable_global_admin_sudo", "sudo"}),
 		Suspended: d.Get("suspended").(bool),
+		// Campos para controle de estado e agendamento de ativação
+		State:                   d.Get("state").(string),
+		ActivationScheduled:     d.Get("activation_scheduled").(bool),
+		ScheduledActivationDate: d.Get("scheduled_activation_date").(string),
 		// Mapeamento correto: bypass_managed_device_lockout -> disableDeviceMaxLoginAttempts
 		DisableDeviceMaxLoginAttempts: d.Get("bypass_managed_device_lockout").(bool),
 		AllowPublicKey:                d.Get("allow_public_key").(bool),
@@ -1072,6 +1093,14 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 		return diag.FromErr(fmt.Errorf("error setting state: %v", err))
 	}
 
+	if err := d.Set("activation_scheduled", user.ActivationScheduled); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting activation_scheduled: %v", err))
+	}
+
+	if err := d.Set("scheduled_activation_date", user.ScheduledActivationDate); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting scheduled_activation_date: %v", err))
+	}
+
 	if err := d.Set("created", user.Created); err != nil {
 		return diag.FromErr(fmt.Errorf("error setting created: %v", err))
 	}
@@ -1398,6 +1427,10 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 		// Usar enable_global_admin_sudo se estiver definido, caso contrário usar sudo para compatibilidade
 		Sudo:      getFirstDefinedBool(d, []string{"enable_global_admin_sudo", "sudo"}),
 		Suspended: d.Get("suspended").(bool),
+		// Campos para controle de estado e agendamento de ativação
+		State:                   d.Get("state").(string),
+		ActivationScheduled:     d.Get("activation_scheduled").(bool),
+		ScheduledActivationDate: d.Get("scheduled_activation_date").(string),
 		// Mapeamento correto: bypass_managed_device_lockout -> disableDeviceMaxLoginAttempts
 		DisableDeviceMaxLoginAttempts: d.Get("bypass_managed_device_lockout").(bool),
 		AllowPublicKey:                d.Get("allow_public_key").(bool),
@@ -1748,4 +1781,36 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta any) d
 	d.SetId("")
 
 	return nil
+}
+
+// resourceUserImport imports an existing user by ID
+func resourceUserImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	// The ID provided during import should be the JumpCloud user ID
+	userID := d.Id()
+
+	// Validate that the ID is not empty
+	if userID == "" {
+		return nil, fmt.Errorf("user ID cannot be empty")
+	}
+
+	// Set the ID in the resource data
+	d.SetId(userID)
+
+	// Call the read function to populate all the fields
+	diags := resourceUserRead(ctx, d, meta)
+	if diags.HasError() {
+		// Convert diagnostics to error for import
+		var errMsgs []string
+		for _, diag := range diags {
+			errMsgs = append(errMsgs, diag.Summary)
+		}
+		return nil, fmt.Errorf("failed to read user during import: %s", strings.Join(errMsgs, "; "))
+	}
+
+	// Check if the resource was found (ID would be empty if not found)
+	if d.Id() == "" {
+		return nil, fmt.Errorf("user with ID %s not found", userID)
+	}
+
+	return []*schema.ResourceData{d}, nil
 }
