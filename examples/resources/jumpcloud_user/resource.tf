@@ -63,4 +63,32 @@ resource "jumpcloud_user" "temporary" {
       password,
     ]
   }
-} 
+}
+
+# Exemplo de usuário em estado STAGED com agendamento de ativação
+resource "jumpcloud_user" "staged_user" {
+  username  = "staged.user"
+  email     = "staged.user@example.com"
+  firstname = "Staged"
+  lastname  = "User"
+
+  password = "SecurePassword789!"
+
+  # Criar usuário em estado STAGED
+  state = "STAGED"
+
+  # Agendar ativação para uma data futura
+  activation_scheduled      = true
+  scheduled_activation_date = "2024-01-15T09:00:00Z"
+
+  # Configurações organizacionais
+  company     = "Example Inc."
+  department  = "HR"
+  job_title   = "New Hire"
+
+  # Atributos personalizados
+  attributes = {
+    onboarding_status = "pending"
+    start_date       = "2024-01-15"
+  }
+}
