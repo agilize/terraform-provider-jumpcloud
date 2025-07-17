@@ -53,9 +53,9 @@ type SSHKey struct {
 
 // MFAConfig represents a user's MFA configuration
 type MFAConfig struct {
-    Exclusion     bool `json:"exclusion,omitempty"`
-    ExclusionDays int  `json:"exclusionDays,omitempty"`
-    Configured    bool `json:"configured,omitempty"`
+	Exclusion     bool `json:"exclusion,omitempty"`
+	ExclusionDays int  `json:"exclusionDays,omitempty"`
+	Configured    bool `json:"configured,omitempty"`
 }
 
 // MFAEnrollment represents a user's MFA enrollment status
@@ -547,22 +547,21 @@ func ResourceUser() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"exclusion": {
-							Type:     schema.TypeBool,
-							Optional: true,
-							Default:  false,
-                            Description: "Whether the user is excluded from MFA requirements",
-                        },
-                        "exclusion_days": {
-                            Type:        schema.TypeInt,
-                            Optional:    true,
-                            Description: "Number of days the user is excluded from MFA requirements",
-                        },
-                        "configured": {
-                            Type:        schema.TypeBool,
-                            Optional:    true,
-                            Computed:    true,
-                            Description: "Whether MFA is configured for the user",
-							
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Whether the user is excluded from MFA requirements",
+						},
+						"exclusion_days": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "Number of days the user is excluded from MFA requirements",
+						},
+						"configured": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Whether MFA is configured for the user",
 						},
 					},
 				},
@@ -832,17 +831,17 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 		user.SSHKeys = userKeys
 	}
 
-    // Set MFA configuration if present
-    if v, ok := d.GetOk("mfa"); ok {
-        mfaList := v.([]any)
-        if len(mfaList) > 0 {
-            mfaMap := mfaList[0].(map[string]any)
-            user.MFA = MFAConfig{
-                Exclusion:     mfaMap["exclusion"].(bool),
-                ExclusionDays: mfaMap["exclusion_days"].(int),
-            }
-        }
-    }	
+	// Set MFA configuration if present
+	if v, ok := d.GetOk("mfa"); ok {
+		mfaList := v.([]any)
+		if len(mfaList) > 0 {
+			mfaMap := mfaList[0].(map[string]any)
+			user.MFA = MFAConfig{
+				Exclusion:     mfaMap["exclusion"].(bool),
+				ExclusionDays: mfaMap["exclusion_days"].(int),
+			}
+		}
+	}
 
 	// Ensure these fields are explicitly set, even if they're empty
 	// This is necessary because the JumpCloud API requires these fields to be present
@@ -1331,9 +1330,9 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	if user.MFA.Configured || user.MFA.Exclusion {
 		mfaConfig := []map[string]any{
 			{
-				"exclusion":       user.MFA.Exclusion,
-				"exclusion_days":  user.MFA.ExclusionDays,
-				"configured":      user.MFA.Configured,
+				"exclusion":      user.MFA.Exclusion,
+				"exclusion_days": user.MFA.ExclusionDays,
+				"configured":     user.MFA.Configured,
 			},
 		}
 		if err := d.Set("mfa", mfaConfig); err != nil {
@@ -1579,7 +1578,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 			}
 		}
 	}
-	
+
 	// Ensure these fields are explicitly set, even if they're empty
 	// This is necessary because the JumpCloud API requires these fields to be present
 	if user.LocalUserAccount == "" {
