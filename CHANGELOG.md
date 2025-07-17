@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.12 (2025-07-09)
+
+* Initial release
+
+## v0.1.10 (2025-06-12)
+
+* Initial release
+
 ## v0.1.9 (2025-05-09)
 
 * Initial release
