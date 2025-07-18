@@ -53,9 +53,10 @@ type SSHKey struct {
 
 // MFAConfig represents a user's MFA configuration
 type MFAConfig struct {
-	Exclusion     bool `json:"exclusion,omitempty"`
-	ExclusionDays int  `json:"exclusionDays,omitempty"`
-	Configured    bool `json:"configured,omitempty"`
+	Exclusion      bool   `json:"exclusion,omitempty"`
+	ExclusionDays  int    `json:"exclusionDays,omitempty"`
+	ExclusionUntil string `json:"exclusionUntil,omitempty"`
+	Configured     bool   `json:"configured,omitempty"`
 }
 
 // MFAEnrollment represents a user's MFA enrollment status
@@ -150,8 +151,27 @@ func formatManagerID(id string) string {
 	return id
 }
 
-// getFirstDefinedBool retorna o primeiro valor booleano definido na lista de campos
-// Útil para lidar com campos obsoletos e seus substitutos
+// formatStateForAPI converts the normalized state to the format expected by the API
+func formatStateForAPI(state string) string {
+	// Convert any case to uppercase format expected by JumpCloud API
+	result := ""
+	switch strings.ToUpper(state) {
+	case "ACTIVATED":
+		result = "ACTIVATED"
+	case "STAGED":
+		result = "STAGED"
+	case "SUSPENDED":
+		result = "SUSPENDED"
+	default:
+		// Return uppercase as fallback
+		result = strings.ToUpper(state)
+	}
+
+	return result
+}
+
+// getFirstDefinedBool returns the first defined boolean value from the list of fields
+// Useful for handling deprecated fields and their replacements
 func getFirstDefinedBool(d *schema.ResourceData, fields []string) bool {
 	for _, field := range fields {
 		// Usar Get e verificar se o campo existe no estado
@@ -162,9 +182,9 @@ func getFirstDefinedBool(d *schema.ResourceData, fields []string) bool {
 	return false
 }
 
-// formatAuthorityField formata o campo de autoridade para o formato esperado pela API
-// Se o valor for "None" ou vazio, retorna nil para que seja omitido na serialização JSON
-// Para "ActiveDirectory", retorna um objeto com o nome
+// formatAuthorityField formats the authority field to the format expected by the API
+// If the value is "None" or empty, returns nil so it's omitted in JSON serialization
+// For "ActiveDirectory", returns an object with the name
 func formatAuthorityField(value string) any {
 	if value == "" || value == "None" {
 		return nil
@@ -182,21 +202,21 @@ func formatAuthorityField(value string) any {
 	}
 }
 
-// formatPasswordAuthority formata o campo password_authority para o formato esperado pela API
-// Se o valor for "None" ou vazio, retorna nil para que seja omitido na serialização JSON
-// Para "Scim", configura o campo restrictedFields com o campo password
+// formatPasswordAuthority formats the password_authority field to the format expected by the API
+// If the value is "None" or empty, returns nil so it's omitted in JSON serialization
+// For "Scim", configures the restrictedFields field with the password field
 func formatPasswordAuthority(value string) any {
 	if value == "" || value == "None" {
 		return nil
 	}
 
 	if value == "Scim" {
-		// Para Scim, não enviamos passwordAuthority, mas sim restrictedFields
-		// Retornamos nil para que o campo passwordAuthority seja omitido
+		// For Scim, we don't send passwordAuthority, but restrictedFields instead
+		// Return nil so the passwordAuthority field is omitted
 		return nil
 	}
 
-	// Para outros valores, usa o formato padrão
+	// For other values, use the standard format
 	return map[string]string{
 		"name": value,
 	}
@@ -244,9 +264,9 @@ type User struct {
 	SystemUsername              string          `json:"systemUsername,omitempty"`
 	UnixGUID                    int             `json:"unix_guid,omitempty"`
 	UnixUID                     int             `json:"unix_uid,omitempty"`
-	// DisableDeviceMaxLoginAttempts é o nome real na API para BypassManagedDeviceLockout
+	// DisableDeviceMaxLoginAttempts is the real API name for BypassManagedDeviceLockout
 	DisableDeviceMaxLoginAttempts bool `json:"disableDeviceMaxLoginAttempts,omitempty"`
-	// BypassManagedDeviceLockout é o nome no Terraform, mas não é enviado diretamente para a API
+	// BypassManagedDeviceLockout is the Terraform name, but not sent directly to the API
 	BypassManagedDeviceLockout bool          `json:"-"`
 	AllowPublicKey             bool          `json:"allow_public_key,omitempty"`
 	PasswordExpired            bool          `json:"password_expired,omitempty"`
@@ -261,15 +281,15 @@ type User struct {
 	PasswordDate               string        `json:"password_date,omitempty"`
 	PasswordExpirationDate     string        `json:"password_expiration_date,omitempty"`
 	Manager                    *Manager      `json:"manager,omitempty"`
-	// PasswordRecoveryEmail não é usado diretamente, usamos RecoveryEmail em vez disso
+	// PasswordRecoveryEmail is not used directly, we use RecoveryEmail instead
 	PasswordRecoveryEmail string `json:"-"`
-	// RecoveryEmail é a estrutura correta para o email de recuperação
+	// RecoveryEmail is the correct structure for recovery email
 	RecoveryEmail *RecoveryEmail `json:"recoveryEmail,omitempty"`
-	// EnforceUIDGIDConsistency mapeia para enable_managed_uid na API, mas não é enviado diretamente
+	// EnforceUIDGIDConsistency maps to enable_managed_uid in the API, but not sent directly
 	EnforceUIDGIDConsistency bool `json:"-"`
-	// GlobalPasswordlessSudo mapeia para passwordless_sudo na API, mas não é enviado diretamente
+	// GlobalPasswordlessSudo maps to passwordless_sudo in the API, but not sent directly
 	GlobalPasswordlessSudo bool `json:"-"`
-	// Esses campos precisam ser tratados como objetos, não como strings simples
+	// These fields need to be treated as objects, not simple strings
 	DelegatedAuthority any `json:"delegatedAuthority,omitempty"`
 	PasswordAuthority  any `json:"passwordAuthority,omitempty"`
 	// LocalUserAccount mapeia para systemUsername na API
@@ -284,6 +304,47 @@ func ResourceUser() *schema.Resource {
 		DeleteContext: resourceUserDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: resourceUserImport,
+		},
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+			// Validate allowed state transitions
+			if diff.HasChange("state") {
+				oldState, newState := diff.GetChange("state")
+				oldStateUpper := strings.ToUpper(oldState.(string))
+				newStateUpper := strings.ToUpper(newState.(string))
+
+				// Skip validation if states are the same (no real change)
+				if oldStateUpper == newStateUpper {
+					return nil
+				}
+
+				// Define allowed transitions
+				allowedTransitions := map[string][]string{
+					"STAGED":    {"ACTIVATED", "SUSPENDED"},
+					"ACTIVATED": {"SUSPENDED"},
+					"SUSPENDED": {"ACTIVATED"},
+				}
+
+				// Check if transition is allowed
+				if allowedStates, exists := allowedTransitions[oldStateUpper]; exists {
+					transitionAllowed := false
+					for _, allowedState := range allowedStates {
+						if newStateUpper == allowedState {
+							transitionAllowed = true
+							break
+						}
+					}
+
+					if !transitionAllowed {
+						return fmt.Errorf("cannot change user state from %s to %s - allowed transitions from %s are: %v",
+							oldStateUpper, newStateUpper, oldStateUpper, allowedStates)
+					}
+				} else if oldStateUpper != "" {
+					// Unrecognized state or no transitions allowed
+					return fmt.Errorf("cannot change user state from %s to %s - no transitions allowed from %s",
+						oldStateUpper, newStateUpper, oldStateUpper)
+				}
+			}
+			return nil
 		},
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -555,7 +616,14 @@ func ResourceUser() *schema.Resource {
 						"exclusion_days": {
 							Type:        schema.TypeInt,
 							Optional:    true,
-							Description: "Number of days the user is excluded from MFA requirements",
+							Description: "Number of days the user is excluded from MFA requirements (automatically converted based on user state)",
+							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+								v := val.(int)
+								if v < 1 {
+									errs = append(errs, fmt.Errorf("%q must be >= 1, got: %d", key, v))
+								}
+								return warns, errs
+							},
 						},
 						"configured": {
 							Type:        schema.TypeBool,
@@ -565,13 +633,31 @@ func ResourceUser() *schema.Resource {
 						},
 					},
 				},
-				Description: "MFA configuration for the user",
+				Description: "MFA configuration for the user (automatically handles STAGED vs ACTIVATED states)",
 			},
 			"state": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "User state (ACTIVATED, STAGED, DISABLED, etc.)",
+				Description: "User state (ACTIVATED, STAGED, SUSPENDED) - case insensitive",
+				StateFunc: func(val interface{}) string {
+					// Normalize to uppercase
+					return strings.ToUpper(val.(string))
+				},
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					// Validate allowed values (case insensitive)
+					validStates := []string{"ACTIVATED", "STAGED", "SUSPENDED"}
+					state := strings.ToUpper(val.(string))
+
+					for _, validState := range validStates {
+						if state == validState {
+							return warns, errs
+						}
+					}
+
+					errs = append(errs, fmt.Errorf("%q must be one of %v (case insensitive), got: %s", key, validStates, val.(string)))
+					return warns, errs
+				},
 			},
 			"activation_scheduled": {
 				Type:        schema.TypeBool,
@@ -700,7 +786,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 		Sudo:      getFirstDefinedBool(d, []string{"enable_global_admin_sudo", "sudo"}),
 		Suspended: d.Get("suspended").(bool),
 		// Campos para controle de estado e agendamento de ativação
-		State:                   d.Get("state").(string),
+		State:                   formatStateForAPI(d.Get("state").(string)),
 		ActivationScheduled:     d.Get("activation_scheduled").(bool),
 		ScheduledActivationDate: d.Get("scheduled_activation_date").(string),
 		// Mapeamento correto: bypass_managed_device_lockout -> disableDeviceMaxLoginAttempts
@@ -831,14 +917,19 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 		user.SSHKeys = userKeys
 	}
 
-	// Set MFA configuration if present
-	if v, ok := d.GetOk("mfa"); ok {
-		mfaList := v.([]any)
-		if len(mfaList) > 0 {
-			mfaMap := mfaList[0].(map[string]any)
-			user.MFA = MFAConfig{
-				Exclusion:     mfaMap["exclusion"].(bool),
-				ExclusionDays: mfaMap["exclusion_days"].(int),
+	// Set MFA configuration based on user state
+	userState := d.Get("state").(string)
+	if mfaConfig := buildMFAConfig(d, userState); mfaConfig != nil {
+		user.MFA = *mfaConfig
+
+		// Log da conversão para debug
+		if v, ok := d.GetOk("mfa"); ok {
+			mfaList := v.([]any)
+			if len(mfaList) > 0 {
+				mfaMap := mfaList[0].(map[string]any)
+				if days, ok := mfaMap["exclusion_days"]; ok {
+					logMFAConversion(ctx, userState, days.(int), mfaConfig)
+				}
 			}
 		}
 	}
@@ -1328,10 +1419,47 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	// Set MFA configuration if present
 	if user.MFA.Configured || user.MFA.Exclusion {
+		exclusionDaysToSet := 0
+
+		// Get current state to determine how to handle MFA data
+		userState := strings.ToUpper(user.State)
+
+		// Calculate exclusion_days based on what the API returned and user state
+		if user.MFA.ExclusionDays > 0 {
+			// API returned exclusionDays directly (STAGED users)
+			exclusionDaysToSet = user.MFA.ExclusionDays
+		} else if user.MFA.ExclusionUntil != "" && userState == "ACTIVATED" {
+			// API returned exclusionUntil (ACTIVATED users) - calculate days from now
+			if exclusionTime, err := time.Parse(time.RFC3339, user.MFA.ExclusionUntil); err == nil {
+				now := time.Now()
+				// Calculate days difference using date comparison (not hours)
+				// This ensures we get the correct number of days regardless of time of day
+				nowDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+				exclusionDate := time.Date(exclusionTime.Year(), exclusionTime.Month(), exclusionTime.Day(), 0, 0, 0, 0, exclusionTime.Location())
+
+				daysFromNow := int(exclusionDate.Sub(nowDate).Hours() / 24)
+				// Add 1 day to match JumpCloud's calculation method
+				if daysFromNow >= 0 {
+					exclusionDaysToSet = daysFromNow + 1
+				}
+			}
+		} else {
+			// No exclusion data from API, preserve current state value if exists
+			if v, ok := d.GetOk("mfa"); ok {
+				mfaList := v.([]any)
+				if len(mfaList) > 0 {
+					mfaMap := mfaList[0].(map[string]any)
+					if days, exists := mfaMap["exclusion_days"]; exists {
+						exclusionDaysToSet = days.(int)
+					}
+				}
+			}
+		}
+
 		mfaConfig := []map[string]any{
 			{
 				"exclusion":      user.MFA.Exclusion,
-				"exclusion_days": user.MFA.ExclusionDays,
+				"exclusion_days": exclusionDaysToSet,
 				"configured":     user.MFA.Configured,
 			},
 		}
@@ -1431,7 +1559,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 		Sudo:      getFirstDefinedBool(d, []string{"enable_global_admin_sudo", "sudo"}),
 		Suspended: d.Get("suspended").(bool),
 		// Campos para controle de estado e agendamento de ativação
-		State:                   d.Get("state").(string),
+		State:                   formatStateForAPI(d.Get("state").(string)),
 		ActivationScheduled:     d.Get("activation_scheduled").(bool),
 		ScheduledActivationDate: d.Get("scheduled_activation_date").(string),
 		// Mapeamento correto: bypass_managed_device_lockout -> disableDeviceMaxLoginAttempts
@@ -1567,14 +1695,19 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 		user.SSHKeys = userKeys
 	}
 
-	// Set MFA configuration if present
-	if v, ok := d.GetOk("mfa"); ok {
-		mfaList := v.([]any)
-		if len(mfaList) > 0 {
-			mfaMap := mfaList[0].(map[string]any)
-			user.MFA = MFAConfig{
-				Exclusion:     mfaMap["exclusion"].(bool),
-				ExclusionDays: mfaMap["exclusion_days"].(int),
+	// Set MFA configuration based on user state
+	userState := d.Get("state").(string)
+	if mfaConfig := buildMFAConfig(d, userState); mfaConfig != nil {
+		user.MFA = *mfaConfig
+
+		// Log da conversão para debug
+		if v, ok := d.GetOk("mfa"); ok {
+			mfaList := v.([]any)
+			if len(mfaList) > 0 {
+				mfaMap := mfaList[0].(map[string]any)
+				if days, ok := mfaMap["exclusion_days"]; ok {
+					logMFAConversion(ctx, userState, days.(int), mfaConfig)
+				}
 			}
 		}
 	}
@@ -1741,49 +1874,73 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta any) d
 		}
 
 		// Check if the error is related to Samba service
-		if strings.Contains(err.Error(), "Active Samba Service account") {
-			tflog.Warn(ctx, fmt.Sprintf("Failed to delete user %s due to active Samba service, trying again with forced disable", userID))
-
-			// Create a more comprehensive update to disable all services that might prevent deletion
-			forceUpdate := map[string]any{
-				"samba_service_user":       false,
-				"ldap_binding_user":        false,
-				"sudo":                     false,
-				"passwordless_sudo":        false,
-				"global_passwordless_sudo": false,
-			}
-
-			// Convert to JSON
-			forceUpdateJSON, err := json.Marshal(forceUpdate)
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error serializing force update: %v", err))
-			}
-
-			// Make a PUT request to force disable all services
-			tflog.Debug(ctx, fmt.Sprintf("Force disabling all services for user ID: %s", userID))
-			tflog.Debug(ctx, fmt.Sprintf("Force update request body: %s", string(forceUpdateJSON)))
-			_, updateErr := c.DoRequest(http.MethodPut, fmt.Sprintf("/api/systemusers/%s", userID), forceUpdateJSON)
-			if updateErr != nil {
-				return diag.FromErr(fmt.Errorf("error force disabling services for user %s: %v", userID, updateErr))
-			}
-
-			// Wait a moment for the change to take effect
-			time.Sleep(2 * time.Second)
-
-			// Try deleting again
-			_, deleteErr := c.DoRequest(http.MethodDelete, fmt.Sprintf("/api/systemusers/%s", userID), nil)
-			if deleteErr != nil {
-				return diag.FromErr(fmt.Errorf("error deleting user %s after disabling services: %v", userID, deleteErr))
-			}
-		} else {
-			return diag.FromErr(fmt.Errorf("error deleting user %s: %v", userID, err))
+		if strings.Contains(err.Error(), "Samba service is enabled") {
+			return diag.FromErr(fmt.Errorf("error deleting user %s: %v. Please disable Samba service before deleting the user", userID, err))
 		}
+
+		return diag.FromErr(fmt.Errorf("error deleting user %s: %v", userID, err))
 	}
 
-	// Set ID to empty to signify resource has been removed
-	d.SetId("")
-
 	return nil
+}
+
+// buildMFAConfig builds the MFA configuration based on user state
+// Automatically converts exclusion_days to the correct format based on state
+func buildMFAConfig(d *schema.ResourceData, userState string) *MFAConfig {
+	if v, ok := d.GetOk("mfa"); ok {
+		mfaList := v.([]any)
+		if len(mfaList) > 0 {
+			mfaMap := mfaList[0].(map[string]any)
+
+			// Normalize state for comparison
+			normalizedState := strings.ToUpper(userState)
+
+			// If user is SUSPENDED, don't send MFA block
+			if normalizedState == "SUSPENDED" {
+				return nil
+			}
+
+			config := &MFAConfig{
+				Exclusion:  mfaMap["exclusion"].(bool),
+				Configured: mfaMap["configured"].(bool),
+			}
+
+			// Process exclusion_days based on state
+			if days, ok := mfaMap["exclusion_days"]; ok && days.(int) > 0 {
+				exclusionDays := days.(int)
+
+				switch normalizedState {
+				case "STAGED":
+					// For STAGED, use the value directly
+					config.ExclusionDays = exclusionDays
+
+				case "ACTIVATED":
+					// For ACTIVATED, calculate future date
+					futureDate := time.Now().AddDate(0, 0, exclusionDays)
+					config.ExclusionUntil = futureDate.Format(time.RFC3339)
+
+				default:
+					// For other states, use STAGED as default
+					config.ExclusionDays = exclusionDays
+				}
+			}
+
+			return config
+		}
+	}
+	return nil
+}
+
+// logMFAConversion logs the automatic MFA conversion for debugging
+func logMFAConversion(ctx context.Context, userState string, days int, config *MFAConfig) {
+	switch userState {
+	case "STAGED":
+		tflog.Debug(ctx, fmt.Sprintf("MFA: Using exclusionDays=%d for STAGED user", config.ExclusionDays))
+	case "ACTIVATED":
+		tflog.Debug(ctx, fmt.Sprintf("MFA: Converted %d days to exclusionUntil=%s for ACTIVATED user", days, config.ExclusionUntil))
+	case "SUSPENDED":
+		tflog.Debug(ctx, "MFA: Omitting MFA block for SUSPENDED user")
+	}
 }
 
 // resourceUserImport imports an existing user by ID
