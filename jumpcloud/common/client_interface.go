@@ -9,10 +9,12 @@ import (
 // ClientInterface defines the methods a JumpCloud client must implement
 type ClientInterface interface {
 	// DoRequest performs an API request with the given method, path, and body
-	DoRequest(method, path string, body []byte) ([]byte, error)
+	// The body parameter accepts interface{} to support both []byte and struct types
+	DoRequest(method, path string, body interface{}) ([]byte, error)
 
 	// DoRequestWithContext performs an API request with context and the given method, path, and body
-	DoRequestWithContext(ctx context.Context, method, path string, body []byte) ([]byte, error)
+	// The body parameter accepts interface{} to support both []byte and struct types
+	DoRequestWithContext(ctx context.Context, method, path string, body interface{}) ([]byte, error)
 
 	// GetApiKey returns the API key used for authentication
 	GetApiKey() string

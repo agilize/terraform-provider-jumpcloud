@@ -10,53 +10,44 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"registry.terraform.io/agilize/jumpcloud/pkg/apiclient"
 
-	// Admin - Resources
-	admin_roles "registry.terraform.io/agilize/jumpcloud/jumpcloud/admin/admin_roles"
-	admin_users "registry.terraform.io/agilize/jumpcloud/jumpcloud/admin/admin_users"
+	// Device Management
+	devices_commands "registry.terraform.io/agilize/jumpcloud/jumpcloud/device_management/commands"
+	device_groups "registry.terraform.io/agilize/jumpcloud/jumpcloud/device_management/device_groups"
+	devices "registry.terraform.io/agilize/jumpcloud/jumpcloud/device_management/devices"
+	devices_mdm "registry.terraform.io/agilize/jumpcloud/jumpcloud/device_management/mdm"
+	devices_software_management "registry.terraform.io/agilize/jumpcloud/jumpcloud/device_management/software_management"
 
-	// Application - Resources
-	application_catalog "registry.terraform.io/agilize/jumpcloud/jumpcloud/application/catalog"
-	application_mappings "registry.terraform.io/agilize/jumpcloud/jumpcloud/application/mappings"
-	application_oauth "registry.terraform.io/agilize/jumpcloud/jumpcloud/application/oauth"
-	application_scim "registry.terraform.io/agilize/jumpcloud/jumpcloud/application/scim"
-	application_sso "registry.terraform.io/agilize/jumpcloud/jumpcloud/application/sso"
-
-	// Authentication - Resources
-	authentication_attempts "registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication/attempts"
-	authentication_conditional_access "registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication/conditional_access"
-	authentication_iplist "registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication/iplist"
-	authentication_mfa "registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication/mfa"
-	authentication_policies "registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication/policies"
-	authentication_radius "registry.terraform.io/agilize/jumpcloud/jumpcloud/authentication/radius"
-
-	// Devices - Resources
-	devices_commands "registry.terraform.io/agilize/jumpcloud/jumpcloud/devices/commands"
-	devices_mdm "registry.terraform.io/agilize/jumpcloud/jumpcloud/devices/mdm"
-	devices_software_management "registry.terraform.io/agilize/jumpcloud/jumpcloud/devices/software_management"
-	devices "registry.terraform.io/agilize/jumpcloud/jumpcloud/devices/system_devices"
-	device_groups "registry.terraform.io/agilize/jumpcloud/jumpcloud/devices/system_groups"
-
-	// Insights - Resources
+	// Insights
+	insights_alerts "registry.terraform.io/agilize/jumpcloud/jumpcloud/insights/alerts"
 	insights_directory_insights "registry.terraform.io/agilize/jumpcloud/jumpcloud/insights/directory_insights"
 
-	// Organization - Resources
-	organization_alerts "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/alerts"
-	organization_api_keys "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/api_keys"
-	organization_audit_logs "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/audit_logs"
-	organization_metrics "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/metrics"
-	organization_monitors "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/monitors"
-	organization_notifications "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/notifications"
-	organization_settings "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/settings"
-	organization_webhooks "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization/webhooks"
+	// Organization Settings
+	admin_roles "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization_settings/admin_roles"
+	admin_users "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization_settings/admin_users"
+	organization_api_keys "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization_settings/api_keys"
+	organization_audit_logs "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization_settings/audit_logs"
+	organization_metrics "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization_settings/metrics"
+	organization_monitors "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization_settings/monitors"
+	organization_notifications "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization_settings/notifications"
+	organization_settings "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization_settings/settings"
+	organization_webhooks "registry.terraform.io/agilize/jumpcloud/jumpcloud/organization_settings/webhooks"
 
-	// Password - Resources
-	password_manager "registry.terraform.io/agilize/jumpcloud/jumpcloud/password/password_manager"
-	password_policies "registry.terraform.io/agilize/jumpcloud/jumpcloud/password/password_policies"
+	// Security Management
+	authentication "registry.terraform.io/agilize/jumpcloud/jumpcloud/security_management/attempts"
+	security_conditional_access "registry.terraform.io/agilize/jumpcloud/jumpcloud/security_management/conditional_access"
+	security_iplist "registry.terraform.io/agilize/jumpcloud/jumpcloud/security_management/iplist"
+	security_mfa "registry.terraform.io/agilize/jumpcloud/jumpcloud/security_management/mfa"
+	security_password_policies "registry.terraform.io/agilize/jumpcloud/jumpcloud/security_management/password_policies"
 
-	// Users - Resources
-	user_associations "registry.terraform.io/agilize/jumpcloud/jumpcloud/users/user_associations"
-	user_groups "registry.terraform.io/agilize/jumpcloud/jumpcloud/users/user_groups"
-	users_directory "registry.terraform.io/agilize/jumpcloud/jumpcloud/users/users_directory"
+	// User Authentication
+	password_manager "registry.terraform.io/agilize/jumpcloud/jumpcloud/user_authentication/password_manager"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/user_authentication/radius"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/user_authentication/scim"
+	"registry.terraform.io/agilize/jumpcloud/jumpcloud/user_authentication/sso"
+
+	// User Management
+	usergroups "registry.terraform.io/agilize/jumpcloud/jumpcloud/user_management/user_groups"
+	users "registry.terraform.io/agilize/jumpcloud/jumpcloud/user_management/users"
 )
 
 // New returns a provider plugin instance
@@ -89,51 +80,37 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			// Admin Users - Resources
+			// Organization Settings - Admin Users
 			"jumpcloud_admin_user": admin_users.ResourceUser(),
 
-			// Admin Roles - Resources
+			// Organization Settings - Admin Roles
 			"jumpcloud_admin_role":         admin_roles.ResourceRole(),
 			"jumpcloud_admin_role_binding": admin_roles.ResourceRoleBinding(),
 
-			// Application Catalog - Resources
-			"jumpcloud_application_catalog_application": application_catalog.ResourceAppCatalogApplication(),
-			"jumpcloud_application_catalog_assignment":  application_catalog.ResourceAssignment(),
-			"jumpcloud_application_catalog_category":    application_catalog.ResourceCategory(),
+			// User Authentication - SCIM
+			"jumpcloud_application_scim_server":            scim.ResourceServer(),
+			"jumpcloud_application_scim_attribute_mapping": scim.ResourceAttributeMapping(),
+			"jumpcloud_application_scim_integration":       scim.ResourceIntegration(),
 
-			// Application Mappings - Resources
-			"jumpcloud_application_mapping_user":  application_mappings.ResourceUserMapping(),
-			"jumpcloud_application_mapping_group": application_mappings.ResourceGroupMapping(),
+			// User Authentication - SSO
+			"jumpcloud_application_sso_application": sso.ResourceSSOApplication(),
 
-			// Application OAuth resources
-			"jumpcloud_application_oauth_authorization": application_oauth.ResourceAuthorization(),
-			"jumpcloud_application_oauth_user":          application_oauth.ResourceUser(),
+			// Security Management - Conditional Access
+			"jumpcloud_authentication_conditional_access_rule": security_conditional_access.ResourceConditionalAccessRule(),
 
-			// Application SCIM Resources
-			"jumpcloud_application_scim_server":            application_scim.ResourceServer(),
-			"jumpcloud_application_scim_attribute_mapping": application_scim.ResourceAttributeMapping(),
-			"jumpcloud_application_scim_integration":       application_scim.ResourceIntegration(),
+			// Security Management - IP Lists
+			"jumpcloud_authentication_ip_list":            security_iplist.ResourceList(),
+			"jumpcloud_authentication_ip_list_assignment": security_iplist.ResourceListAssignment(),
 
-			// Application SSO Resources
-			"jumpcloud_application_sso_application": application_sso.ResourceSSOApplication(),
+			// Security Management - MFA
+			"jumpcloud_authentication_mfa_configuration": security_mfa.ResourceConfiguration(),
+			"jumpcloud_authentication_mfa_settings":      security_mfa.ResourceSettings(),
 
-			// Authentication Conditional Access - Resources
-			"jumpcloud_authentication_conditional_access_rule": authentication_conditional_access.ResourceConditionalAccessRule(),
+			// Security Management - Password Policies
+			"jumpcloud_password_policy": security_password_policies.ResourcePasswordPolicy(),
 
-			// Authentication IP Lists - Resources
-			"jumpcloud_authentication_ip_list":            authentication_iplist.ResourceList(),
-			"jumpcloud_authentication_ip_list_assignment": authentication_iplist.ResourceListAssignment(),
-
-			// Authentication MFA - Resources
-			"jumpcloud_authentication_mfa_configuration": authentication_mfa.ResourceConfiguration(),
-			"jumpcloud_authentication_mfa_settings":      authentication_mfa.ResourceSettings(),
-
-			// Authentication Policies - Resources
-			"jumpcloud_authentication_policy":         authentication_policies.ResourcePolicy(),
-			"jumpcloud_authentication_policy_binding": authentication_policies.ResourcePolicyBinding(),
-
-			// Authentication RADIUS - Resources
-			"jumpcloud_authentication_radius_server": authentication_radius.ResourceServer(),
+			// User Authentication - RADIUS
+			"jumpcloud_authentication_radius_server": radius.ResourceServer(),
 
 			// Devices Commands - Resources
 			"jumpcloud_devices_command":             devices_commands.ResourceCommand(),
@@ -141,11 +118,11 @@ func Provider() *schema.Provider {
 			"jumpcloud_devices_command_schedule":    devices_commands.ResourceCommandSchedule(),
 
 			// Device Groups - Resources
-			"jumpcloud_devices_group":            device_groups.ResourceGroup(),
-			"jumpcloud_devices_group_membership": device_groups.ResourceMembership(),
+			"jumpcloud_devices_group":            device_groups.ResourceDeviceGroup(),
+			"jumpcloud_devices_group_membership": device_groups.ResourceDeviceGroupMembership(),
 
 			// Devices - Resources
-			"jumpcloud_devices": devices.ResourceSystem(),
+			"jumpcloud_devices": devices.ResourceDevice(),
 
 			// Devices MDM - Resources
 			"jumpcloud_devices_mdm_configuration":      devices_mdm.ResourceConfiguration(),
@@ -159,97 +136,85 @@ func Provider() *schema.Provider {
 			"jumpcloud_devices_software_update_policy": devices_software_management.ResourceSoftwareUpdatePolicy(),
 			"jumpcloud_devices_software_deployment":    devices_software_management.ResourceSoftwareDeployment(),
 
-			// Organization Alerts - Resources
-			"jumpcloud_organization_alert_configuration": organization_alerts.ResourceAlertConfiguration(),
-
-			// Organization API Keys - Resources
+			// Organization Settings - API Keys
 			"jumpcloud_organization_api_key":         organization_api_keys.ResourceKey(),
 			"jumpcloud_organization_api_key_binding": organization_api_keys.ResourceKeyBinding(),
 
-			// Organization Monitoring - Resources
+			// Organization Settings - Monitoring
 			"jumpcloud_organization_monitoring_threshold": organization_monitors.ResourceThreshold(),
 
-			// Organization Notifications - Resources
+			// Organization Settings - Notifications
 			"jumpcloud_organization_notification_channel": organization_notifications.ResourceChannel(),
 
-			// Organization Settings - Resources
+			// Organization Settings - Settings
 			"jumpcloud_organization":          organization_settings.ResourceOrganization(),
 			"jumpcloud_organization_settings": organization_settings.ResourceSettings(),
 
-			// Organization Webhooks - Resources
+			// Organization Settings - Webhooks
 			"jumpcloud_organization_webhook":              organization_webhooks.ResourceWebhook(),
 			"jumpcloud_organization_webhook_subscription": organization_webhooks.ResourceWebhookSubscription(),
 
-			// Directory Insights - Resources
+			// Insights - Directory Insights
 			"jumpcloud_directory_insights_configuration": insights_directory_insights.ResourceConfiguration(),
 
-			// Password Manager resources
+			// User Authentication - Password Manager
 			"jumpcloud_password_safe":  password_manager.ResourceSafe(),
 			"jumpcloud_password_entry": password_manager.ResourceEntry(),
 
-			// Password Policies - Resources
-			"jumpcloud_password_policy": password_policies.ResourcePasswordPolicy(),
+			// User Management - User Groups
+			"jumpcloud_user_group":                         usergroups.ResourceUserGroup(),
+			"jumpcloud_user_group_membership":              usergroups.ResourceUserGroupMembership(),
+			"jumpcloud_user_group_application_association": usergroups.ResourceUserGroupApplicationAssociation(),
 
-			// User Association Resources
-			"jumpcloud_user_device_association": user_associations.ResourceSystem(),
-
-			// User Groups Resources
-			"jumpcloud_user_group":            user_groups.ResourceUserGroup(),
-			"jumpcloud_user_group_membership": user_groups.ResourceMembership(),
-
-			// Users - Resources
-			"jumpcloud_user": users_directory.ResourceUser(),
+			// User Management - Users
+			"jumpcloud_user":                         users.ResourceUser(),
+			"jumpcloud_user_device_association":      users.ResourceUserDeviceAssociation(),
+			"jumpcloud_user_application_association": users.ResourceUserApplicationAssociation(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			// Admin Roles - Data Sources
+			// Organization Settings - Admin Roles
 			"jumpcloud_admin_roles": admin_roles.DataSourceRoles(),
 
-			// Admin Users - Data Sources
+			// Organization Settings - Admin Users
 			"jumpcloud_admin_users": admin_users.DataSourceUsers(),
 
-			// Users - Data Sources
-			"jumpcloud_user":       users_directory.DataSourceUser(),
-			"jumpcloud_user_group": user_groups.DataSourceUserGroup(),
+			// User Management - User Groups
+			"jumpcloud_user_group":                         usergroups.DataSourceUserGroup(),
+			"jumpcloud_user_group_membership":              usergroups.DataSourceUserGroupMembership(),
+			"jumpcloud_user_group_application_association": usergroups.DataSourceUserGroupApplicationAssociation(),
 
-			// Application Catalog - Data Sources
-			"jumpcloud_application_catalog_application":  application_catalog.DataSourceApplication(),
-			"jumpcloud_application_catalog_applications": application_catalog.DataSourceAppCatalogApplications(),
-			"jumpcloud_application_catalog_categories":   application_catalog.DataSourceCategories(),
+			// User Management - Users
+			"jumpcloud_user":                         users.DataSourceUser(),
+			"jumpcloud_user_device_association":      users.DataSourceUserDeviceAssociation(),
+			"jumpcloud_user_application_association": users.DataSourceUserApplicationAssociation(),
 
-			// Application OAuth - Data Sources
-			"jumpcloud_application_oauth_users": application_oauth.DataSourceUsers(),
+			// User Authentication - SCIM
+			"jumpcloud_application_scim_servers": scim.DataSourceServers(),
+			"jumpcloud_application_scim_schema":  scim.DataSourceSchema(),
 
-			// Application SCIM - Data Sources
-			"jumpcloud_application_scim_servers": application_scim.DataSourceServers(),
-			"jumpcloud_application_scim_schema":  application_scim.DataSourceSchema(),
+			// User Authentication - SSO
+			"jumpcloud_application_sso_application": sso.DataSourceSSOApplication(),
 
-			// Application SSO - Data Sources
-			"jumpcloud_application_sso_application": application_sso.DataSourceSSOApplication(),
+			// Security Management - Attempts
+			"jumpcloud_authentication_attempts": authentication.DataSourceAttempts(),
 
-			// Authentication Attempts - Data Sources
-			"jumpcloud_authentication_attempts": authentication_attempts.DataSourceAttempts(),
+			// Security Management - IP Lists
+			"jumpcloud_authentication_ip_lists":     security_iplist.DataSourceLists(),
+			"jumpcloud_authentication_ip_locations": security_iplist.DataSourceLocations(),
 
-			// Authentication IP Lists - Data Sources
-			"jumpcloud_authentication_ip_lists":     authentication_iplist.DataSourceLists(),
-			"jumpcloud_authentication_ip_locations": authentication_iplist.DataSourceLocations(),
+			// Security Management - MFA
+			"jumpcloud_authentication_mfa_settings": security_mfa.DataSourceSettings(),
+			"jumpcloud_authentication_mfa_stats":    security_mfa.DataSourceStats(),
 
-			// Authentication MFA - Data Sources
-			"jumpcloud_authentication_mfa_settings": authentication_mfa.DataSourceSettings(),
-			"jumpcloud_authentication_mfa_stats":    authentication_mfa.DataSourceStats(),
-
-			// Authentication Policies - Data Sources
-			"jumpcloud_authentication_policy_templates": authentication_policies.DataSourcePolicyTemplates(),
-			"jumpcloud_authentication_policies":         authentication_policies.DataSourcePolicies(),
-
-			// Authentication RADIUS - Data Sources
-			"jumpcloud_authentication_radius_server": authentication_radius.DataSourceServer(),
+			// User Authentication - RADIUS
+			"jumpcloud_authentication_radius_server": radius.DataSourceServer(),
 
 			// Devices Commands - Data Sources
 			"jumpcloud_devices_command": devices_commands.DataSourceCommand(),
 
 			// Devices System - Data Sources
-			"jumpcloud_devices_group": device_groups.DataSourceGroup(),
-			"jumpcloud_devices":       devices.DataSourceSystem(),
+			"jumpcloud_devices_group": device_groups.DataSourceDeviceGroup(),
+			"jumpcloud_devices":       devices.DataSourceDevice(),
 
 			// Devices MDM - Data Sources
 			"jumpcloud_devices_mdm_stats":    devices_mdm.DataSourceStats(),
@@ -261,27 +226,27 @@ func Provider() *schema.Provider {
 			"jumpcloud_devices_software_update_policies":   devices_software_management.DataSourceSoftwareUpdatePolicies(),
 			"jumpcloud_devices_software_deployment_status": devices_software_management.DataSourceSoftwareDeploymentStatus(),
 
-			// Directory Insights - Data Sources
+			// Insights - Directory Insights
 			"jumpcloud_directory_insights_events": insights_directory_insights.DataSourceEvents(),
 
-			// Organization Alerts - Data Sources
-			"jumpcloud_organization_alerts":          organization_alerts.DataSourceAlerts(),
-			"jumpcloud_organization_alert_templates": organization_alerts.DataSourceAlertTemplates(),
+			// Insights - Alerts
+			"jumpcloud_organization_alerts":          insights_alerts.DataSourceAlerts(),
+			"jumpcloud_organization_alert_templates": insights_alerts.DataSourceAlertTemplates(),
 
-			// Organization Audit Logs - Data Sources
+			// Organization Settings - Audit Logs
 			"jumpcloud_organization_audit_logs": organization_audit_logs.DataSourceAuditLogs(),
 
-			// Organization Metrics - Data Sources
+			// Organization Settings - Metrics
 			"jumpcloud_organization_system_metrics": organization_metrics.DataSourceSystemMetrics(),
 
-			// Organization Webhooks - Data Sources
+			// Organization Settings - Webhooks
 			"jumpcloud_organization_webhook": organization_webhooks.DataSourceWebhook(),
 
-			// Password Manager data sources
+			// User Authentication - Password Manager
 			"jumpcloud_password_safes": password_manager.DataSourceSafes(),
 
-			// Password Policies - Data Sources
-			"jumpcloud_password_policies": password_policies.DataSourcePolicies(),
+			// Security Management - Password Policies
+			"jumpcloud_password_policies": security_password_policies.DataSourcePolicies(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}
@@ -310,26 +275,36 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (any, diag.D
 	return client, nil
 }
 
-// clientAdapter adapts the apiclient.Client to the ClientInterface
+// clientAdapter adapts the apiclient.Client to implement multiple client interfaces
+// It implements both common.ClientInterface (with []byte) and common.APIClientInterface (with interface{})
 type clientAdapter struct {
 	apiClient *apiclient.Client
 }
 
-// DoRequest implements the ClientInterface method with the correct signature
-func (a *clientAdapter) DoRequest(method, path string, body []byte) ([]byte, error) {
+// doRequestInternal is the internal implementation that handles all request types
+func (a *clientAdapter) doRequestInternal(method, path string, body interface{}) ([]byte, error) {
 	var requestBody any
-	if len(body) > 0 {
-		// First try to unmarshal as JSON object
-		if err := json.Unmarshal(body, &requestBody); err != nil {
-			// If that fails, try to use the raw bytes as a string
-			bodyStr := string(body)
-			if len(bodyStr) > 0 && (bodyStr[0] == '{' || bodyStr[0] == '[') {
-				// This looks like JSON but couldn't be parsed, log a warning
-				tflog.Warn(context.Background(), fmt.Sprintf("Failed to unmarshal JSON request body: %v. Using raw bytes.", err))
+
+	// Handle different body types
+	switch v := body.(type) {
+	case []byte:
+		// If body is already []byte, try to unmarshal it
+		if len(v) > 0 {
+			if err := json.Unmarshal(v, &requestBody); err != nil {
+				// If unmarshal fails, use raw bytes
+				bodyStr := string(v)
+				if len(bodyStr) > 0 && (bodyStr[0] == '{' || bodyStr[0] == '[') {
+					tflog.Warn(context.Background(), fmt.Sprintf("Failed to unmarshal JSON request body: %v. Using raw bytes.", err))
+				}
+				requestBody = v
 			}
-			// Use the raw bytes as the request body
-			requestBody = body
 		}
+	case nil:
+		// No body
+		requestBody = nil
+	default:
+		// For any other type, use it directly
+		requestBody = v
 	}
 
 	// Log the request for debugging
@@ -352,45 +327,32 @@ func (a *clientAdapter) DoRequest(method, path string, body []byte) ([]byte, err
 	return result, err
 }
 
+// DoRequest implements BOTH interfaces by accepting interface{} which is compatible with []byte
+// This works because []byte satisfies interface{}, and we handle the conversion internally
+func (a *clientAdapter) DoRequest(method, path string, body interface{}) ([]byte, error) {
+	return a.doRequestInternal(method, path, body)
+}
+
+// DoRequestWithContext implements the ClientInterface method with context support
+func (a *clientAdapter) DoRequestWithContext(ctx context.Context, method, path string, body interface{}) ([]byte, error) {
+	// For now, we ignore the context and delegate to DoRequest
+	// TODO: Add proper context support to the underlying API client
+	return a.doRequestInternal(method, path, body)
+}
+
 // GetApiKey implements the ClientInterface method with the correct signature
 func (a *clientAdapter) GetApiKey() string {
+	return a.apiClient.GetApiKey()
+}
+
+// GetAPIKey implements the APIClientInterface method (note the capitalization)
+func (a *clientAdapter) GetAPIKey() string {
 	return a.apiClient.GetApiKey()
 }
 
 // GetOrgID implements the ClientInterface method with the correct signature
 func (a *clientAdapter) GetOrgID() string {
 	return a.apiClient.GetOrgID()
-}
-
-// DoRequestWithContext implements the ClientInterface method with the correct signature
-func (a *clientAdapter) DoRequestWithContext(ctx context.Context, method, path string, body []byte) ([]byte, error) {
-	// Log the request for debugging
-	tflog.Debug(ctx, fmt.Sprintf("Making API request with context: %s %s", method, path))
-
-	// Use the same body processing logic as in DoRequest
-	var requestBody any
-	if len(body) > 0 {
-		if err := json.Unmarshal(body, &requestBody); err != nil {
-			bodyStr := string(body)
-			if len(bodyStr) > 0 && (bodyStr[0] == '{' || bodyStr[0] == '[') {
-				tflog.Warn(ctx, fmt.Sprintf("Failed to unmarshal JSON request body: %v. Using raw bytes.", err))
-			}
-			requestBody = body
-		}
-	}
-
-	// Call the underlying API client
-	// Note: The current apiclient.Client doesn't have a context-aware method,
-	// so we're using the regular DoRequest method for now.
-	// This should be updated when the API client supports context.
-	result, err := a.apiClient.DoRequest(method, path, requestBody)
-
-	// Log any errors
-	if err != nil {
-		tflog.Error(ctx, fmt.Sprintf("API request failed: %v", err))
-	}
-
-	return result, err
 }
 
 // JumpCloudClient is an interface for interaction with the JumpCloud API

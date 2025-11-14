@@ -20,7 +20,7 @@ OS_ARCH=darwin_amd64
 # Terraform directories
 LOCAL_PLUGIN_DIR=~/.terraform.d/plugins/registry.terraform.io/agilize/jumpcloud/$(VERSION)/$(OS_ARCH)
 
-.PHONY: all build clean test test-unit test-integration test-acceptance test-resources test-datasources test-performance test-security test-coverage fmt lint lint-strict vet mod-tidy mod-vendor install docs release pr-check pr-checks check-sdk-version tfproviderlint-check check-fmt
+.PHONY: all build clean test test-unit test-integration test-acceptance test-resources test-datasources test-performance test-security test-coverage fmt lint lint-strict vet mod-tidy mod-vendor install docs release pr-check pr-checks check-sdk-version tfproviderlint-check check-fmt validate-resource validate-all-resources test-phase1 help
 
 all: clean fmt lint vet test build
 
@@ -198,30 +198,63 @@ pr-checks:
 	@$(MAKE) check-sdk-version
 	@echo "✅ All PR checks passed successfully!"
 
+# Validation commands for roadmap
+validate-resource:
+	@if [ -z "$(FILE)" ]; then \
+		echo "Usage: make validate-resource FILE=path/to/resource.go"; \
+		exit 1; \
+	fi
+	@chmod +x scripts/validate_resource.sh
+	@./scripts/validate_resource.sh $(FILE)
+
+validate-all-resources:
+	@echo "Validating all resources..."
+	@chmod +x scripts/validate_resource.sh
+	@for file in $$(find jumpcloud -name "resource_*.go" -o -name "data_source_*.go"); do \
+		echo ""; \
+		echo "Validating $$file..."; \
+		./scripts/validate_resource.sh $$file || true; \
+	done
+
+# Phase 1 specific tests
+test-phase1:
+	@echo "Running Phase 1 tests (Application and User Associations)..."
+	@echo "Testing Application User Mapping..."
+	@TF_ACC=1 $(GOTEST) -v -timeout 30m -run "TestAccResourceApplicationUserMapping" ./jumpcloud/application/mappings/...
+	@echo "Testing Application Group Mapping..."
+	@TF_ACC=1 $(GOTEST) -v -timeout 30m -run "TestAccResourceApplicationGroupMapping" ./jumpcloud/application/mappings/...
+	@echo "Testing User Device Association..."
+	@TF_ACC=1 $(GOTEST) -v -timeout 30m -run "TestAccResourceUserDeviceAssociation" ./jumpcloud/users/user_associations/...
+	@echo "Testing User Group Membership..."
+	@TF_ACC=1 $(GOTEST) -v -timeout 30m -run "TestAccResourceUserGroupMembership" ./jumpcloud/users/user_groups/...
+
 help:
 	@echo "Terraform JumpCloud Provider Makefile"
 	@echo ""
 	@echo "Usage:"
-	@echo "  make                   Build the provider after running format, lint, vet, and tests"
-	@echo "  make build             Build the provider binary"
-	@echo "  make clean             Remove build artifacts"
-	@echo "  make test              Run all tests"
-	@echo "  make test-unit         Run unit tests"
-	@echo "  make test-integration  Run integration tests (requires API credentials)"
-	@echo "  make test-acceptance   Run acceptance tests (requires API credentials)"
-	@echo "  make test-resources    Run resource tests"
-	@echo "  make test-datasources  Run data source tests"
-	@echo "  make test-performance  Run performance tests"
-	@echo "  make test-security     Run security tests"
-	@echo "  make test-coverage     Run tests with coverage report"
-	@echo "  make fmt               Format Go code"
-	@echo "  make lint              Run linters (ignoring errors)"
-	@echo "  make lint-strict       Run linters (failing on errors)"
-	@echo "  make vet               Run Go vet"
-	@echo "  make mod-tidy          Tidy Go modules"
-	@echo "  make mod-vendor        Download all dependencies"
-	@echo "  make install           Install provider to local Terraform plugin directory"
-	@echo "  make docs              Generate documentation"
-	@echo "  make release           Create release artifacts for different platforms"
-	@echo "  make pr-check          Run all PR checks locally (ignoring lint errors)"
-	@echo "  make pr-checks         Run all PR checks locally (failing on lint errors)"
+	@echo "  make                      Build the provider after running format, lint, vet, and tests"
+	@echo "  make build                Build the provider binary"
+	@echo "  make clean                Remove build artifacts"
+	@echo "  make test                 Run all tests"
+	@echo "  make test-unit            Run unit tests"
+	@echo "  make test-integration     Run integration tests (requires API credentials)"
+	@echo "  make test-acceptance      Run acceptance tests (requires API credentials)"
+	@echo "  make test-resources       Run resource tests"
+	@echo "  make test-datasources     Run data source tests"
+	@echo "  make test-performance     Run performance tests"
+	@echo "  make test-security        Run security tests"
+	@echo "  make test-coverage        Run tests with coverage report"
+	@echo "  make test-phase1          Run Phase 1 specific tests (associations)"
+	@echo "  make fmt                  Format Go code"
+	@echo "  make lint                 Run linters (ignoring errors)"
+	@echo "  make lint-strict          Run linters (failing on errors)"
+	@echo "  make vet                  Run Go vet"
+	@echo "  make mod-tidy             Tidy Go modules"
+	@echo "  make mod-vendor           Download all dependencies"
+	@echo "  make install              Install provider to local Terraform plugin directory"
+	@echo "  make docs                 Generate documentation"
+	@echo "  make release              Create release artifacts for different platforms"
+	@echo "  make pr-check             Run all PR checks locally (ignoring lint errors)"
+	@echo "  make pr-checks            Run all PR checks locally (failing on lint errors)"
+	@echo "  make validate-resource    Validate a specific resource (use FILE=path/to/file.go)"
+	@echo "  make validate-all-resources  Validate all resources in the provider"
