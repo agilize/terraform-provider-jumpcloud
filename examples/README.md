@@ -2,6 +2,33 @@
 
 This directory contains examples that demonstrate how to use the JumpCloud Terraform Provider in real-world scenarios.
 
+## 🆕 New Examples (Phase 1 Validated Resources)
+
+### [Phase 1: Application Mappings](./phase1-application-mappings/)
+Complete examples for managing application access and user associations using validated Phase 1 resources:
+- Application user mappings
+- Application group mappings
+- User group membership
+- Device associations
+- Complete onboarding workflows
+
+### [Users and Groups](./users-and-groups/)
+Comprehensive user and user group management examples:
+- Basic and advanced user creation
+- SSH key management
+- Custom attributes
+- Bulk user operations
+- Group-based organization
+
+### [Complete Organization](./complete-organization/)
+Production-ready example showing how to set up an entire organization:
+- Multi-dimensional group structure (departments + roles)
+- Automated group membership
+- Tiered application access
+- Scalable design patterns
+
+---
+
 ## Example Structure
 
 The examples are organized by use case:

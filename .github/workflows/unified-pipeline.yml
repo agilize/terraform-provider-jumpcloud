@@ -56,86 +56,220 @@ jobs:
       - name: Set Version
         id: set-version
         run: |
-          # Determine version based on event type
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ github.event.inputs.version }}" ]]; then
-            # Manually provided version
-            VERSION="${{ github.event.inputs.version }}"
-            IS_PRERELEASE="${{ github.event.inputs.is_prerelease }}"
-            
-            # If pre-release is true, add the suffix
-            if [[ "$IS_PRERELEASE" == "true" ]]; then
-              SUFFIX="${{ github.event.inputs.prerelease_suffix }}"
-              # Check if version already has a pre-release suffix
-              if [[ ! "$VERSION" == *-* ]]; then
-                VERSION="${VERSION}-${SUFFIX}"
+          set -euo pipefail
+
+          # Get current branch name
+          BRANCH_NAME="${{ github.ref_name }}"
+          echo "Current branch: $BRANCH_NAME"
+
+          # Get latest tag
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Latest tag: $LATEST_TAG"
+
+          # Remove 'v' prefix if present
+          LATEST_VERSION=${LATEST_TAG#v}
+
+          # Parse version components (MAJOR.MINOR.PATCH)
+          if [[ "$LATEST_VERSION" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
+            MAJOR=${BASH_REMATCH[1]}
+            MINOR=${BASH_REMATCH[2]}
+            PATCH=${BASH_REMATCH[3]}
+          else
+            MAJOR=0
+            MINOR=1
+            PATCH=0
+          fi
+
+          # Analyze commits since last tag to determine version increment
+          echo "::group::Analyzing commits for version increment"
+
+          # Get commits since last tag
+          if git describe --tags --abbrev=0 >/dev/null 2>&1; then
+            LAST_TAG=$(git describe --tags --abbrev=0)
+            COMMITS_RANGE="${LAST_TAG}..HEAD"
+          else
+            # No tags exist, analyze all commits
+            COMMITS_RANGE="HEAD"
+          fi
+
+          echo "Analyzing commits in range: $COMMITS_RANGE"
+
+          # Get all commit messages since last tag
+          COMMIT_MESSAGES=$(git log --pretty=format:"%s" $COMMITS_RANGE 2>/dev/null || echo "")
+          COMMIT_BODIES=$(git log --pretty=format:"%b" $COMMITS_RANGE 2>/dev/null || echo "")
+
+          # Initialize increment flags
+          HAS_BREAKING=false
+          HAS_FEAT=false
+          HAS_FIX=false
+
+          # Check for BREAKING CHANGES
+          if echo "$COMMIT_MESSAGES" | grep -qE "^[a-zA-Z]+(\(.+\))?!:" || \
+             echo "$COMMIT_BODIES" | grep -q "BREAKING CHANGE"; then
+            HAS_BREAKING=true
+            echo "🚨 BREAKING CHANGE detected"
+          fi
+
+          # Check for features
+          if echo "$COMMIT_MESSAGES" | grep -qE "^feat(\(.+\))?:"; then
+            HAS_FEAT=true
+            echo "✨ Feature commits detected"
+          fi
+
+          # Check for fixes
+          if echo "$COMMIT_MESSAGES" | grep -qE "^fix(\(.+\))?:"; then
+            HAS_FIX=true
+            echo "🐛 Fix commits detected"
+          fi
+
+          # Determine version increment based on conventional commits
+          if [[ "$HAS_BREAKING" == true ]]; then
+            echo "📈 Version increment: MAJOR (breaking changes)"
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+          elif [[ "$HAS_FEAT" == true ]]; then
+            echo "📈 Version increment: MINOR (new features)"
+            MINOR=$((MINOR + 1))
+            PATCH=0
+          elif [[ "$HAS_FIX" == true ]] || [[ -n "$COMMIT_MESSAGES" ]]; then
+            echo "📈 Version increment: PATCH (fixes or other changes)"
+            PATCH=$((PATCH + 1))
+          else
+            echo "📈 Version increment: PATCH (default - no commits found)"
+            PATCH=$((PATCH + 1))
+          fi
+
+          echo "::endgroup::"
+
+          # Determine prerelease suffix based on branch
+          PRERELEASE_SUFFIX=""
+          IS_PRERELEASE=false
+
+          case "$BRANCH_NAME" in
+            "main"|"master")
+              # Production release - use calculated version as-is
+              IS_PRERELEASE=false
+              echo "🚀 Production release branch"
+              ;;
+            "develop")
+              # Beta release - use calculated version with beta suffix
+              PRERELEASE_SUFFIX="beta"
+              IS_PRERELEASE=true
+              echo "🧪 Development branch - beta release"
+              ;;
+            "staging"|"homol")
+              # Release candidate - use calculated version with rc suffix
+              PRERELEASE_SUFFIX="rc"
+              IS_PRERELEASE=true
+              echo "🎯 Staging branch - release candidate"
+              ;;
+            *)
+              # Feature/other branches - use calculated version with appropriate suffix
+              if [[ "$BRANCH_NAME" == feature/* ]]; then
+                PRERELEASE_SUFFIX="alpha"
+                echo "🔬 Feature branch - alpha release"
+              elif [[ "$BRANCH_NAME" == hotfix/* ]]; then
+                PRERELEASE_SUFFIX="hotfix"
+                echo "🚑 Hotfix branch - hotfix release"
+              else
+                PRERELEASE_SUFFIX="dev"
+                echo "🛠️ Other branch - dev release"
               fi
-            fi
-          elif [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == refs/tags/* ]]; then
-            # Version from a tag
-            VERSION=${GITHUB_REF#refs/tags/v}
-            # Check if it's a pre-release based on tag name
-            if [[ "$VERSION" == *-* ]]; then
-              IS_PRERELEASE="true"
+              IS_PRERELEASE=true
+              ;;
+          esac
+
+          # Build base version
+          BASE_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+
+          # Add prerelease suffix if needed
+          if [[ "$IS_PRERELEASE" == true && -n "$PRERELEASE_SUFFIX" ]]; then
+            # Get commit count since last tag for prerelease numbering
+            if git describe --tags --abbrev=0 >/dev/null 2>&1; then
+              LAST_TAG=$(git describe --tags --abbrev=0)
+              COMMIT_COUNT=$(git rev-list --count ${LAST_TAG}..HEAD 2>/dev/null || echo "1")
             else
-              IS_PRERELEASE="false"
+              # No tags exist, count all commits
+              COMMIT_COUNT=$(git rev-list --count HEAD 2>/dev/null || echo "1")
+            fi
+
+            # Build prerelease version following SemVer spec
+            # Format: X.Y.Z-prerelease.N (without build metadata)
+            if [[ "$COMMIT_COUNT" -gt 0 ]]; then
+              VERSION="${BASE_VERSION}-${PRERELEASE_SUFFIX}.${COMMIT_COUNT}"
+            else
+              # First prerelease
+              VERSION="${BASE_VERSION}-${PRERELEASE_SUFFIX}.1"
             fi
           else
-            # Automatic determination as fallback
-            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-            echo "Latest tag: $LATEST_TAG"
-            
-            # Remove 'v' from beginning
-            LATEST_VERSION=${LATEST_TAG#v}
-            
-            # Parse version components
-            if [[ "$LATEST_VERSION" == *-* ]]; then
-              # Handle pre-release versions
-              VERSION_PART=${LATEST_VERSION%-*}
-              SUFFIX_PART=${LATEST_VERSION#*-}
-            else
-              VERSION_PART=$LATEST_VERSION
-              SUFFIX_PART=""
-            fi
-            
-            # Split version into parts: MAJOR.MINOR.PATCH
-            IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_PART"
-            
-            # Remove any remaining suffix from PATCH
-            PATCH=$(echo $PATCH | sed -E 's/([0-9]+).*/\1/')
-            
-            # Determine branch-specific versioning
-            if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-              # For develop branch, increment PATCH and add -beta
-              NEW_PATCH=$((PATCH + 1))
-              VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}-beta"
-              IS_PRERELEASE="true"
-            elif [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]]; then
-              # For main/master branch - if latest was a pre-release with same MAJOR.MINOR, remove suffix
-              # Otherwise, increment PATCH
-              if [[ -n "$SUFFIX_PART" && "${MAJOR}.${MINOR}" == "${MAJOR}.${MINOR}" ]]; then
-                VERSION="${MAJOR}.${MINOR}.${PATCH}"
-              else
-                NEW_PATCH=$((PATCH + 1))
-                VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
-              fi
-              IS_PRERELEASE="false"
-            else
-              # For other branches, just use current version
-              VERSION="${MAJOR}.${MINOR}.${PATCH}"
-              IS_PRERELEASE="false"
-            fi
+            VERSION="$BASE_VERSION"
           fi
-          
-          # Validate version format (strict SemVer)
+
+          echo "::group::Version Information"
+          echo "Branch: $BRANCH_NAME"
+          echo "Latest tag: $LATEST_TAG"
+          echo "Previous version: $LATEST_VERSION"
+          echo "New base version: $BASE_VERSION"
+          echo "Final version: $VERSION"
+          echo "Is prerelease: $IS_PRERELEASE"
+          echo "Prerelease suffix: $PRERELEASE_SUFFIX"
+          if [[ "$IS_PRERELEASE" == true ]]; then
+            echo "Commit count since tag: $COMMIT_COUNT"
+          fi
+          echo "Version increment applied:"
+          echo "  - Breaking changes: $HAS_BREAKING"
+          echo "  - New features: $HAS_FEAT"
+          echo "  - Bug fixes: $HAS_FIX"
+          echo "::endgroup::"
+
+          # Enhanced SemVer validation
+          echo "::group::Version Validation"
+
+          # Validate basic SemVer format
           if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
-            echo "Error: Version does not follow Semantic Versioning format: $VERSION"
-            echo "See: https://semver.org/"
+            echo "::error::Version does not follow Semantic Versioning format: $VERSION"
+            echo "::error::Expected format: X.Y.Z[-prerelease][+build]"
+            echo "::error::See: https://semver.org/"
             exit 1
           fi
-          
-          echo "Determined version: v${VERSION} (Pre-release: $IS_PRERELEASE)"
+
+          # Validate prerelease format if present
+          if [[ "$IS_PRERELEASE" == true ]]; then
+            if [[ ! "$VERSION" =~ -[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*(\+[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*)?$ ]]; then
+              echo "::error::Invalid prerelease format in version: $VERSION"
+              echo "::error::Prerelease identifiers must be alphanumeric with hyphens"
+              exit 1
+            fi
+          fi
+
+          # Validate version progression using bash comparison
+          if [[ "$LATEST_VERSION" != "0.0.0" ]]; then
+            # Simple version comparison for basic validation
+            OLD_MAJOR=$(echo "$LATEST_VERSION" | cut -d. -f1)
+            OLD_MINOR=$(echo "$LATEST_VERSION" | cut -d. -f2)
+            OLD_PATCH=$(echo "$LATEST_VERSION" | cut -d. -f3)
+
+            # Compare versions numerically
+            if [[ $MAJOR -lt $OLD_MAJOR ]] || \
+               [[ $MAJOR -eq $OLD_MAJOR && $MINOR -lt $OLD_MINOR ]] || \
+               [[ $MAJOR -eq $OLD_MAJOR && $MINOR -eq $OLD_MINOR && $PATCH -lt $OLD_PATCH ]]; then
+              echo "::error::New version $VERSION is not greater than previous version $LATEST_VERSION"
+              echo "::error::This violates semantic versioning progression rules"
+              echo "::error::Previous: $OLD_MAJOR.$OLD_MINOR.$OLD_PATCH, New: $MAJOR.$MINOR.$PATCH"
+              exit 1
+            else
+              echo "✅ Version progression valid: $LATEST_VERSION → $BASE_VERSION"
+            fi
+          fi
+
+          echo "✅ Version validation passed"
+          echo "::endgroup::"
+
+          echo "::notice::🎉 Determined version: v${VERSION} (Pre-release: $IS_PRERELEASE)"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "is_prerelease=${IS_PRERELEASE}" >> $GITHUB_OUTPUT
+          echo "prerelease_suffix=${PRERELEASE_SUFFIX}" >> $GITHUB_OUTPUT
 
   # Run tests before build
   test:

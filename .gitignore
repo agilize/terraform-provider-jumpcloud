@@ -50,3 +50,7 @@ node_modules
 # Exclude build artifacts
 out
 build
+
+# Exclude Debug Environment Variables
+debug.env
+examples/development-tests/*
