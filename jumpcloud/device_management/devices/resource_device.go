@@ -236,7 +236,7 @@ func resourceDeviceRead(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 
 	// Handle attributes
-	if system.Attributes != nil && len(system.Attributes) > 0 {
+	if len(system.Attributes) > 0 {
 		attributes := make(map[string]interface{})
 		for k, v := range system.Attributes {
 			attributes[k] = fmt.Sprintf("%v", v)

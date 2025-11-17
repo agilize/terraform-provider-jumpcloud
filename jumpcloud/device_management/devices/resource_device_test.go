@@ -14,15 +14,21 @@ import (
 func TestResourceDeviceSchema(t *testing.T) {
 	s := ResourceDevice()
 
-	// Test required fields
+	// Test display_name field (optional + computed for import workflow)
 	if s.Schema["display_name"] == nil {
 		t.Error("Expected display_name in schema, but it does not exist")
 	}
 	if s.Schema["display_name"].Type != schema.TypeString {
 		t.Error("Expected display_name to be of type string")
 	}
-	if !s.Schema["display_name"].Required {
-		t.Error("Expected display_name to be required")
+	if s.Schema["display_name"].Required {
+		t.Error("Expected display_name to be optional (not required)")
+	}
+	if !s.Schema["display_name"].Optional {
+		t.Error("Expected display_name to be optional")
+	}
+	if !s.Schema["display_name"].Computed {
+		t.Error("Expected display_name to be computed")
 	}
 
 	// Test computed fields
@@ -65,6 +71,11 @@ func TestResourceDeviceSchema(t *testing.T) {
 	}
 	if s.Schema["allow_ssh_root_login"].Required {
 		t.Error("Expected allow_ssh_root_login to be optional")
+	}
+
+	// Test that Importer is defined (required for import workflow)
+	if s.Importer == nil {
+		t.Error("Expected Importer to be defined for import workflow")
 	}
 }
 

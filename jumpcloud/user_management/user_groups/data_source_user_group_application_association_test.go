@@ -116,4 +116,3 @@ data "jumpcloud_user_group_application_association" "test" {
 }
 `
 }
-

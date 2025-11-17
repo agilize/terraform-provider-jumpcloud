@@ -103,4 +103,3 @@ func dataSourceUserApplicationAssociationRead(ctx context.Context, d *schema.Res
 
 	return diags
 }
-
