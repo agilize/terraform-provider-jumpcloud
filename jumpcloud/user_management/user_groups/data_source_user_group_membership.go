@@ -12,6 +12,50 @@ import (
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/common"
 )
 
+// fetchAllGroupMembersWithAPIClient fetches all members of a user group using APIClientInterface, handling pagination
+// This is a variant of fetchAllGroupMembers for use with APIClientInterface (used by data sources)
+func fetchAllGroupMembersWithAPIClient(ctx context.Context, c common.APIClientInterface, userGroupID string) ([]map[string]interface{}, error) {
+	var allMembers []map[string]interface{}
+	limit := 100 // Fetch 100 members per page
+	skip := 0
+
+	for {
+		// Build URL with pagination parameters
+		url := fmt.Sprintf("/api/v2/usergroups/%s/members?limit=%d&skip=%d", userGroupID, limit, skip)
+		tflog.Debug(ctx, fmt.Sprintf("Fetching group members: %s (limit=%d, skip=%d)", userGroupID, limit, skip))
+
+		resp, err := c.DoRequest(http.MethodGet, url, nil)
+		if err != nil {
+			return nil, fmt.Errorf("error fetching group members: %v", err)
+		}
+
+		// Decode the response - the API returns an array of membership objects
+		var memberships []map[string]interface{}
+		if err := json.Unmarshal(resp, &memberships); err != nil {
+			return nil, fmt.Errorf("error deserializing response: %v", err)
+		}
+
+		// If no members returned, we've reached the end
+		if len(memberships) == 0 {
+			break
+		}
+
+		// Add to our collection
+		allMembers = append(allMembers, memberships...)
+
+		// If we got fewer results than the limit, we've reached the end
+		if len(memberships) < limit {
+			break
+		}
+
+		// Move to next page
+		skip += limit
+	}
+
+	tflog.Debug(ctx, fmt.Sprintf("Fetched total of %d members for group %s", len(allMembers), userGroupID))
+	return allMembers, nil
+}
+
 // DataSourceUserGroupMembership returns a schema for the JumpCloud user group membership data source
 func DataSourceUserGroupMembership() *schema.Resource {
 	return &schema.Resource{
@@ -51,25 +95,22 @@ func dataSourceUserGroupMembershipRead(ctx context.Context, d *schema.ResourceDa
 	tflog.Debug(ctx, fmt.Sprintf("Checking membership of user %s in user group %s", userID, userGroupID))
 
 	// Query the Graph API to get all users in this user group
-	endpoint := fmt.Sprintf("/api/v2/usergroups/%s/members", userGroupID)
-	resp, err := client.DoRequest(http.MethodGet, endpoint, nil)
+	// Use pagination to handle groups with more than 10 members (fixes issue #56)
+	memberships, err := fetchAllGroupMembersWithAPIClient(ctx, client, userGroupID)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error querying user group members: %v", err))
 	}
 
-	// Parse the response
-	var members []GraphAssociationResponse
-	if err := json.Unmarshal(resp, &members); err != nil {
-		return diag.FromErr(fmt.Errorf("error parsing members response: %v", err))
-	}
-
 	// Check if the specific user is in the list
 	isMember := false
-	for _, member := range members {
-		if member.ID == userID {
-			isMember = true
-			tflog.Debug(ctx, fmt.Sprintf("User %s is a member of user group %s", userID, userGroupID))
-			break
+	for _, membership := range memberships {
+		// Check if this is a user membership matching our user ID
+		if to, ok := membership["to"].(map[string]interface{}); ok {
+			if id, ok := to["id"].(string); ok && id == userID {
+				isMember = true
+				tflog.Debug(ctx, fmt.Sprintf("User %s is a member of user group %s", userID, userGroupID))
+				break
+			}
 		}
 	}
 

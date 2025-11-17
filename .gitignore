@@ -53,3 +53,4 @@ build
 
 # Exclude Debug Environment Variables
 debug.env
+examples/development-tests/*

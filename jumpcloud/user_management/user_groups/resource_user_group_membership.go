@@ -198,9 +198,8 @@ func resourceUserGroupMembershipRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	// Check if the association still exists by getting all members of the group
-	url := fmt.Sprintf("/api/v2/usergroups/%s/members", userGroupID)
-	tflog.Debug(ctx, fmt.Sprintf("Fetching members for group %s", userGroupID))
-	resp, err := c.DoRequest(http.MethodGet, url, nil)
+	// Use pagination to handle groups with more than 10 members (fixes issue #56)
+	memberships, err := fetchAllGroupMembers(ctx, c, userGroupID)
 	if err != nil {
 		if common.IsNotFoundError(err) {
 			tflog.Warn(ctx, fmt.Sprintf("User group %s not found, removing membership from state", userGroupID))
@@ -208,15 +207,6 @@ func resourceUserGroupMembershipRead(ctx context.Context, d *schema.ResourceData
 			return diags
 		}
 		return diag.FromErr(fmt.Errorf("error checking if user is member of group: %v", err))
-	}
-
-	// Debug log the response
-	tflog.Debug(ctx, fmt.Sprintf("Group members response: %s", string(resp)))
-
-	// Decode the response - the API returns an array of membership objects
-	var memberships []map[string]interface{}
-	if err := json.Unmarshal(resp, &memberships); err != nil {
-		return diag.FromErr(fmt.Errorf("error deserializing response: %v", err))
 	}
 
 	// Check if the user is still associated with the group
