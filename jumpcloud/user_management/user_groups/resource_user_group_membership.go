@@ -14,6 +14,50 @@ import (
 	"registry.terraform.io/agilize/jumpcloud/jumpcloud/common"
 )
 
+// fetchAllGroupMembers fetches all members of a user group, handling pagination
+// This fixes issue #56 where groups with more than 10 members would fail
+func fetchAllGroupMembers(ctx context.Context, c common.ClientInterface, userGroupID string) ([]map[string]interface{}, error) {
+	var allMembers []map[string]interface{}
+	limit := 100 // Fetch 100 members per page
+	skip := 0
+
+	for {
+		// Build URL with pagination parameters
+		url := fmt.Sprintf("/api/v2/usergroups/%s/members?limit=%d&skip=%d", userGroupID, limit, skip)
+		tflog.Debug(ctx, fmt.Sprintf("Fetching group members: %s (limit=%d, skip=%d)", userGroupID, limit, skip))
+
+		resp, err := c.DoRequest(http.MethodGet, url, nil)
+		if err != nil {
+			return nil, fmt.Errorf("error fetching group members: %v", err)
+		}
+
+		// Decode the response - the API returns an array of membership objects
+		var memberships []map[string]interface{}
+		if err := json.Unmarshal(resp, &memberships); err != nil {
+			return nil, fmt.Errorf("error deserializing response: %v", err)
+		}
+
+		// If no members returned, we've reached the end
+		if len(memberships) == 0 {
+			break
+		}
+
+		// Add to our collection
+		allMembers = append(allMembers, memberships...)
+
+		// If we got fewer results than the limit, we've reached the end
+		if len(memberships) < limit {
+			break
+		}
+
+		// Move to next page
+		skip += limit
+	}
+
+	tflog.Debug(ctx, fmt.Sprintf("Fetched total of %d members for group %s", len(allMembers), userGroupID))
+	return allMembers, nil
+}
+
 // ResourceUserGroupMembership returns the resource schema for JumpCloud user group membership
 func ResourceUserGroupMembership() *schema.Resource {
 	return &schema.Resource{
@@ -84,19 +128,10 @@ func resourceUserGroupMembershipCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	// Check if the user is already a member of the group
-	checkUrl := fmt.Sprintf("/api/v2/usergroups/%s/members", userGroupID)
-	resp, err := c.DoRequest(http.MethodGet, checkUrl, nil)
+	// Use pagination to handle groups with more than 10 members (fixes issue #56)
+	memberships, err := fetchAllGroupMembers(ctx, c, userGroupID)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error checking group membership: %v", err))
-	}
-
-	// Debug log the response
-	tflog.Debug(ctx, fmt.Sprintf("Group members response: %s", string(resp)))
-
-	// Decode the response - the API returns an array of membership objects
-	var memberships []map[string]interface{}
-	if err := json.Unmarshal(resp, &memberships); err != nil {
-		return diag.FromErr(fmt.Errorf("error deserializing response: %v", err))
 	}
 
 	// Check if the user is already associated with the group
