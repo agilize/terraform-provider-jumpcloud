@@ -1,3 +1,7 @@
+---
+type: "always_apply"
+---
+
 # Augment Context: Software Development Assistant
 
 ## Role Definition
