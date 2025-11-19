@@ -1,4 +1,11 @@
-# jumpcloud_user Resource
+---
+page_title: "JumpCloud: jumpcloud_user"
+subcategory: "User Management"
+description: |-
+  Manages a user in JumpCloud
+---
+
+# jumpcloud_user
 
 Manages a JumpCloud user. This resource allows you to create, read, update, and delete users in your JumpCloud organization.
 

@@ -1,4 +1,11 @@
-# jumpcloud_user_system_association Resource
+---
+page_title: "JumpCloud: jumpcloud_user_system_association"
+subcategory: "Device Management"
+description: |-
+  Manages associations between users and systems in JumpCloud
+---
+
+# jumpcloud_user_system_association
 
 Manages associations between users and systems in JumpCloud. This resource allows you to create and delete links between users and systems, controlling which users have access to which systems.
 

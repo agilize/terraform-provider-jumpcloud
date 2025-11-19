@@ -1,10 +1,17 @@
-# jumpcloud_mfa_settings Data Source
+---
+page_title: "JumpCloud: jumpcloud_mfa_settings"
+subcategory: "Security Management"
+description: |-
+  Get information about MFA settings in JumpCloud
+---
 
-Este data source permite obter informações sobre as configurações de MFA (Multi-Factor Authentication) para uma organização JumpCloud. Pode ser útil para avaliar as políticas de MFA existentes antes de fazer alterações ou para monitorar configurações entre várias organizações.
+# jumpcloud_mfa_settings (Data Source)
 
-## Exemplo de Uso
+This data source allows you to get information about MFA (Multi-Factor Authentication) settings for a JumpCloud organization. It can be useful for evaluating existing MFA policies before making changes or for monitoring settings across multiple organizations.
 
-### Buscar configurações da organização atual
+## Example Usage
+
+### Get settings for the current organization
 
 ```hcl
 data "jumpcloud_mfa_settings" "current" {}
@@ -14,36 +21,36 @@ output "mfa_methods_enabled" {
 }
 
 output "system_insights_status" {
-  value = data.jumpcloud_mfa_settings.current.system_insights_enrolled ? "Ativado" : "Desativado"
+  value = data.jumpcloud_mfa_settings.current.system_insights_enrolled ? "Enabled" : "Disabled"
 }
 ```
 
-### Buscar configurações de uma organização específica (multi-tenant)
+### Get settings for a specific organization (multi-tenant)
 
 ```hcl
 data "jumpcloud_mfa_settings" "child_org" {
   organization_id = var.child_organization_id
 }
 
-# Validação de configurações para conformidade
+# Validate settings for compliance
 output "mfa_exclusion_window_compliant" {
   value = data.jumpcloud_mfa_settings.child_org.exclusion_window_days <= 7
-  description = "Conforme se a janela de exclusão for menor ou igual a 7 dias"
+  description = "Compliant if exclusion window is less than or equal to 7 days"
 }
 ```
 
 ## Argument Reference
 
-Os seguintes argumentos são suportados:
+The following arguments are supported:
 
-* `organization_id` - (Opcional) ID da organização para obter as configurações de MFA. Se não especificado, será usado o ID da organização atual configurada no provider.
+* `organization_id` - (Optional) Organization ID to get MFA settings for. If not specified, the current organization configured in the provider will be used.
 
 ## Attribute Reference
 
-Os seguintes atributos são exportados:
+The following attributes are exported:
 
-* `id` - ID das configurações de MFA ou "current" para a organização atual.
-* `system_insights_enrolled` - Se o System Insights está habilitado para MFA.
-* `exclusion_window_days` - Número de dias de janela de exclusão para MFA (período de graça).
-* `enabled_methods` - Lista de métodos MFA habilitados, como `totp`, `duo`, `push`, `sms`, `email`, `webauthn` e `security_questions`.
-* `updated` - Data da última atualização das configurações de MFA. 
+* `id` - ID of the MFA settings or "current" for the current organization.
+* `system_insights_enrolled` - Whether System Insights is enabled for MFA.
+* `exclusion_window_days` - Number of exclusion window days for MFA (grace period).
+* `enabled_methods` - List of enabled MFA methods, such as `totp`, `duo`, `push`, `sms`, `email`, `webauthn`, and `security_questions`.
+* `updated` - Last update date of the MFA settings.

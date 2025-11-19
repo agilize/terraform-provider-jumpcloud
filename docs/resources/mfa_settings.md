@@ -1,4 +1,11 @@
-# jumpcloud_mfa_settings Resource
+---
+page_title: "JumpCloud: jumpcloud_mfa_settings"
+subcategory: "Security Management"
+description: |-
+  Manages MFA settings in JumpCloud
+---
+
+# jumpcloud_mfa_settings
 
 Manages MFA (Multi-Factor Authentication) settings in JumpCloud. Since these settings are defined per organization, this is a singleton resource - only one instance should exist per JumpCloud organization.
 

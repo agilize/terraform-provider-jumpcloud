@@ -1,3 +1,10 @@
+---
+page_title: "JumpCloud: jumpcloud_webhook"
+subcategory: "Organization Settings"
+description: |-
+  Manages a webhook in JumpCloud
+---
+
 # jumpcloud_webhook
 
 Manages webhooks in JumpCloud, allowing you to configure real-time notifications for specific events in your organization.

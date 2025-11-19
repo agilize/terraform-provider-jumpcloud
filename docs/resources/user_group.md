@@ -1,4 +1,11 @@
-# jumpcloud_user_group Resource
+---
+page_title: "JumpCloud: jumpcloud_user_group"
+subcategory: "User Management"
+description: |-
+  Manages a user group in JumpCloud
+---
+
+# jumpcloud_user_group
 
 Manages user groups in JumpCloud. This resource allows you to create, update, and delete user groups in JumpCloud, defining properties such as name, description, and custom attributes.
 

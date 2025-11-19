@@ -1,6 +1,6 @@
 ---
 page_title: "JumpCloud: jumpcloud_scim_server"
-subcategory: "Identity Management"
+subcategory: "User Authentication"
 description: |-
   Manages a SCIM server in JumpCloud
 ---
