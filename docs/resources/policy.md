@@ -1,4 +1,11 @@
-# jumpcloud_policy Resource
+---
+page_title: "JumpCloud: jumpcloud_policy"
+subcategory: "Device Management"
+description: |-
+  Manages a policy in JumpCloud
+---
+
+# jumpcloud_policy
 
 This resource allows you to manage policies in JumpCloud. Policies are configurations that can be applied to users or systems, controlling different security aspects such as password complexity, MFA, account lockout, and system updates.
 

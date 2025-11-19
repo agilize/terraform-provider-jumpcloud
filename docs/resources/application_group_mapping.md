@@ -1,4 +1,11 @@
-# jumpcloud_application_group_mapping Resource
+---
+page_title: "JumpCloud: jumpcloud_application_group_mapping"
+subcategory: "Application Management"
+description: |-
+  Manages group-to-application mappings in JumpCloud
+---
+
+# jumpcloud_application_group_mapping
 
 Manages mappings between groups and applications in JumpCloud, granting access for user groups or system groups to SSO applications.
 

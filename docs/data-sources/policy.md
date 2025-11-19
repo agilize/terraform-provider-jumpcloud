@@ -1,4 +1,11 @@
-# jumpcloud_policy Data Source
+---
+page_title: "JumpCloud: jumpcloud_policy"
+subcategory: "Device Management"
+description: |-
+  Get information about a JumpCloud policy
+---
+
+# jumpcloud_policy (Data Source)
 
 Use this data source to get information about a specific existing JumpCloud policy. This data source allows you to retrieve details about policies such as password complexity, MFA, and other security settings.
 

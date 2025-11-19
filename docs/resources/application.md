@@ -1,4 +1,11 @@
-# jumpcloud_application Resource
+---
+page_title: "JumpCloud: jumpcloud_application"
+subcategory: "Application Management"
+description: |-
+  Manages an application in JumpCloud
+---
+
+# jumpcloud_application
 
 This resource allows you to manage applications in JumpCloud to provide Single Sign-On (SSO) for your users. JumpCloud supports SAML, OAuth, and OIDC applications.
 

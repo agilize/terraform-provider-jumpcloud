@@ -1,4 +1,11 @@
-# jumpcloud_user_group Data Source
+---
+page_title: "JumpCloud: jumpcloud_user_group"
+subcategory: "User Management"
+description: |-
+  Get information about a user group in JumpCloud
+---
+
+# jumpcloud_user_group (Data Source)
 
 Use this data source to get information about an existing user group in JumpCloud, including both static and dynamic groups.
 

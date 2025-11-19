@@ -1,4 +1,11 @@
-# jumpcloud_system Data Source
+---
+page_title: "JumpCloud: jumpcloud_system"
+subcategory: "Device Management"
+description: |-
+  Get information about a JumpCloud system (device)
+---
+
+# jumpcloud_system (Data Source)
 
 Use this data source to get information about a JumpCloud system (device).
 

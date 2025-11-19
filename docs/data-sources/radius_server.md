@@ -1,10 +1,17 @@
-# jumpcloud_radius_server Data Source
+---
+page_title: "JumpCloud: jumpcloud_radius_server"
+subcategory: "User Authentication"
+description: |-
+  Get information about a RADIUS server in JumpCloud
+---
 
-Este data source permite obter informações sobre um servidor RADIUS específico configurado no JumpCloud. Pode ser útil para referenciar servidores RADIUS existentes sem precisar recriá-los em seu código Terraform.
+# jumpcloud_radius_server (Data Source)
 
-## Exemplo de Uso
+This data source allows you to get information about a specific RADIUS server configured in JumpCloud. It can be useful for referencing existing RADIUS servers without needing to recreate them in your Terraform code.
 
-### Buscar por ID
+## Example Usage
+
+### Get by ID
 
 ```hcl
 data "jumpcloud_radius_server" "vpn_server" {
@@ -16,24 +23,24 @@ output "vpn_server_mfa_required" {
 }
 ```
 
-### Buscar por Nome
+### Get by Name
 
 ```hcl
 data "jumpcloud_radius_server" "wifi_auth" {
   name = "WiFi Authentication"
 }
 
-# Usar o ID em outro recurso ou associação
+# Use the ID in another resource or association
 resource "jumpcloud_user_group" "wifi_users" {
   name        = "WiFi Users"
-  description = "Usuários com acesso à rede WiFi autenticada"
+  description = "Users with access to authenticated WiFi network"
 }
 
 resource "jumpcloud_radius_server" "new_wifi_radius" {
   name          = "New WiFi Authentication"
   shared_secret = var.radius_secret
-  
-  # Associar com o mesmo grupo do servidor existente
+
+  # Associate with the same group as the existing server
   targets = [
     jumpcloud_user_group.wifi_users.id
   ]
@@ -42,24 +49,24 @@ resource "jumpcloud_radius_server" "new_wifi_radius" {
 
 ## Argument Reference
 
-Os seguintes argumentos são suportados:
+The following arguments are supported:
 
-* `id` - (Opcional) ID do servidor RADIUS no JumpCloud. Conflita com `name`.
-* `name` - (Opcional) Nome do servidor RADIUS no JumpCloud. Conflita com `id`.
+* `id` - (Optional) The ID of the RADIUS server in JumpCloud. Conflicts with `name`.
+* `name` - (Optional) The name of the RADIUS server in JumpCloud. Conflicts with `id`.
 
-**Nota**: Exatamente um de `id` ou `name` deve ser especificado.
+**Note**: Exactly one of `id` or `name` must be specified.
 
 ## Attribute Reference
 
-Os seguintes atributos são exportados:
+The following attributes are exported:
 
-* `network_source_ip` - IP de origem da rede usado para comunicação com o servidor RADIUS.
-* `mfa_required` - Se a autenticação multifator é exigida para o servidor RADIUS.
-* `user_password_expiration_action` - Ação a ser tomada quando a senha do usuário expirar (`allow` ou `deny`).
-* `user_lockout_action` - Ação a ser tomada quando o usuário for bloqueado (`allow` ou `deny`).
-* `user_attribute` - Atributo do usuário usado para autenticação (`username` ou `email`).
-* `targets` - Lista de IDs de grupos associados ao servidor RADIUS.
-* `created` - Data de criação do servidor RADIUS.
-* `updated` - Data da última atualização do servidor RADIUS.
+* `network_source_ip` - Network source IP used for communication with the RADIUS server.
+* `mfa_required` - Whether multi-factor authentication is required for the RADIUS server.
+* `user_password_expiration_action` - Action to take when a user's password expires (`allow` or `deny`).
+* `user_lockout_action` - Action to take when a user is locked out (`allow` or `deny`).
+* `user_attribute` - User attribute used for authentication (`username` or `email`).
+* `targets` - List of group IDs associated with the RADIUS server.
+* `created` - Creation date of the RADIUS server.
+* `updated` - Last update date of the RADIUS server.
 
-**Nota**: O atributo `shared_secret` não é exportado por razões de segurança. 
+**Note**: The `shared_secret` attribute is not exported for security reasons.

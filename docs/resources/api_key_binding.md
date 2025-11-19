@@ -1,4 +1,11 @@
-# jumpcloud_api_key_binding Resource
+---
+page_title: "JumpCloud: jumpcloud_api_key_binding"
+subcategory: "Organization Settings"
+description: |-
+  Manages API key permissions in JumpCloud
+---
+
+# jumpcloud_api_key_binding
 
 Manages API key permissions in JumpCloud. This resource allows you to define which operations an API key can perform and on which resources, enabling granular access control.
 
