@@ -1,4 +1,11 @@
-# jumpcloud_application_user_mapping Resource
+---
+page_title: "JumpCloud: jumpcloud_application_user_mapping"
+subcategory: "Application Management"
+description: |-
+  Manages user-to-application mappings in JumpCloud
+---
+
+# jumpcloud_application_user_mapping
 
 Manages mappings between users and applications in JumpCloud, granting access for individual users to SSO applications.
 

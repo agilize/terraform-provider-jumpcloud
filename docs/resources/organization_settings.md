@@ -1,4 +1,11 @@
-# jumpcloud_organization_settings Resource
+---
+page_title: "JumpCloud: jumpcloud_organization_settings"
+subcategory: "Organization Settings"
+description: |-
+  Manages organization settings in JumpCloud
+---
+
+# jumpcloud_organization_settings
 
 This resource allows you to manage the settings of an organization in JumpCloud, including password policies, MFA configurations, insights, email templates, and other security settings.
 

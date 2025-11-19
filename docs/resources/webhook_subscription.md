@@ -1,3 +1,10 @@
+---
+page_title: "JumpCloud: jumpcloud_webhook_subscription"
+subcategory: "Organization Settings"
+description: |-
+  Manages webhook event subscriptions in JumpCloud
+---
+
 # jumpcloud_webhook_subscription
 
 Manages event subscriptions for webhooks in JumpCloud. This resource allows you to specify which specific events a webhook should monitor, enabling granular control over notifications.

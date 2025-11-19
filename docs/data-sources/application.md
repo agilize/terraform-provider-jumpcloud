@@ -1,10 +1,17 @@
-# jumpcloud_application Data Source
+---
+page_title: "JumpCloud: jumpcloud_application"
+subcategory: "Application Management"
+description: |-
+  Get information about an application in JumpCloud
+---
 
-Este data source permite obter informações sobre uma aplicação específica configurada no JumpCloud. Pode ser útil para referenciar aplicações existentes sem precisar recriá-las em seu código Terraform.
+# jumpcloud_application (Data Source)
 
-## Exemplo de Uso
+This data source allows you to get information about a specific application configured in JumpCloud. It can be useful for referencing existing applications without needing to recreate them in your Terraform code.
 
-### Buscar por ID
+## Example Usage
+
+### Get by ID
 
 ```hcl
 data "jumpcloud_application" "salesforce" {
@@ -16,14 +23,14 @@ output "salesforce_sso_url" {
 }
 ```
 
-### Buscar por Nome
+### Get by Name
 
 ```hcl
 data "jumpcloud_application" "jira" {
   name = "Jira Cloud"
 }
 
-# Usar o ID em outro recurso
+# Use the ID in another resource
 resource "jumpcloud_application_user_mapping" "jira_user" {
   application_id = data.jumpcloud_application.jira.id
   user_id        = jumpcloud_user.dev_user.id
@@ -32,24 +39,24 @@ resource "jumpcloud_application_user_mapping" "jira_user" {
 
 ## Argument Reference
 
-Os seguintes argumentos são suportados:
+The following arguments are supported:
 
-* `id` - (Opcional) ID da aplicação no JumpCloud. Conflita com `name`.
-* `name` - (Opcional) Nome da aplicação no JumpCloud. Conflita com `id`.
+* `id` - (Optional) The ID of the application in JumpCloud. Conflicts with `name`.
+* `name` - (Optional) The name of the application in JumpCloud. Conflicts with `id`.
 
-**Nota**: Exatamente um de `id` ou `name` deve ser especificado.
+**Note**: Exactly one of `id` or `name` must be specified.
 
 ## Attribute Reference
 
-Os seguintes atributos são exportados:
+The following attributes are exported:
 
-* `display_name` - Nome de exibição da aplicação que é mostrado na interface do JumpCloud.
-* `description` - Descrição da aplicação.
-* `sso_url` - URL de SSO para a aplicação. Geralmente usado para aplicações SAML.
-* `saml_metadata` - Metadados SAML da aplicação.
-* `type` - Tipo da aplicação. Pode ser `saml`, `oidc` ou `oauth`.
-* `config` - Mapa de configurações específicas para o tipo de aplicação.
-* `logo` - URL ou string base64 da imagem do logo da aplicação.
-* `active` - Indica se a aplicação está ativa.
-* `created` - Data de criação da aplicação.
-* `updated` - Data da última atualização da aplicação. 
+* `display_name` - Display name of the application shown in the JumpCloud interface.
+* `description` - Description of the application.
+* `sso_url` - SSO URL for the application. Typically used for SAML applications.
+* `saml_metadata` - SAML metadata of the application.
+* `type` - Type of the application. Can be `saml`, `oidc`, or `oauth`.
+* `config` - Map of application-specific configuration settings.
+* `logo` - URL or base64 string of the application logo image.
+* `active` - Indicates whether the application is active.
+* `created` - Creation date of the application.
+* `updated` - Last update date of the application.

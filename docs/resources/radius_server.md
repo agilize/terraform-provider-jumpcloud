@@ -1,4 +1,11 @@
-# jumpcloud_radius_server Resource
+---
+page_title: "JumpCloud: jumpcloud_radius_server"
+subcategory: "User Authentication"
+description: |-
+  Manages a RADIUS server in JumpCloud
+---
+
+# jumpcloud_radius_server
 
 This resource allows you to manage RADIUS servers in JumpCloud. RADIUS (Remote Authentication Dial-In User Service) is a network protocol that provides centralized authentication, authorization, and accounting for users connecting to and using network services.
 

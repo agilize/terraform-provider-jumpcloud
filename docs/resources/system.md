@@ -1,4 +1,11 @@
-# jumpcloud_system Resource
+---
+page_title: "JumpCloud: jumpcloud_system"
+subcategory: "Device Management"
+description: |-
+  Manages a system (device) in JumpCloud
+---
+
+# jumpcloud_system
 
 Manages systems (devices) in JumpCloud. This resource allows you to create, update, and delete system configurations in JumpCloud, controlling security settings, tags, and attributes.
 

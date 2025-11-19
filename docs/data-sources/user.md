@@ -1,4 +1,11 @@
-# jumpcloud_user Data Source
+---
+page_title: "JumpCloud: jumpcloud_user"
+subcategory: "User Management"
+description: |-
+  Get information about a JumpCloud user
+---
+
+# jumpcloud_user (Data Source)
 
 Use this data source to get information about a JumpCloud user.
 

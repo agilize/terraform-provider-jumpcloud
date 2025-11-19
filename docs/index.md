@@ -15,7 +15,7 @@ terraform {
   required_providers {
     jumpcloud = {
       source  = "agilize/jumpcloud"
-      version = "~> 0.1.0"
+      version = "~> 0.1.14"
     }
   }
 }
@@ -57,38 +57,76 @@ The provider supports the following arguments:
 
 ## Resources and Data Sources
 
-### Resources
+The JumpCloud provider offers resources and data sources organized by functional area:
 
-* `jumpcloud_api_key` - Manage API keys
-* `jumpcloud_api_key_binding` - Manage API key permissions
-* `jumpcloud_application` - Manage applications
-* `jumpcloud_application_group_mapping` - Manage application access for groups
-* `jumpcloud_application_user_mapping` - Manage application access for users
-* `jumpcloud_mfa_settings` - Manage MFA settings
-* `jumpcloud_organization` - Manage organizations
-* `jumpcloud_organization_settings` - Manage organization settings
-* `jumpcloud_policy` - Manage policies
-* `jumpcloud_policy_association` - Associate policies with groups
-* `jumpcloud_radius_server` - Manage RADIUS servers
-* `jumpcloud_scim_server` - Manage SCIM servers
-* `jumpcloud_software_update_policy` - Manage software update policies
-* `jumpcloud_system` - Manage systems
+### User Management
+
+**Resources:**
 * `jumpcloud_user` - Manage users
 * `jumpcloud_user_group` - Manage user groups
-* `jumpcloud_user_system_association` - Associate users with systems
+
+**Data Sources:**
+* `jumpcloud_user` - Get information about users
+* `jumpcloud_user_group` - Get information about user groups
+
+### Device Management
+
+**Resources:**
+* `jumpcloud_system` - Manage devices (systems)
+* `jumpcloud_policy` - Manage device policies
+* `jumpcloud_policy_association` - Associate policies with device groups
+* `jumpcloud_user_system_association` - Associate users with devices
+
+**Data Sources:**
+* `jumpcloud_system` - Get information about devices
+* `jumpcloud_policy` - Get information about policies
+* `jumpcloud_user_system_association` - Check user-device associations
+
+### Software Management
+
+**Resources:**
+* `jumpcloud_software_update_policy` - Manage software update policies
+
+**Data Sources:**
+* `jumpcloud_software_update_policies` - List software update policies
+
+### User Authentication
+
+**Resources:**
+* `jumpcloud_radius_server` - Manage RADIUS servers
+* `jumpcloud_scim_server` - Manage SCIM servers
+
+**Data Sources:**
+* `jumpcloud_radius_server` - Get information about RADIUS servers
+* `jumpcloud_scim_servers` - Get information about SCIM servers
+
+### Security Management
+
+**Resources:**
+* `jumpcloud_mfa_settings` - Manage MFA settings
+
+**Data Sources:**
+* `jumpcloud_mfa_settings` - Get MFA settings
+
+### Organization Settings
+
+**Resources:**
+* `jumpcloud_organization` - Manage organizations
+* `jumpcloud_organization_settings` - Manage organization settings
+* `jumpcloud_api_key` - Manage API keys
+* `jumpcloud_api_key_binding` - Manage API key permissions
 * `jumpcloud_webhook` - Manage webhooks
 * `jumpcloud_webhook_subscription` - Manage webhook subscriptions
 
-### Data Sources
+**Data Sources:**
+* `jumpcloud_webhook` - Get information about webhooks
 
+### Application Management
+
+**Resources:**
+* `jumpcloud_application` - Manage applications
+* `jumpcloud_application_user_mapping` - Manage application access for users
+* `jumpcloud_application_group_mapping` - Manage application access for groups
+
+**Data Sources:**
 * `jumpcloud_application` - Get information about applications
-* `jumpcloud_mfa_settings` - Get MFA settings
-* `jumpcloud_policy` - Get information about policies
-* `jumpcloud_radius_server` - Get information about RADIUS servers
-* `jumpcloud_scim_servers` - Get information about SCIM servers
-* `jumpcloud_software_update_policies` - List software update policies
-* `jumpcloud_system` - Get information about systems
-* `jumpcloud_user` - Get information about users
-* `jumpcloud_user_group` - Get information about user groups
-* `jumpcloud_user_system_association` - Check user-system associations
-* `jumpcloud_webhook` - Get information about webhooks 

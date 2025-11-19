@@ -1,3 +1,10 @@
+---
+page_title: "JumpCloud: jumpcloud_api_key"
+subcategory: "Organization Settings"
+description: |-
+  Manages an API key in JumpCloud
+---
+
 # jumpcloud_api_key
 
 Manages API keys in JumpCloud. This resource allows you to create and manage API keys that can be used to authenticate requests to JumpCloud APIs.

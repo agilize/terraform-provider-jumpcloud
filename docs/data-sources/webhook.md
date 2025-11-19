@@ -1,4 +1,11 @@
-# jumpcloud_webhook Data Source
+---
+page_title: "JumpCloud: jumpcloud_webhook"
+subcategory: "Organization Settings"
+description: |-
+  Get information about a webhook in JumpCloud
+---
+
+# jumpcloud_webhook (Data Source)
 
 Use this data source to retrieve information about a specific existing webhook in JumpCloud.
 

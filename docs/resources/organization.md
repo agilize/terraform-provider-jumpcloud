@@ -1,4 +1,11 @@
-# jumpcloud_organization Resource
+---
+page_title: "JumpCloud: jumpcloud_organization"
+subcategory: "Organization Settings"
+description: |-
+  Manages an organization in JumpCloud
+---
+
+# jumpcloud_organization
 
 Manages organizations in JumpCloud. This resource allows you to create and manage organizations in a multi-tenant environment, configuring details such as name, contact information, branding, and allowed domains.
 

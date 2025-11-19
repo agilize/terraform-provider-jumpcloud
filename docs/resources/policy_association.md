@@ -1,4 +1,11 @@
-# jumpcloud_policy_association Resource
+---
+page_title: "JumpCloud: jumpcloud_policy_association"
+subcategory: "Device Management"
+description: |-
+  Associates a policy with user or system groups in JumpCloud
+---
+
+# jumpcloud_policy_association
 
 This resource allows you to associate JumpCloud policies with user or system groups, applying the security and compliance configurations defined in the policies to the group members.
 
