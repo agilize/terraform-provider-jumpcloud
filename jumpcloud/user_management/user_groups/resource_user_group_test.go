@@ -91,6 +91,19 @@ func TestResourceUserGroupSchema(t *testing.T) {
 	}
 }
 
+// TestResourceUserGroupImporter verifies the resource is importable so existing
+// user groups can be brought under management via `terraform import`.
+func TestResourceUserGroupImporter(t *testing.T) {
+	s := usergroups.ResourceUserGroup()
+
+	if s.Importer == nil {
+		t.Fatal("Expected user group resource to define an Importer")
+	}
+	if s.Importer.StateContext == nil {
+		t.Error("Expected user group Importer to set StateContext")
+	}
+}
+
 // Acceptance testing
 func TestAccResourceUsergroup_basic(t *testing.T) {
 	resourceName := "jumpcloud_user_group.test"

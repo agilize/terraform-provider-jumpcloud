@@ -61,10 +61,23 @@ func Provider() *schema.Provider {
 		Schema: map[string]*schema.Schema{
 			"api_key": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Sensitive:   true,
 				DefaultFunc: schema.EnvDefaultFunc("JUMPCLOUD_API_KEY", nil),
 				Description: "API key for JumpCloud operations.",
+			},
+			"client_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("JUMPCLOUD_CLIENT_ID", nil),
+				Description: "OAuth2 service-account client ID (alternative to api_key).",
+			},
+			"client_secret": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+				DefaultFunc: schema.EnvDefaultFunc("JUMPCLOUD_CLIENT_SECRET", nil),
+				Description: "OAuth2 service-account client secret.",
 			},
 			"org_id": {
 				Type:        schema.TypeString,
@@ -257,13 +270,21 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (any, diag.D
 	tflog.Info(ctx, "Configuring JumpCloud client")
 
 	apiKey := d.Get("api_key").(string)
+	clientID := d.Get("client_id").(string)
+	clientSecret := d.Get("client_secret").(string)
 	orgID := d.Get("org_id").(string)
 	apiURL := d.Get("api_url").(string)
 
+	if apiKey == "" && (clientID == "" || clientSecret == "") {
+		return nil, diag.Errorf("either api_key or both client_id and client_secret must be set")
+	}
+
 	config := &apiclient.Config{
-		APIKey: apiKey,
-		OrgID:  orgID,
-		APIURL: apiURL,
+		APIKey:       apiKey,
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		OrgID:        orgID,
+		APIURL:       apiURL,
 	}
 
 	apiClient := apiclient.NewClient(config)

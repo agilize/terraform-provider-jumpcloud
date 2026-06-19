@@ -1,9 +1,53 @@
 package commands
 
 import (
+	"bytes"
+	"encoding/json"
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
+
+// flexInt is an integer that tolerates the JumpCloud command API returning
+// numeric fields (notably timeout) as JSON strings (e.g. "120") on read while
+// accepting and emitting bare JSON numbers on write. The provider's int schema
+// field is preserved; only the wire-decoding is made lenient.
+type flexInt int
+
+func (f *flexInt) UnmarshalJSON(b []byte) error {
+	b = bytes.TrimSpace(b)
+	if len(b) == 0 || string(b) == "null" {
+		*f = 0
+		return nil
+	}
+	if b[0] == '"' {
+		var s string
+		if err := json.Unmarshal(b, &s); err != nil {
+			return err
+		}
+		if s == "" {
+			*f = 0
+			return nil
+		}
+		n, err := strconv.Atoi(s)
+		if err != nil {
+			return err
+		}
+		*f = flexInt(n)
+		return nil
+	}
+	var n int
+	if err := json.Unmarshal(b, &n); err != nil {
+		return err
+	}
+	*f = flexInt(n)
+	return nil
+}
+
+func (f flexInt) MarshalJSON() ([]byte, error) {
+	return []byte(strconv.Itoa(int(f))), nil
+}
 
 // CommandTypes returns a map of valid command types
 func CommandTypes() map[string]bool {
@@ -133,7 +177,7 @@ type Command struct {
 	Shell          string                 `json:"shell,omitempty"`
 	Sudo           bool                   `json:"sudo,omitempty"`
 	LaunchType     string                 `json:"launchType,omitempty"`
-	Timeout        int                    `json:"timeout,omitempty"`
+	Timeout        flexInt                `json:"timeout,omitempty"`
 	Files          []string               `json:"files,omitempty"`
 	Environments   []string               `json:"environments,omitempty"`
 	Description    string                 `json:"description,omitempty"`

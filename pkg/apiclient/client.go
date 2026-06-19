@@ -3,16 +3,23 @@ package apiclient
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
+	"sync"
 	"time"
 )
 
 // JUMPCLOUD_API_V1_URL is the base URL for JumpCloud API v1
 const JUMPCLOUD_API_V1_URL = "https://console.jumpcloud.com"
+
+// JUMPCLOUD_OAUTH_TOKEN_URL is the default OAuth2 token endpoint for JumpCloud
+// service-account (client_credentials) authentication.
+const JUMPCLOUD_OAUTH_TOKEN_URL = "https://admin-oauth.id.jumpcloud.com/oauth2/token"
 
 // JUMPCLOUD_API_V2_URL is the base URL for JumpCloud API v2
 const JUMPCLOUD_API_V2_URL = "https://console.jumpcloud.com"
@@ -48,6 +55,18 @@ type Config struct {
 	// RequestTimeout is the timeout for API requests
 	// Defaults to 30 seconds
 	RequestTimeout time.Duration
+
+	// ClientID is the OAuth2 service-account client ID
+	// When set together with ClientSecret, the client authenticates via the
+	// OAuth2 client_credentials flow (Bearer token) instead of the static x-api-key.
+	ClientID string
+
+	// ClientSecret is the OAuth2 service-account client secret
+	ClientSecret string
+
+	// OAuthTokenURL is the OAuth2 token endpoint used for the client_credentials flow
+	// Defaults to JUMPCLOUD_OAUTH_TOKEN_URL when empty
+	OAuthTokenURL string
 }
 
 // Client is used to communicate with the JumpCloud API
@@ -67,6 +86,27 @@ type Client struct {
 
 	// HTTPClient is the underlying HTTP client used for API requests
 	HTTPClient *http.Client
+
+	// ClientID is the OAuth2 service-account client ID
+	ClientID string
+
+	// ClientSecret is the OAuth2 service-account client secret
+	ClientSecret string
+
+	// OAuthTokenURL is the OAuth2 token endpoint for the client_credentials flow
+	OAuthTokenURL string
+
+	// bearerToken caches the most recently fetched OAuth2 access token
+	bearerToken string
+
+	// tokenExpiry is the time at which the cached bearerToken should be considered stale
+	tokenExpiry time.Time
+
+	// tokenMu guards the token cache fields.
+	// NOTE: a pointer is used (not a value) because parts of the codebase still
+	// type-assert the client by value; a value sync.Mutex would make Client
+	// uncopyable and trip go vet's copylocks on that pre-existing usage.
+	tokenMu *sync.Mutex
 }
 
 // NewClient creates a new JumpCloud client with the provided configuration
@@ -90,13 +130,85 @@ func NewClient(config *Config) *Client {
 		version = V2
 	}
 
-	return &Client{
-		APIKey:     config.APIKey,
-		OrgID:      config.OrgID,
-		APIURL:     apiURL,
-		Version:    version,
-		HTTPClient: &http.Client{Timeout: timeout},
+	// Set default OAuth2 token URL if not specified
+	oauthTokenURL := config.OAuthTokenURL
+	if oauthTokenURL == "" {
+		oauthTokenURL = JUMPCLOUD_OAUTH_TOKEN_URL
 	}
+
+	return &Client{
+		APIKey:        config.APIKey,
+		OrgID:         config.OrgID,
+		APIURL:        apiURL,
+		Version:       version,
+		HTTPClient:    &http.Client{Timeout: timeout},
+		ClientID:      config.ClientID,
+		ClientSecret:  config.ClientSecret,
+		OAuthTokenURL: oauthTokenURL,
+		tokenMu:       &sync.Mutex{},
+	}
+}
+
+// ensureBearerToken returns a valid OAuth2 access token, fetching a new one via
+// the client_credentials flow when the cache is empty or expired. It is safe for
+// concurrent use.
+func (c *Client) ensureBearerToken(ctx context.Context) (string, error) {
+	c.tokenMu.Lock()
+	defer c.tokenMu.Unlock()
+
+	if c.bearerToken != "" && time.Now().Before(c.tokenExpiry) {
+		return c.bearerToken, nil
+	}
+
+	form := url.Values{}
+	form.Set("scope", "api")
+	form.Set("grant_type", "client_credentials")
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.OAuthTokenURL, strings.NewReader(form.Encode()))
+	if err != nil {
+		return "", fmt.Errorf("error creating oauth token request: %v", err)
+	}
+
+	basic := base64.StdEncoding.EncodeToString([]byte(c.ClientID + ":" + c.ClientSecret))
+	req.Header.Set("Authorization", "Basic "+basic)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("error requesting oauth token: %v", err)
+	}
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			fmt.Printf("WARNING: Error closing oauth response body: %v\n", closeErr)
+		}
+	}()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("error reading oauth token response: %v", err)
+	}
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return "", fmt.Errorf("oauth token request failed with status %d: %s", resp.StatusCode, string(respBody))
+	}
+
+	var tokenResp struct {
+		AccessToken string `json:"access_token"`
+		ExpiresIn   int    `json:"expires_in"`
+		TokenType   string `json:"token_type"`
+	}
+	if err := json.Unmarshal(respBody, &tokenResp); err != nil {
+		return "", fmt.Errorf("error parsing oauth token response: %v", err)
+	}
+	if tokenResp.AccessToken == "" {
+		return "", fmt.Errorf("oauth token response contained no access_token")
+	}
+
+	c.bearerToken = tokenResp.AccessToken
+	c.tokenExpiry = time.Now().Add(time.Duration(tokenResp.ExpiresIn-60) * time.Second)
+
+	return c.bearerToken, nil
 }
 
 // DoRequestWithContext makes an HTTP request to the JumpCloud API with context
@@ -137,10 +249,19 @@ func (c *Client) DoRequestWithContext(ctx context.Context, method, path string, 
 		return nil, fmt.Errorf("error creating request: %v", err)
 	}
 
-	// Set headers
-	// JumpCloud API requires x-api-key header for authentication
+	// Set authentication header.
+	// When OAuth2 service-account credentials are configured, use a Bearer token
+	// from the client_credentials flow; otherwise fall back to the static x-api-key.
 	// See: https://docs.jumpcloud.com/api/authentication
-	req.Header.Set("x-api-key", c.APIKey)
+	if c.ClientID != "" && c.ClientSecret != "" {
+		tok, err := c.ensureBearerToken(ctx)
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Authorization", "Bearer "+tok)
+	} else {
+		req.Header.Set("x-api-key", c.APIKey)
+	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 
