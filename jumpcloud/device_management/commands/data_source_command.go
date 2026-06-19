@@ -209,7 +209,7 @@ func dataSourceCommandRead(ctx context.Context, d *schema.ResourceData, meta int
 		"shell":           command.Shell,
 		"sudo":            command.Sudo,
 		"launch_type":     command.LaunchType,
-		"timeout":         command.Timeout,
+		"timeout":         int(command.Timeout),
 		"description":     command.Description,
 		"files":           command.Files,
 		"environments":    command.Environments,

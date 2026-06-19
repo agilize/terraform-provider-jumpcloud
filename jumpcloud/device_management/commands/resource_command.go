@@ -160,7 +160,7 @@ func resourceCommandCreate(ctx context.Context, d *schema.ResourceData, meta int
 		Shell:          d.Get("shell").(string),
 		Sudo:           d.Get("sudo").(bool),
 		LaunchType:     d.Get("launch_type").(string),
-		Timeout:        d.Get("timeout").(int),
+		Timeout:        flexInt(d.Get("timeout").(int)),
 		Description:    d.Get("description").(string),
 	}
 
@@ -247,7 +247,7 @@ func resourceCommandRead(ctx context.Context, d *schema.ResourceData, meta inter
 		"shell":           command.Shell,
 		"sudo":            command.Sudo,
 		"launch_type":     command.LaunchType,
-		"timeout":         command.Timeout,
+		"timeout":         int(command.Timeout),
 		"description":     command.Description,
 		"files":           command.Files,
 		"environments":    command.Environments,
@@ -307,7 +307,7 @@ func resourceCommandUpdate(ctx context.Context, d *schema.ResourceData, meta int
 		Shell:          d.Get("shell").(string),
 		Sudo:           d.Get("sudo").(bool),
 		LaunchType:     d.Get("launch_type").(string),
-		Timeout:        d.Get("timeout").(int),
+		Timeout:        flexInt(d.Get("timeout").(int)),
 		Description:    d.Get("description").(string),
 	}
 
